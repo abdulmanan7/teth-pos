@@ -67,7 +67,7 @@ export const showNotification = {
    */
   orderComplete: (orderNumber: string, customer: string, total: string, staff: string) => {
     toast(
-      `Order #${orderNumber} completed! Customer: ${customer}, Total: $${total}`,
+      `Order #${orderNumber} completed! Customer: ${customer}, Total: Rs ${total}`,
       "success",
       5000
     );

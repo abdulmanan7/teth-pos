@@ -98,11 +98,11 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
   const formatValue = (value: any) => {
     if (typeof value === "number") {
       if (value > 1000000) {
-        return `$${(value / 1000000).toFixed(2)}M`;
+        return `Rs ${(value / 1000000).toFixed(2)}M`;
       } else if (value > 1000) {
-        return `$${(value / 1000).toFixed(2)}K`;
+        return `Rs ${(value / 1000).toFixed(2)}K`;
       }
-      return `$${value.toFixed(2)}`;
+      return `Rs ${value.toFixed(2)}`;
     }
     return value;
   };
@@ -289,11 +289,11 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
                         <td className="text-white py-2">{p.name}</td>
                         <td className="text-slate-400 py-2">{p.sku}</td>
                         <td className="text-right text-white py-2">
-                          ${p.price?.toFixed(2)}
+                          Rs {p.price?.toFixed(2)}
                         </td>
                         <td className="text-right text-white py-2">{p.stock}</td>
                         <td className="text-right text-green-400 py-2">
-                          ${p.value?.toFixed(2)}
+                          Rs {p.value?.toFixed(2)}
                         </td>
                       </tr>
                     ))}
@@ -328,7 +328,7 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
                         <td className="text-white py-2 capitalize">{t.type}</td>
                         <td className="text-right text-white py-2">{t.quantity}</td>
                         <td className="text-right text-green-400 py-2">
-                          ${t.value?.toFixed(2)}
+                          Rs {t.value?.toFixed(2)}
                         </td>
                         <td className="text-slate-400 py-2">
                           {new Date(t.date).toLocaleDateString()}

@@ -218,7 +218,7 @@ export default function PurchaseOrderManager() {
         notes: paymentForm.notes,
       });
 
-      alert(`Payment of $${paymentForm.amount.toFixed(2)} recorded successfully!`);
+      alert(`Payment of Rs ${paymentForm.amount.toFixed(2)} recorded successfully!`);
       setSelectedPO(updatedPO);
       setPaymentForm({ amount: 0, payment_method: 'bank_transfer', reference: '', notes: '' });
       setShowPaymentForm(false);
@@ -337,7 +337,7 @@ export default function PurchaseOrderManager() {
 
                   <div className="grid grid-cols-2 gap-2 text-sm text-slate-400 mb-2">
                     <div>Vendor: <span className="text-white">{getVendorName(po.vendor_id)}</span></div>
-                    <div>Total: <span className="text-white font-semibold">${po.total_amount.toFixed(2)}</span></div>
+                    <div>Total: <span className="text-white font-semibold">Rs {po.total_amount.toFixed(2)}</span></div>
                     <div>Order Date: <span className="text-white">{new Date(po.order_date).toLocaleDateString()}</span></div>
                     {po.expected_delivery && (
                       <div>Expected: <span className="text-white">{new Date(po.expected_delivery).toLocaleDateString()}</span></div>
@@ -350,7 +350,7 @@ export default function PurchaseOrderManager() {
                     <div className="space-y-1">
                       {po.items.map((item, idx) => (
                         <div key={idx} className="text-xs text-slate-300">
-                          {getProductName(item.product_id)} - {item.quantity} × ${item.purchase_price.toFixed(2)} = ${item.line_total.toFixed(2)}
+                          {getProductName(item.product_id)} - {item.quantity} × Rs {item.purchase_price.toFixed(2)} = Rs {item.line_total.toFixed(2)}
                         </div>
                       ))}
                     </div>
@@ -488,7 +488,7 @@ export default function PurchaseOrderManager() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-slate-300">
-                          Line Total: ${(item.quantity * item.purchase_price).toFixed(2)}
+                          Line Total: Rs {(item.quantity * item.purchase_price).toFixed(2)}
                         </span>
                         {formData.items.length > 1 && (
                           <button
@@ -507,7 +507,7 @@ export default function PurchaseOrderManager() {
                 <div className="mt-3 p-3 bg-slate-700/50 rounded">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-white">Total Amount:</span>
-                    <span className="text-lg font-bold text-green-400">${calculateTotal().toFixed(2)}</span>
+                    <span className="text-lg font-bold text-green-400">Rs {calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -585,7 +585,7 @@ export default function PurchaseOrderManager() {
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 mb-1">Total Amount</p>
-                    <p className="text-lg font-bold text-green-400">${selectedPO.total_amount.toFixed(2)}</p>
+                    <p className="text-lg font-bold text-green-400">Rs {selectedPO.total_amount.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -627,15 +627,15 @@ export default function PurchaseOrderManager() {
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   <div className="bg-slate-700/50 p-2 rounded">
                     <p className="text-xs text-slate-400">Total Amount</p>
-                    <p className="text-sm font-semibold text-white">${selectedPO.total_amount.toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-white">Rs {selectedPO.total_amount.toFixed(2)}</p>
                   </div>
                   <div className="bg-slate-700/50 p-2 rounded">
                     <p className="text-xs text-slate-400">Amount Paid</p>
-                    <p className="text-sm font-semibold text-green-400">${selectedPO.amount_paid.toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-green-400">Rs {selectedPO.amount_paid.toFixed(2)}</p>
                   </div>
                   <div className="bg-slate-700/50 p-2 rounded">
                     <p className="text-xs text-slate-400">Remaining</p>
-                    <p className="text-sm font-semibold text-yellow-400">${(selectedPO.total_amount - selectedPO.amount_paid).toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-yellow-400">Rs {(selectedPO.total_amount - selectedPO.amount_paid).toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -717,7 +717,7 @@ export default function PurchaseOrderManager() {
                       {selectedPO.payment_history.map((payment, idx) => (
                         <div key={idx} className="bg-slate-700/30 p-2 rounded border border-slate-600">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-semibold text-green-400">${payment.amount.toFixed(2)}</span>
+                            <span className="text-sm font-semibold text-green-400">Rs {payment.amount.toFixed(2)}</span>
                             <span className="text-xs text-slate-400">{new Date(payment.payment_date).toLocaleDateString()}</span>
                           </div>
                           <div className="text-xs text-slate-400">
@@ -741,9 +741,9 @@ export default function PurchaseOrderManager() {
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm font-medium text-white">{getProductName(item.product_id)}</p>
-                          <p className="text-xs text-slate-400">{item.quantity} × ${item.purchase_price.toFixed(2)}</p>
+                          <p className="text-xs text-slate-400">{item.quantity} × Rs {item.purchase_price.toFixed(2)}</p>
                         </div>
-                        <p className="text-sm font-semibold text-green-400">${item.line_total.toFixed(2)}</p>
+                        <p className="text-sm font-semibold text-green-400">Rs {item.line_total.toFixed(2)}</p>
                       </div>
                     </div>
                   ))}

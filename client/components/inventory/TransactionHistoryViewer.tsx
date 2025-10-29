@@ -305,13 +305,13 @@ export default function TransactionHistoryViewer({
             <div>
               <p className="text-slate-400">Unit Price</p>
               <p className="text-white font-medium">
-                ${selectedTransaction.unit_price?.toFixed(2) || "N/A"}
+                Rs {selectedTransaction.unit_price?.toFixed(2) || "N/A"}
               </p>
             </div>
             <div>
               <p className="text-slate-400">Total Value</p>
               <p className="text-white font-medium">
-                ${selectedTransaction.total_value?.toLocaleString() || "N/A"}
+                Rs {selectedTransaction.total_value?.toLocaleString() || "N/A"}
               </p>
             </div>
             {selectedTransaction.from_warehouse && (

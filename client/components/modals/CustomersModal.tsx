@@ -147,7 +147,7 @@ export default function CustomersModal({ onClose }: { onClose: () => void }) {
                       <div>
                         <p className="text-xs text-slate-400 mb-1">Total Spent</p>
                         <p className="text-lg font-bold text-green-400">
-                          ${customer.totalSpent.toFixed(2)}
+                          Rs {customer.totalSpent.toFixed(2)}
                         </p>
                       </div>
                     </div>

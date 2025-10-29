@@ -299,7 +299,7 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
 
                       <div className="text-right flex flex-col gap-2">
                         <div>
-                          <p className="text-lg font-bold text-blue-400">${product.price.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-blue-400">Rs {product.price.toFixed(2)}</p>
                           <p className="text-xs text-slate-400">Price</p>
                         </div>
                         <div className="flex gap-1">
@@ -399,7 +399,7 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-slate-400">Price</p>
-                  <p className="text-white font-semibold">${selectedProduct.price.toFixed(2)}</p>
+                  <p className="text-white font-semibold">Rs {selectedProduct.price.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-slate-400">Quantity per Unit</p>

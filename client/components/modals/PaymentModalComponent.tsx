@@ -63,24 +63,24 @@ export default function PaymentModalComponent({
           <div className="p-4 bg-slate-700/50 rounded-lg space-y-2">
             <div className="flex justify-between text-slate-400 text-sm">
               <span>Total Amount:</span>
-              <span className="text-green-400 font-bold text-lg">${total.toFixed(2)}</span>
+              <span className="text-green-400 font-bold text-lg">Rs {total.toFixed(2)}</span>
             </div>
             {paymentAmount && (
               <>
                 <div className="flex justify-between text-slate-400 text-sm border-t border-slate-600 pt-2">
                   <span>Amount Paid:</span>
-                  <span className="text-white font-bold">${paymentAmountNum.toFixed(2)}</span>
+                  <span className="text-white font-bold">Rs {paymentAmountNum.toFixed(2)}</span>
                 </div>
                 {isValidPayment && (
                   <div className="flex justify-between text-slate-400 text-sm">
                     <span>Change to Return:</span>
-                    <span className="text-yellow-400 font-bold text-lg">${change.toFixed(2)}</span>
+                    <span className="text-yellow-400 font-bold text-lg">Rs {change.toFixed(2)}</span>
                   </div>
                 )}
                 {!isValidPayment && (
                   <div className="flex justify-between text-slate-400 text-sm">
                     <span>Still Due:</span>
-                    <span className="text-red-400 font-bold">${(total - paymentAmountNum).toFixed(2)}</span>
+                    <span className="text-red-400 font-bold">Rs {(total - paymentAmountNum).toFixed(2)}</span>
                   </div>
                 )}
               </>
@@ -91,7 +91,7 @@ export default function PaymentModalComponent({
           <div className="space-y-2">
             <label className="text-white font-semibold text-sm">Enter Payment Amount</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white font-bold">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white font-bold">Rs</span>
               <input
                 type="number"
                 value={paymentAmount}
@@ -183,7 +183,7 @@ export default function PaymentModalComponent({
                 return;
               }
               if (!isValidPayment) {
-                alert("Payment amount must be at least $" + total.toFixed(2));
+                alert("Payment amount must be at least Rs " + total.toFixed(2));
                 return;
               }
               onPayment(selectedMethod);

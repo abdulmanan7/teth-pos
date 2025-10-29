@@ -54,6 +54,7 @@ interface Product {
   stock: number;
   category?: string;
   sku?: string;
+  hasSerialNumbers?: boolean;
 }
 
 interface CartItem {
@@ -570,7 +571,7 @@ export default function Index() {
                                 <p className="text-xs font-semibold text-white truncate">{order.orderNumber}</p>
                                 <p className="text-xs text-slate-400 truncate">{order.customer}</p>
                               </div>
-                              <p className="text-xs font-bold text-emerald-400">${order.total.toFixed(2)}</p>
+                              <p className="text-xs font-bold text-emerald-400">Rs {order.total.toFixed(2)}</p>
                             </div>
                             <p className="text-xs text-slate-500 mt-1">{timeAgo}</p>
                           </div>
@@ -671,7 +672,7 @@ export default function Index() {
                             <span className={`font-bold text-sm ${
                               selectedProductIndex === index ? "text-blue-100" : "text-blue-600"
                             }`}>
-                              ${product.price.toFixed(2)}
+                              Rs {product.price.toFixed(2)}
                             </span>
                           </button>
                         ))}
@@ -721,7 +722,7 @@ export default function Index() {
                           </h4>
                           <div className="flex items-center justify-between gap-1">
                             <span className="text-blue-400 font-bold text-sm">
-                              ${product.price.toFixed(2)}
+                              Rs {product.price.toFixed(2)}
                             </span>
                             <Plus className={`w-3 h-3 text-green-400 transition-opacity ${
                               isClicking ? "opacity-100" : "opacity-0 group-hover:opacity-100"
@@ -776,7 +777,7 @@ export default function Index() {
 
                         <div className="flex justify-between items-center text-xs">
                           <span className="text-blue-400 font-bold">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            Rs {(item.price * item.quantity).toFixed(2)}
                           </span>
                           <div className="flex items-center gap-0.5">
                             <button
@@ -849,14 +850,14 @@ export default function Index() {
                 <div className="border-t border-slate-600 pt-4 space-y-2 mb-6">
                   <div className="flex justify-between text-slate-300 text-sm">
                     <span>TAX ({(taxRate * 100).toFixed(1)}%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>Rs {tax.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-slate-300 text-sm">
                     <span>NET</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>Rs {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-2xl font-bold text-white pt-2">
-                    <span>${total.toFixed(2)}</span>
+                    <span>Rs {total.toFixed(2)}</span>
                   </div>
                 </div>
 

@@ -134,7 +134,7 @@ export default function OrdersModal({ onClose }: { onClose: () => void }) {
                           </span>
                         </div>
                         <p className="text-2xl font-bold text-blue-400">
-                          ${order.total.toFixed(2)}
+                          Rs {order.total.toFixed(2)}
                         </p>
                       </div>
 

@@ -205,7 +205,7 @@ export default function VendorManager() {
                     </div>
                     <div>
                       <p className="text-slate-500">Total Spent</p>
-                      <p className="text-white font-semibold">${vendor.total_spent.toFixed(2)}</p>
+                      <p className="text-white font-semibold">Rs {vendor.total_spent.toFixed(2)}</p>
                     </div>
                     <div>
                       <p className="text-slate-500">Status</p>

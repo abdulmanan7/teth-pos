@@ -332,7 +332,7 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
               <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
                 <p className="text-sm text-slate-400 mb-2">Avg Value per Product</p>
                 <p className="text-2xl font-bold text-green-400">
-                  ${overview.average_value_per_product.toFixed(2)}
+                  Rs {overview.average_value_per_product.toFixed(2)}
                 </p>
               </div>
               <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">

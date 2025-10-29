@@ -53,7 +53,7 @@ export default function SalesReportModal({ onClose }: { onClose: () => void }) {
   const avgRevenue = (totalRevenue / SALES_DATA.length).toFixed(2);
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
       <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-700">
@@ -72,14 +72,14 @@ export default function SalesReportModal({ onClose }: { onClose: () => void }) {
             Last 5 Days Overview
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <MetricBox label="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} trend="+12.5%" />
+            <MetricBox label="Total Revenue" value={`Rs ${totalRevenue.toLocaleString()}`} trend="+12.5%" />
             <MetricBox
               label="Total Orders"
               value={totalOrders.toString()}
               trend="+8.2%"
             />
-            <MetricBox label="Avg Daily Revenue" value={`$${avgRevenue}`} trend="+5.1%" />
-            <MetricBox label="Avg Order Value" value="$137.04" trend="+2.3%" />
+            <MetricBox label="Avg Daily Revenue" value={`Rs ${avgRevenue}`} trend="+5.1%" />
+            <MetricBox label="Avg Order Value" value="Rs 137.04" trend="+2.3%" />
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export default function SalesReportModal({ onClose }: { onClose: () => void }) {
                   <div>
                     <p className="text-slate-400 mb-1">Avg Order Value</p>
                     <p className="font-semibold">
-                      ${day.avgOrderValue.toFixed(2)}
+                      Rs {day.avgOrderValue.toFixed(2)}
                     </p>
                   </div>
                   <div>

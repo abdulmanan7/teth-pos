@@ -320,7 +320,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                             "bg-slate-500/20 text-slate-400"
                           }`}>{ret.status}</span>
                           <p className="text-lg font-bold text-white mt-2">
-                            ${ret.netAdjustment.toFixed(2)}
+                            Rs {ret.netAdjustment.toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -414,7 +414,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                     </div>
                   </div>
                   <div className="text-xs text-slate-400">
-                    Order Total: ${selectedOrder.total.toFixed(2)} • Items: {selectedOrder.items.length}
+                    Order Total: Rs {selectedOrder.total.toFixed(2)} • Items: {selectedOrder.items.length}
                   </div>
                 </div>
               )}
@@ -454,7 +454,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                               className="w-full text-left px-4 py-2 hover:bg-slate-600 border-b border-slate-600 last:border-0 transition-colors"
                             >
                               <p className="text-white font-medium">{order.orderNumber}</p>
-                              <p className="text-xs text-slate-400">{order.customer} • ${order.total.toFixed(2)}</p>
+                              <p className="text-xs text-slate-400">{order.customer} • Rs {order.total.toFixed(2)}</p>
                             </button>
                           ))
                         )}
@@ -554,7 +554,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                                     }}
                                     className="w-full text-left px-2 py-1 hover:bg-slate-500 border-b border-slate-500 last:border-0 text-white text-sm transition-colors"
                                   >
-                                    {p.name} - ${p.price.toFixed(2)} (Qty: {p.quantity})
+                                    {p.name} - Rs {p.price.toFixed(2)} (Qty: {p.quantity})
                                   </button>
                                 ))
                               )}
@@ -721,7 +721,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                                       }}
                                       className="w-full text-left px-2 py-1 hover:bg-slate-500 border-b border-slate-500 last:border-0 text-white text-sm transition-colors"
                                     >
-                                      {p.name} - ${p.price.toFixed(2)}
+                                      {p.name} - Rs {p.price.toFixed(2)}
                                     </button>
                                   ))
                                 )}
@@ -809,16 +809,16 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                 <div className="text-xs text-slate-400 mt-2 space-y-1">
                   {returnType === "refund" ? (
                     <>
-                      <p>Refund Amount: ${returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0).toFixed(2)}</p>
-                      <p className="text-red-400 font-semibold">Deduction: ${priceAdjustment.toFixed(2)}</p>
-                      <p className="text-emerald-400 font-semibold">Final Refund: ${(returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0) - priceAdjustment).toFixed(2)}</p>
-                      <p className="text-slate-500">Enter deduction amount (e.g., 2.50 to deduct $2.50 from refund)</p>
+                      <p>Refund Amount: Rs {returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0).toFixed(2)}</p>
+                      <p className="text-red-400 font-semibold">Deduction: Rs {priceAdjustment.toFixed(2)}</p>
+                      <p className="text-emerald-400 font-semibold">Final Refund: Rs {(returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0) - priceAdjustment).toFixed(2)}</p>
+                      <p className="text-slate-500">Enter deduction amount (e.g., 2.50 to deduct Rs 2.50 from refund)</p>
                     </>
                   ) : (
                     <>
-                      <p>Returned Total: ${returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0).toFixed(2)}</p>
-                      <p>Replacement Total: ${replacementItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}</p>
-                      <p className="text-blue-400 font-semibold">Auto Value: ${calculateAutoAdjustment().toFixed(2)}</p>
+                      <p>Returned Total: Rs {returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0).toFixed(2)}</p>
+                      <p>Replacement Total: Rs {replacementItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}</p>
+                      <p className="text-blue-400 font-semibold">Auto Value: Rs {calculateAutoAdjustment().toFixed(2)}</p>
                       <p className="text-slate-500">Positive = customer pays more, Negative = customer gets credit</p>
                     </>
                   )}
@@ -848,7 +848,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                         <span className="flex items-center gap-1">
                           <span className="text-red-400">↓</span> Returned Items ({returnItems.length}):
                         </span>
-                        <span className="font-bold text-white">${returnTotal.toFixed(2)}</span>
+                        <span className="font-bold text-white">Rs {returnTotal.toFixed(2)}</span>
                       </div>
                       
                       {priceAdjustment > 0 && (
@@ -856,7 +856,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                           <span className="flex items-center gap-1">
                             <span className="text-yellow-400">✂</span> Deduction:
                           </span>
-                          <span className="font-bold text-red-400">-${priceAdjustment.toFixed(2)}</span>
+                          <span className="font-bold text-red-400">-Rs {priceAdjustment.toFixed(2)}</span>
                         </div>
                       )}
                     </>
@@ -866,14 +866,14 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                         <span className="flex items-center gap-1">
                           <span className="text-red-400">↓</span> Returned Items ({returnItems.length}):
                         </span>
-                        <span className="font-bold text-white">${returnTotal.toFixed(2)}</span>
+                        <span className="font-bold text-white">Rs {returnTotal.toFixed(2)}</span>
                       </div>
                       
                       <div className="flex justify-between text-slate-300">
                         <span className="flex items-center gap-1">
                           <span className="text-blue-400">↑</span> Replacement Items ({replacementItems.length}):
                         </span>
-                        <span className="font-bold text-white">${replacementTotal.toFixed(2)}</span>
+                        <span className="font-bold text-white">Rs {replacementTotal.toFixed(2)}</span>
                       </div>
                       
                       {priceAdjustment !== 0 && (
@@ -905,10 +905,10 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                             : "text-slate-300"
                     }`}>
                       {returnType === "refund" 
-                        ? `$${(returnTotal - priceAdjustment).toFixed(2)}`
+                        ? `Rs ${(returnTotal - priceAdjustment).toFixed(2)}`
                         : netAdjustment > 0
-                          ? `$${netAdjustment.toFixed(2)}`
-                          : `${netAdjustment < 0 ? "-" : ""}$${Math.abs(netAdjustment).toFixed(2)}`
+                          ? `Rs ${netAdjustment.toFixed(2)}`
+                          : `${netAdjustment < 0 ? "-" : ""}Rs ${Math.abs(netAdjustment).toFixed(2)}`
                       }
                     </div>
                     <div className="text-xs text-slate-400 mt-1">

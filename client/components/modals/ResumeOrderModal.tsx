@@ -80,7 +80,7 @@ export default function ResumeOrderModal({
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-green-400">
-                        ${draft.total.toFixed(2)}
+                        Rs {draft.total.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -95,7 +95,7 @@ export default function ResumeOrderModal({
                           {item.name} x{item.quantity}
                         </span>
                         <span className="text-slate-400">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          Rs {(item.price * item.quantity).toFixed(2)}
                         </span>
                       </div>
                     ))}

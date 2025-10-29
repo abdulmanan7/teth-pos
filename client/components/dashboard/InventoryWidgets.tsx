@@ -237,7 +237,7 @@ export default function InventoryWidgets() {
             </div>
             <p className="text-4xl font-bold">{stats.total_products}</p>
             <p className="text-xs opacity-75 mt-2">
-              Avg: ${(stats.total_stock_value / stats.total_products).toFixed(0)}
+              Avg: Rs {(stats.total_stock_value / stats.total_products).toFixed(0)}
             </p>
           </div>
 
@@ -395,7 +395,7 @@ export default function InventoryWidgets() {
           <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
             <p className="text-xs text-slate-400 mb-2">Avg Product Value</p>
             <p className="text-2xl font-bold text-white">
-              ${(stats.total_stock_value / stats.total_products).toFixed(0)}
+              Rs {(stats.total_stock_value / stats.total_products).toFixed(0)}
             </p>
             <p className="text-xs text-slate-500 mt-1">per product</p>
           </div>

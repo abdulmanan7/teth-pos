@@ -58,7 +58,7 @@ export default function OrderHistoryModal({ onClose }: { onClose: () => void }) 
             <div>
               <p className="text-slate-400 text-sm mb-2">Total Revenue</p>
               <p className="text-3xl font-bold text-green-400">
-                ${totalRevenue.toFixed(2)}
+                Rs {totalRevenue.toFixed(2)}
               </p>
             </div>
             <div>
@@ -122,7 +122,7 @@ export default function OrderHistoryModal({ onClose }: { onClose: () => void }) 
                         {order.orderNumber}
                       </h3>
                       <p className="text-2xl font-bold text-green-400">
-                        ${order.total.toFixed(2)}
+                        Rs {order.total.toFixed(2)}
                       </p>
                     </div>
 

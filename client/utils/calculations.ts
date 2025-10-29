@@ -42,7 +42,7 @@ export const calculateTotals = (
  * Format number as currency
  */
 export const formatCurrency = (amount: number): string => {
-  return `$${amount.toFixed(2)}`;
+  return `Rs ${amount.toFixed(2)}`;
 };
 
 /**

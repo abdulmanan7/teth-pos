@@ -1,0 +1,115 @@
+import { RequestHandler } from 'express';
+import { Product } from '../db/models/Product';
+import { SerialNumber } from '../db/models/SerialNumber';
+
+// Get all products
+export const getAllProducts: RequestHandler = async (req, res) => {
+  try {
+    const products = await Product.find();
+    
+    // Add hasSerialNumbers flag to each product
+    const productsWithSerialFlag = await Promise.all(
+      products.map(async (product) => {
+        const serialCount = await SerialNumber.countDocuments({ product_id: product._id });
+        return {
+          ...product.toObject(),
+          hasSerialNumbers: serialCount > 0,
+        };
+      })
+    );
+    
+    res.json(productsWithSerialFlag);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+};
+
+// Get products by category
+export const getProductsByCategory: RequestHandler = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const products = await Product.find({ category });
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+};
+
+// Get single product
+export const getProduct: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json(product);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    res.status(500).json({ error: 'Failed to fetch product' });
+  }
+};
+
+// Create product
+export const createProduct: RequestHandler = async (req, res) => {
+  try {
+    const { name, sku, price, stock, category, description } = req.body;
+    
+    const product = new Product({
+      name,
+      sku,
+      price,
+      stock,
+      category,
+      description,
+    });
+    
+    await product.save();
+    res.status(201).json(product);
+  } catch (error) {
+    console.error('Error creating product:', error);
+    res.status(500).json({ error: 'Failed to create product' });
+  }
+};
+
+// Update product
+export const updateProduct: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, sku, price, stock, category, description } = req.body;
+    
+    const product = await Product.findByIdAndUpdate(
+      id,
+      { name, sku, price, stock, category, description },
+      { new: true }
+    );
+    
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    
+    res.json(product);
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ error: 'Failed to update product' });
+  }
+};
+
+// Delete product
+export const deleteProduct: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findByIdAndDelete(id);
+    
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    res.status(500).json({ error: 'Failed to delete product' });
+  }
+};

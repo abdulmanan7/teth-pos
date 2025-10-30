@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Loader, Package, AlertTriangle } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 import type { LotNumber, Product, Warehouse } from "@shared/api";
 
 interface LotNumbersManagerProps {
@@ -10,6 +11,7 @@ interface LotNumbersManagerProps {
 }
 
 export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
+  const { addToast } = useToast();
   const [lotNumbers, setLotNumbers] = useState<LotNumber[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -120,7 +122,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.lot_number || !formData.product_id || !formData.warehouse_id) {
-      alert("Lot number, product ID, and warehouse ID are required");
+      addToast("Lot number, product, and warehouse are required", "warning");
       return;
     }
 
@@ -134,14 +136,16 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
 
       if (editingId) {
         await put(`/api/inventory/lot-numbers/${editingId}`, payload);
+        addToast("Lot number updated successfully", "success");
       } else {
         await post("/api/inventory/lot-numbers", payload);
+        addToast("Lot number created successfully", "success");
       }
       resetForm();
       await fetchLotNumbers();
     } catch (error) {
       console.error("Error saving lot number:", error);
-      alert("Failed to save lot number");
+      addToast("Failed to save lot number", "error");
     }
   };
 
@@ -171,10 +175,11 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
     if (confirm("Are you sure you want to delete this lot number?")) {
       try {
         await deleteRequest(`/api/inventory/lot-numbers/${id}`);
+        addToast("Lot number deleted", "success");
         await fetchLotNumbers();
       } catch (error) {
         console.error("Error deleting lot number:", error);
-        alert("Failed to delete lot number");
+        addToast("Failed to delete lot number", "error");
       }
     }
   };

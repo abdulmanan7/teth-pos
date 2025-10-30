@@ -16,12 +16,14 @@ interface DraftOrder {
 }
 
 interface ResumeOrderModalProps {
+  isDarkTheme: boolean;
   draftOrders: DraftOrder[];
   onResume: (draft: DraftOrder) => void;
   onClose: () => void;
 }
 
 export default function ResumeOrderModal({
+  isDarkTheme,
   draftOrders,
   onResume,
   onClose,

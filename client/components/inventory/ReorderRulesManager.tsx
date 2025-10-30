@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Loader, Truck, AlertCircle, ChevronDown } from "lu
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 import type { ReorderRule, Product, Warehouse } from "@shared/api";
 
 interface ReorderRulesManagerProps {
@@ -10,6 +11,7 @@ interface ReorderRulesManagerProps {
 }
 
 export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProps) {
+  const { addToast } = useToast();
   const [rules, setRules] = useState<ReorderRule[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -73,7 +75,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.product_id || !formData.reorder_point || !formData.reorder_quantity) {
-      alert("Product ID, reorder point, and reorder quantity are required");
+      addToast("Product, reorder point, and reorder quantity are required", "warning");
       return;
     }
 
@@ -90,14 +92,16 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
 
       if (editingId) {
         await put(`/api/inventory/reorder-rules/${editingId}`, payload);
+        addToast("Reorder rule updated successfully", "success");
       } else {
         await post("/api/inventory/reorder-rules", payload);
+        addToast("Reorder rule created successfully", "success");
       }
       resetForm();
       await fetchData();
     } catch (error) {
       console.error("Error saving reorder rule:", error);
-      alert("Failed to save reorder rule");
+      addToast("Failed to save reorder rule", "error");
     }
   };
 
@@ -124,10 +128,11 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
     if (confirm("Are you sure you want to delete this reorder rule?")) {
       try {
         await deleteRequest(`/api/inventory/reorder-rules/${id}`);
+        addToast("Reorder rule deleted", "success");
         await fetchData();
       } catch (error) {
         console.error("Error deleting reorder rule:", error);
-        alert("Failed to delete reorder rule");
+        addToast("Failed to delete reorder rule", "error");
       }
     }
   };

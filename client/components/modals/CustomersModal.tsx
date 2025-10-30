@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 import type { Customer } from "@shared/api";
 
-export default function CustomersModal({ onClose }: { onClose: () => void }) {
+export default function CustomersModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
+  const { addToast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,20 +43,20 @@ export default function CustomersModal({ onClose }: { onClose: () => void }) {
     
     // Validate required fields
     if (!formData.name || !formData.email) {
-      alert("Please fill in name and email");
+      addToast("Please fill in name and email", "warning");
       return;
     }
 
     try {
       setFormLoading(true);
       await post("/api/customers", formData);
-      alert("Customer added successfully!");
+      addToast("Customer added successfully!", "success");
       setFormData({ name: "", email: "", phone: "", city: "", address: "" });
       setShowForm(false);
       await fetchCustomers();
     } catch (error) {
       console.error("Error adding customer:", error);
-      alert("Failed to add customer");
+      addToast("Failed to add customer", "error");
     } finally {
       setFormLoading(false);
     }

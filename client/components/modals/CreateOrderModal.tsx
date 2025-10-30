@@ -37,7 +37,7 @@ const CUSTOMERS = [
   { id: 6, name: "Frank Brown" },
 ];
 
-export default function CreateOrderModal({ onClose }: { onClose: () => void }) {
+export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");

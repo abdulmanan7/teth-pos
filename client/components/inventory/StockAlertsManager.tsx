@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 import type { StockAlert, Product } from "@shared/api";
 
 interface StockAlertsManagerProps {
@@ -19,6 +20,7 @@ interface StockAlertsManagerProps {
 }
 
 export default function StockAlertsManager({ onClose }: StockAlertsManagerProps) {
+  const { addToast } = useToast();
   const [alerts, setAlerts] = useState<StockAlert[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,11 +125,11 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
     try {
       setLoading(true);
       const result = await post("/api/inventory/stock-alerts/check", {});
-      alert(`Alert check completed. ${result.alerts_created} new alerts created.`);
+      addToast(`Alert check completed. ${result.alerts_created} new alerts created.`, "success");
       await fetchData();
     } catch (error) {
       console.error("Error checking alerts:", error);
-      alert("Failed to check alerts");
+      addToast("Failed to check alerts", "error");
     }
   };
 
@@ -137,10 +139,10 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
         acknowledged_by: "current_user",
       });
       await fetchData();
-      alert("Alert acknowledged");
+      addToast("Alert acknowledged", "success");
     } catch (error) {
       console.error("Error acknowledging alert:", error);
-      alert("Failed to acknowledge alert");
+      addToast("Failed to acknowledge alert", "error");
     }
   };
 
@@ -148,10 +150,10 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
     try {
       await put(`/api/inventory/stock-alerts/${id}/resolve`, {});
       await fetchData();
-      alert("Alert resolved");
+      addToast("Alert resolved", "success");
     } catch (error) {
       console.error("Error resolving alert:", error);
-      alert("Failed to resolve alert");
+      addToast("Failed to resolve alert", "error");
     }
   };
 
@@ -160,10 +162,10 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
       try {
         await deleteRequest(`/api/inventory/stock-alerts/${id}`);
         await fetchData();
-        alert("Alert deleted");
+        addToast("Alert deleted", "success");
       } catch (error) {
         console.error("Error deleting alert:", error);
-        alert("Failed to delete alert");
+        addToast("Failed to delete alert", "error");
       }
     }
   };

@@ -17,6 +17,8 @@ async function createWindow() {
     mainWindow = new BrowserWindow({
       width: 1200,
       height: 800,
+      fullscreen: true,
+      icon: path.join(__dirname, "../client/assets/logo4.svg"),
       webPreferences: {
         preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,

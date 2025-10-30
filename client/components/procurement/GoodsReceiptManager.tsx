@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 
 interface Product {
   _id: string;
@@ -48,6 +49,7 @@ interface GoodsReceipt {
 }
 
 export default function GoodsReceiptManager() {
+  const { addToast } = useToast();
   const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>([]);
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -83,7 +85,7 @@ export default function GoodsReceiptManager() {
       setProducts(productsData);
     } catch (error) {
       console.error("Error fetching data:", error);
-      alert("Failed to fetch data");
+      addToast("Failed to fetch goods receipt data", "error");
     } finally {
       setLoading(false);
     }
@@ -139,12 +141,12 @@ export default function GoodsReceiptManager() {
   const handleSaveGR = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.po_id || formData.items.length === 0) {
-      alert("Please select a PO and add items");
+      addToast("Please select a PO and add items", "warning");
       return;
     }
 
     if (formData.items.some(item => item.received_quantity < 0)) {
-      alert("Received quantity cannot be negative");
+      addToast("Received quantity cannot be negative", "warning");
       return;
     }
 
@@ -158,7 +160,7 @@ export default function GoodsReceiptManager() {
       };
 
       await post("/api/goods-receipts", payload);
-      alert("Goods receipt created successfully!");
+      addToast("Goods receipt created successfully!", "success");
       setShowForm(false);
       setFormData({
         po_id: "",
@@ -170,7 +172,7 @@ export default function GoodsReceiptManager() {
       await fetchData();
     } catch (error) {
       console.error("Error saving GR:", error);
-      alert("Failed to create goods receipt");
+      addToast("Failed to create goods receipt", "error");
     } finally {
       setSubmitting(false);
     }
@@ -180,11 +182,11 @@ export default function GoodsReceiptManager() {
     if (confirm("Are you sure you want to delete this goods receipt?")) {
       try {
         await deleteRequest(`/api/goods-receipts/${id}`);
-        alert("Goods receipt deleted successfully!");
+        addToast("Goods receipt deleted successfully!", "success");
         await fetchData();
       } catch (error) {
         console.error("Error deleting GR:", error);
-        alert("Failed to delete goods receipt");
+        addToast("Failed to delete goods receipt", "error");
       }
     }
   };
@@ -194,13 +196,13 @@ export default function GoodsReceiptManager() {
     try {
       setConfirming(true);
       await put(`/api/goods-receipts/${selectedGR._id}/confirm`, {});
-      alert("Goods receipt confirmed! Inventory updated.");
+      addToast("Goods receipt confirmed! Inventory updated.", "success");
       await fetchData();
       setShowDetailsModal(false);
       setSelectedGR(null);
     } catch (error) {
       console.error("Error confirming GR:", error);
-      alert("Failed to confirm goods receipt");
+      addToast("Failed to confirm goods receipt", "error");
     } finally {
       setConfirming(false);
     }

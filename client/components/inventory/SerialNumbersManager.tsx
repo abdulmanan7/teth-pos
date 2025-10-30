@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Loader, Barcode, AlertTriangle, Copy } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 import type { SerialNumber, Product, Warehouse, LotNumber } from "@shared/api";
 
 interface SerialNumbersManagerProps {
@@ -10,6 +11,7 @@ interface SerialNumbersManagerProps {
 }
 
 export default function SerialNumbersManager({ onClose }: SerialNumbersManagerProps) {
+  const { addToast } = useToast();
   const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -153,7 +155,7 @@ export default function SerialNumbersManager({ onClose }: SerialNumbersManagerPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.serial_number || !formData.product_id || !formData.warehouse_id) {
-      alert("Serial number, product, and warehouse are required");
+      addToast("Serial number, product, and warehouse are required", "warning");
       return;
     }
 
@@ -164,21 +166,23 @@ export default function SerialNumbersManager({ onClose }: SerialNumbersManagerPr
 
       if (editingId) {
         await put(`/api/inventory/serial-numbers/${editingId}`, payload);
+        addToast("Serial number updated successfully", "success");
       } else {
         await post("/api/inventory/serial-numbers", payload);
+        addToast("Serial number created successfully", "success");
       }
       resetForm();
       await fetchSerialNumbers();
     } catch (error) {
       console.error("Error saving serial number:", error);
-      alert("Failed to save serial number");
+      addToast("Failed to save serial number", "error");
     }
   };
 
   const handleBulkSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (bulkData.serial_numbers.length === 0 || !bulkData.product_id || !bulkData.warehouse_id) {
-      alert("Serial numbers, product, and warehouse are required");
+      addToast("Serial numbers, product, and warehouse are required", "warning");
       return;
     }
 
@@ -203,10 +207,10 @@ export default function SerialNumbersManager({ onClose }: SerialNumbersManagerPr
       setScannerInput("");
       setShowBulkForm(false);
       await fetchSerialNumbers();
-      alert(`Successfully created ${bulkData.serial_numbers.length} serial numbers`);
+      addToast(`Successfully created ${bulkData.serial_numbers.length} serial numbers`, "success");
     } catch (error) {
       console.error("Error creating serial numbers:", error);
-      alert("Failed to create serial numbers");
+      addToast("Failed to create serial numbers", "error");
     }
   };
 
@@ -227,10 +231,11 @@ export default function SerialNumbersManager({ onClose }: SerialNumbersManagerPr
     if (confirm("Are you sure you want to delete this serial number?")) {
       try {
         await deleteRequest(`/api/inventory/serial-numbers/${id}`);
+        addToast("Serial number deleted successfully", "success");
         await fetchSerialNumbers();
       } catch (error) {
         console.error("Error deleting serial number:", error);
-        alert("Failed to delete serial number");
+        addToast("Failed to delete serial number", "error");
       }
     }
   };

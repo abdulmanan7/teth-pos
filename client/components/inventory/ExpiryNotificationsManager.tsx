@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 import type { ExpiryNotification, Product, LotNumber } from "@shared/api";
 
 interface ExpiryNotificationsManagerProps {
@@ -22,6 +23,7 @@ interface ExpiryNotificationsManagerProps {
 export default function ExpiryNotificationsManager({
   onClose,
 }: ExpiryNotificationsManagerProps) {
+  const { addToast } = useToast();
   const [notifications, setNotifications] = useState<ExpiryNotification[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [lots, setLots] = useState<LotNumber[]>([]);
@@ -157,13 +159,14 @@ export default function ExpiryNotificationsManager({
     try {
       setLoading(true);
       const result = await post("/api/inventory/expiry-notifications/check", {});
-      alert(
-        `Expiry check completed. ${result.notifications_created} new notifications created.`
+      addToast(
+        `Expiry check completed. ${result.notifications_created} new notifications created.`,
+        "success"
       );
       await fetchData();
     } catch (error) {
       console.error("Error checking expiries:", error);
-      alert("Failed to check expiries");
+      addToast("Failed to check expiries", "error");
     }
   };
 
@@ -173,10 +176,10 @@ export default function ExpiryNotificationsManager({
         acknowledged_by: "current_user",
       });
       await fetchData();
-      alert("Notification acknowledged");
+      addToast("Notification acknowledged", "success");
     } catch (error) {
       console.error("Error acknowledging notification:", error);
-      alert("Failed to acknowledge notification");
+      addToast("Failed to acknowledge notification", "error");
     }
   };
 
@@ -186,10 +189,10 @@ export default function ExpiryNotificationsManager({
         resolution_type: resolutionType,
       });
       await fetchData();
-      alert("Notification resolved");
+      addToast("Notification resolved", "success");
     } catch (error) {
       console.error("Error resolving notification:", error);
-      alert("Failed to resolve notification");
+      addToast("Failed to resolve notification", "error");
     }
   };
 
@@ -198,10 +201,10 @@ export default function ExpiryNotificationsManager({
       try {
         await deleteRequest(`/api/inventory/expiry-notifications/${id}`);
         await fetchData();
-        alert("Notification deleted");
+        addToast("Notification deleted", "success");
       } catch (error) {
         console.error("Error deleting notification:", error);
-        alert("Failed to delete notification");
+        addToast("Failed to delete notification", "error");
       }
     }
   };

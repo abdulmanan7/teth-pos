@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 import type { StockAdjustment, Product, Warehouse } from "@shared/api";
 
 interface StockAdjustmentsManagerProps {
@@ -32,6 +33,7 @@ interface AdjustmentLine {
 }
 
 export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsManagerProps) {
+  const { addToast } = useToast();
   const [adjustments, setAdjustments] = useState<StockAdjustment[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -146,7 +148,7 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
 
   const handleAddLine = () => {
     if (!currentLine.product_id) {
-      alert("Please select a product");
+      addToast("Please select a product", "warning");
       return;
     }
 
@@ -180,7 +182,7 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
     e.preventDefault();
 
     if (!formData.warehouse_id || formData.lines.length === 0) {
-      alert("Please select a warehouse and add at least one line item");
+      addToast("Please select a warehouse and add at least one line item", "warning");
       return;
     }
 
@@ -193,10 +195,10 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
       await post("/api/inventory/stock-adjustments", payload);
       resetForm();
       await fetchAdjustments();
-      alert("Stock adjustment created successfully");
+      addToast("Stock adjustment created successfully", "success");
     } catch (error) {
       console.error("Error creating adjustment:", error);
-      alert("Failed to create adjustment");
+      addToast("Failed to create adjustment", "error");
     }
   };
 
@@ -207,10 +209,10 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
           approved_by: "current_user",
         });
         await fetchAdjustments();
-        alert("Adjustment approved and inventory updated");
+        addToast("Adjustment approved and inventory updated", "success");
       } catch (error) {
         console.error("Error approving adjustment:", error);
-        alert("Failed to approve adjustment");
+        addToast("Failed to approve adjustment", "error");
       }
     }
   };
@@ -223,10 +225,10 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
           rejection_reason: reason,
         });
         await fetchAdjustments();
-        alert("Adjustment rejected");
+        addToast("Adjustment rejected", "success");
       } catch (error) {
         console.error("Error rejecting adjustment:", error);
-        alert("Failed to reject adjustment");
+        addToast("Failed to reject adjustment", "error");
       }
     }
   };
@@ -236,10 +238,10 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
       try {
         await deleteRequest(`/api/inventory/stock-adjustments/${id}`);
         await fetchAdjustments();
-        alert("Adjustment deleted");
+        addToast("Adjustment deleted", "success");
       } catch (error) {
         console.error("Error deleting adjustment:", error);
-        alert("Failed to delete adjustment");
+        addToast("Failed to delete adjustment", "error");
       }
     }
   };

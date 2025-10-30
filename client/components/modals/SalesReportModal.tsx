@@ -47,7 +47,7 @@ const SALES_DATA: SalesMetric[] = [
   },
 ];
 
-export default function SalesReportModal({ onClose }: { onClose: () => void }) {
+export default function SalesReportModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
   const totalRevenue = SALES_DATA.reduce((sum, item) => sum + item.revenue, 0);
   const totalOrders = SALES_DATA.reduce((sum, item) => sum + item.orders, 0);
   const avgRevenue = (totalRevenue / SALES_DATA.length).toFixed(2);

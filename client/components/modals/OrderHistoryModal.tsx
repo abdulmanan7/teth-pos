@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import type { Order } from "@shared/api";
 
-export default function OrderHistoryModal({ onClose }: { onClose: () => void }) {
+export default function OrderHistoryModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
   const { get } = useElectronApi();
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("all");

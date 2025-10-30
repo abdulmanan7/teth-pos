@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 
 interface Vendor {
   _id: string;
@@ -49,6 +50,7 @@ interface PurchaseOrder {
 }
 
 export default function PurchaseOrderManager() {
+  const { addToast } = useToast();
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -93,7 +95,7 @@ export default function PurchaseOrderManager() {
       setProducts(productsData);
     } catch (error) {
       console.error("Error fetching data:", error);
-      alert("Failed to fetch data");
+      addToast("Failed to fetch purchase order data", "error");
     } finally {
       setLoading(false);
     }
@@ -136,12 +138,12 @@ export default function PurchaseOrderManager() {
   const handleSavePO = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.vendor_id || formData.items.length === 0) {
-      alert("Please select a vendor and add items");
+      addToast("Please select a vendor and add items", "warning");
       return;
     }
 
     if (formData.items.some(item => !item.product_id || item.quantity <= 0 || item.purchase_price <= 0)) {
-      alert("Please fill in all item details");
+      addToast("Please fill in all item details", "warning");
       return;
     }
 
@@ -156,17 +158,17 @@ export default function PurchaseOrderManager() {
 
       if (editingId) {
         await put(`/api/purchase-orders/${editingId}`, payload);
-        alert("Purchase order updated successfully!");
+        addToast("Purchase order updated successfully!", "success");
       } else {
         await post("/api/purchase-orders", payload);
-        alert("Purchase order created successfully!");
+        addToast("Purchase order created successfully!", "success");
       }
       resetForm();
       setShowForm(false);
       await fetchData();
     } catch (error) {
       console.error("Error saving PO:", error);
-      alert("Failed to save purchase order");
+      addToast("Failed to save purchase order", "error");
     } finally {
       setSubmitting(false);
     }
@@ -176,11 +178,11 @@ export default function PurchaseOrderManager() {
     if (confirm("Are you sure you want to delete this purchase order?")) {
       try {
         await deleteRequest(`/api/purchase-orders/${id}`);
-        alert("Purchase order deleted successfully!");
+        addToast("Purchase order deleted successfully!", "success");
         await fetchData();
       } catch (error) {
         console.error("Error deleting PO:", error);
-        alert("Failed to delete purchase order");
+        addToast("Failed to delete purchase order", "error");
       }
     }
   };
@@ -190,13 +192,13 @@ export default function PurchaseOrderManager() {
     try {
       setUpdatingStatus(true);
       await put(`/api/purchase-orders/${selectedPO._id}/status`, { status: newStatus });
-      alert("Purchase order status updated successfully!");
+      addToast("Purchase order status updated successfully!", "success");
       await fetchData();
       setShowDetailsModal(false);
       setSelectedPO(null);
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update purchase order status");
+      addToast("Failed to update purchase order status", "error");
     } finally {
       setUpdatingStatus(false);
     }
@@ -205,7 +207,7 @@ export default function PurchaseOrderManager() {
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPO || paymentForm.amount <= 0) {
-      alert("Please enter a valid payment amount");
+      addToast("Please enter a valid payment amount", "warning");
       return;
     }
 
@@ -218,14 +220,14 @@ export default function PurchaseOrderManager() {
         notes: paymentForm.notes,
       });
 
-      alert(`Payment of Rs ${paymentForm.amount.toFixed(2)} recorded successfully!`);
+      addToast(`Payment of Rs ${paymentForm.amount.toFixed(2)} recorded successfully!`, "success");
       setSelectedPO(updatedPO);
       setPaymentForm({ amount: 0, payment_method: 'bank_transfer', reference: '', notes: '' });
       setShowPaymentForm(false);
       await fetchData();
     } catch (error) {
       console.error("Error recording payment:", error);
-      alert("Failed to record payment");
+      addToast("Failed to record payment", "error");
     } finally {
       setRecordingPayment(false);
     }

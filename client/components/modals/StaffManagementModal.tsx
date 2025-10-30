@@ -4,10 +4,11 @@ import { useElectronApi } from "@/hooks/useElectronApi";
 import type { Staff } from "@shared/api";
 
 interface StaffManagementModalProps {
+  isDarkTheme: boolean;
   onClose: () => void;
 }
 
-export default function StaffManagementModal({ onClose }: StaffManagementModalProps) {
+export default function StaffManagementModal({ isDarkTheme, onClose }: StaffManagementModalProps) {
   const { get, post, put, delete: deleteRequest } = useElectronApi();
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);

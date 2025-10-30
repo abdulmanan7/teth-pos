@@ -18,13 +18,14 @@ import GoodsReceiptManager from "@/components/procurement/GoodsReceiptManager";
 import StaffManagementModal from "@/components/modals/StaffManagementModal";
 
 interface AdminModalProps {
+  isDarkTheme: boolean;
   onClose: () => void;
   userRole?: string;
 }
 
 type AdminTab = "overview" | "warehouses" | "lot-numbers" | "reorder-rules" | "serial-numbers" | "stock-adjustments" | "stock-alerts" | "expiry-notifications" | "analytics" | "transactions" | "barcode-scanner" | "reporting" | "vendors" | "purchase-orders" | "goods-receipts" | "staff" | null;
 
-export default function AdminModal({ onClose }: AdminModalProps) {
+export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModalProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
 
   if (activeTab === "warehouses") {

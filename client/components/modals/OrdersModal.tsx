@@ -12,7 +12,7 @@ const statusConfig = {
   cancelled: { color: "text-red-400", bg: "bg-red-500/10" },
 };
 
-export default function OrdersModal({ onClose }: { onClose: () => void }) {
+export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);

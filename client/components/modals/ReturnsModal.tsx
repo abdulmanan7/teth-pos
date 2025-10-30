@@ -1,6 +1,7 @@
 import { X, Plus, Trash2, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 
 interface ReturnItem {
   productId: string;
@@ -34,7 +35,8 @@ interface Product {
   stock: number;
 }
 
-export default function ReturnsModal({ onClose }: { onClose: () => void }) {
+export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
+  const { addToast } = useToast();
   const { get, post } = useElectronApi();
   const [tab, setTab] = useState<"create" | "list">("list");
   const [returns, setReturns] = useState<any[]>([]);
@@ -165,7 +167,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
 
   const handleCreateReturn = async () => {
     if (!selectedOrder || returnItems.length === 0) {
-      alert("Please select an order and add returned items");
+      addToast("Please select an order and add returned items", "warning");
       return;
     }
 
@@ -191,7 +193,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
       const response = await post("/api/returns", returnData);
 
       if (response.success) {
-        alert("Return request created successfully!");
+        addToast("Return request created successfully!", "success");
         setTab("list");
         setOrderSearch("");
         setSelectedOrder(null);
@@ -201,10 +203,10 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
         setNotes("");
         fetchData();
       } else {
-        alert(`Error: ${response.error}`);
+        addToast(`Error: ${response.error}`, "error");
       }
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+      addToast(`Error: ${error.message}`, "error");
     }
   };
 
@@ -212,32 +214,26 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-white">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <path d="M20.49 15a9 9 0 1 1 .12-4.49"></path>
-            </svg>
-            <h2 className="text-2xl font-bold text-white">Product Returns</h2>
-          </div>
+        <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+          <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Returns Management</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1"
+            className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-700 bg-slate-700/30">
+        <div className={`flex border-b ${isDarkTheme ? 'border-slate-700 bg-slate-700/30' : 'border-slate-200 bg-slate-50'}`}>
           <button
             onClick={() => setTab("list")}
             className={`flex-1 px-4 py-3 font-semibold transition-colors flex items-center justify-center gap-2 ${
               tab === "list"
-                ? "text-white border-b-2 border-blue-500"
-                : "text-slate-400 hover:text-white"
+                ? isDarkTheme ? "text-white border-b-2 border-blue-500" : "text-slate-900 border-b-2 border-blue-500"
+                : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
@@ -251,8 +247,8 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
             onClick={() => setTab("create")}
             className={`flex-1 px-4 py-3 font-semibold transition-colors flex items-center justify-center gap-2 ${
               tab === "create"
-                ? "text-white border-b-2 border-blue-500"
-                : "text-slate-400 hover:text-white"
+                ? isDarkTheme ? "text-white border-b-2 border-blue-500" : "text-slate-900 border-b-2 border-blue-500"
+                : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
@@ -270,9 +266,9 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
               {/* Stats */}
               {stats && (
                 <div className="grid grid-cols-5 gap-4 mb-6">
-                  <div className="bg-slate-700/50 p-4 rounded-lg border border-slate-600">
-                    <p className="text-slate-400 text-sm">Total Returns</p>
-                    <p className="text-2xl font-bold text-white">{stats.totalReturns}</p>
+                  <div className={`p-4 rounded-lg border ${isDarkTheme ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+                    <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Returns</p>
+                    <p className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{stats.totalReturns}</p>
                   </div>
                   <div className="bg-yellow-500/10 p-4 rounded-lg border border-yellow-500/30">
                     <p className="text-yellow-400 text-sm">Pending</p>
@@ -295,21 +291,21 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
 
               {/* Returns List */}
               {loading ? (
-                <p className="text-center text-slate-400">Loading returns...</p>
+                <p className={`text-center ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Loading returns...</p>
               ) : returns.length === 0 ? (
-                <p className="text-center text-slate-400 py-8">No returns found</p>
+                <p className={`text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>No returns found</p>
               ) : (
                 <div className="space-y-3">
                   {returns.map((ret: any) => (
                     <div
                       key={ret._id}
-                      className="bg-slate-700/30 p-4 rounded-lg border border-slate-600 hover:border-slate-500 transition-colors"
+                      className={`p-4 rounded-lg border transition-colors ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <p className="font-semibold text-white">{ret.returnNumber}</p>
-                          <p className="text-sm text-slate-400">Order: {ret.originalOrderNumber}</p>
-                          <p className="text-sm text-slate-400">Customer: {ret.customer}</p>
+                          <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{ret.returnNumber}</p>
+                          <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Order: {ret.originalOrderNumber}</p>
+                          <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Customer: {ret.customer}</p>
                         </div>
                         <div className="text-right">
                           <span className={`text-sm font-semibold px-2 py-1 rounded capitalize ${
@@ -319,12 +315,12 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                             ret.status === "rejected" ? "bg-red-500/20 text-red-400" :
                             "bg-slate-500/20 text-slate-400"
                           }`}>{ret.status}</span>
-                          <p className="text-lg font-bold text-white mt-2">
+                          <p className={`text-lg font-bold mt-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                             Rs {ret.netAdjustment.toFixed(2)}
                           </p>
                         </div>
                       </div>
-                      <div className="text-xs text-slate-500 mb-3">
+                      <div className={`text-xs mb-3 ${isDarkTheme ? 'text-slate-500' : 'text-slate-600'}`}>
                         {ret.items.length} item(s) • {ret.returnType}
                       </div>
                       
@@ -335,13 +331,13 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                             onClick={async () => {
                               try {
                                 await post(`/api/returns/${ret._id}/approve`, { approvedBy: "Staff" });
-                                alert("Return approved successfully");
+                                addToast("Return approved successfully", "success");
                                 fetchData();
                               } catch (error) {
-                                alert("Error approving return");
+                                addToast("Error approving return", "error");
                               }
                             }}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded transition-colors font-medium flex items-center justify-center gap-1"
+                            className={`flex-1 text-white text-sm px-3 py-2 rounded transition-colors font-medium flex items-center justify-center gap-1 ${isDarkTheme ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}`}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                               <polyline points="20 6 9 17 4 12"></polyline>
@@ -354,10 +350,10 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                               if (!reason) return;
                               try {
                                 await post(`/api/returns/${ret._id}/reject`, { reason });
-                                alert("Return rejected successfully");
+                                addToast("Return rejected successfully", "success");
                                 fetchData();
                               } catch (error) {
-                                alert("Error rejecting return");
+                                addToast("Error rejecting return", "error");
                               }
                             }}
                             className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded transition-colors font-medium flex items-center justify-center gap-1"
@@ -376,10 +372,10 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                           onClick={async () => {
                             try {
                               await post(`/api/returns/${ret._id}/complete`, { processedBy: "Staff" });
-                              alert("Return completed successfully");
+                              addToast("Return completed successfully", "success");
                               fetchData();
                             } catch (error) {
-                              alert("Error completing return");
+                              addToast("Error completing return", "error");
                             }
                           }}
                           className="w-full bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-2 rounded transition-colors font-medium flex items-center justify-center gap-1"
@@ -422,10 +418,10 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
               {/* Order Info */}
               <div className="space-y-3">
                 <div>
-                  <label className="text-white font-semibold text-sm block mb-1">Select Order</label>
+                  <label className={`font-semibold text-sm block mb-1 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Select Order</label>
                   <div className="relative">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`} />
                       <input
                         type="text"
                         value={orderSearch}
@@ -435,13 +431,13 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                         }}
                         onFocus={() => setShowOrderDropdown(true)}
                         placeholder="Search order number or customer..."
-                        className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}`}
                       />
                     </div>
                     {showOrderDropdown && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-slate-700 border border-slate-600 rounded-lg shadow-lg z-10 max-h-64 overflow-auto">
+                      <div className={`absolute top-full left-0 right-0 mt-1 border rounded-lg shadow-lg z-10 max-h-64 overflow-auto ${isDarkTheme ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'}`}>
                         {filteredOrders.length === 0 ? (
-                          <div className="p-3 text-slate-400 text-sm">No orders found</div>
+                          <div className={`p-3 text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>No orders found</div>
                         ) : (
                           filteredOrders.map((order) => (
                             <button
@@ -451,10 +447,10 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                                 setOrderSearch(`${order.orderNumber} - ${order.customer}`);
                                 setShowOrderDropdown(false);
                               }}
-                              className="w-full text-left px-4 py-2 hover:bg-slate-600 border-b border-slate-600 last:border-0 transition-colors"
+                              className={`w-full text-left px-4 py-2 border-b last:border-0 transition-colors ${isDarkTheme ? 'hover:bg-slate-600 border-slate-600 text-white' : 'hover:bg-slate-100 border-slate-300 text-slate-900'}`}
                             >
-                              <p className="text-white font-medium">{order.orderNumber}</p>
-                              <p className="text-xs text-slate-400">{order.customer} • Rs {order.total.toFixed(2)}</p>
+                              <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{order.orderNumber}</p>
+                              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{order.customer} • Rs {order.total.toFixed(2)}</p>
                             </button>
                           ))
                         )}
@@ -464,11 +460,11 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 <div>
-                  <label className="text-white font-semibold text-sm block mb-1">Return Type</label>
+                  <label className={`font-semibold text-sm block mb-1 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Return Type</label>
                   <select
                     value={returnType}
                     onChange={(e) => setReturnType(e.target.value as any)}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}`}
                   >
                     <option value="refund">💵 Refund (Cash Back)</option>
                     <option value="replacement">🔄 Replacement (Same Product)</option>
@@ -477,11 +473,11 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
 
                 {returnType === "refund" && (
                   <div>
-                    <label className="text-white font-semibold text-sm block mb-1">Refund Method</label>
+                    <label className={`font-semibold text-sm block mb-1 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Refund Method</label>
                     <select
                       value={refundMethod}
                       onChange={(e) => setRefundMethod(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}`}
                     >
                       <option value="cash">Cash</option>
                       <option value="card">Card</option>
@@ -785,17 +781,17 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
               )}
 
               {/* Price Adjustment */}
-              <div className="border-t border-slate-600 pt-4">
+              <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-white font-semibold text-sm">
+                  <label className={`font-semibold text-sm ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                     {returnType === "refund" ? "Refund Deduction" : "Price Adjustment"}
                   </label>
                   {returnType === "replacement" && (
                     <button
-                      onClick={() => setPriceAdjustment(calculateAutoAdjustment())}
-                      className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                      onClick={() => setPriceAdjustment(0)}
+                      className={`text-xs ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
                     >
-                      Auto-Calculate
+                      Reset
                     </button>
                   )}
                 </div>
@@ -804,7 +800,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                   value={priceAdjustment}
                   onChange={(e) => setPriceAdjustment(parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}`}
                 />
                 <div className="text-xs text-slate-400 mt-2 space-y-1">
                   {returnType === "refund" ? (
@@ -826,33 +822,33 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
               </div>
 
               {/* Notes */}
-              <div className="border-t border-slate-600 pt-4">
-                <label className="text-white font-semibold text-sm block mb-1">Notes</label>
+              <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+                <label className={`font-semibold text-sm block mb-1 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Notes</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Additional notes..."
                   rows={3}
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}`}
                 />
               </div>
 
               {/* Summary */}
-              <div className="bg-slate-700/50 p-4 rounded-lg border border-slate-600 space-y-3">
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Summary</div>
+              <div className={`p-4 rounded-lg border space-y-3 ${isDarkTheme ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+                <div className={`text-xs font-semibold uppercase tracking-wide ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Summary</div>
                 
                 <div className="space-y-2">
                   {returnType === "refund" ? (
                     <>
-                      <div className="flex justify-between text-slate-300">
+                      <div className={`flex justify-between ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                         <span className="flex items-center gap-1">
                           <span className="text-red-400">↓</span> Returned Items ({returnItems.length}):
                         </span>
-                        <span className="font-bold text-white">Rs {returnTotal.toFixed(2)}</span>
+                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {returnTotal.toFixed(2)}</span>
                       </div>
                       
                       {priceAdjustment > 0 && (
-                        <div className="flex justify-between text-slate-300">
+                        <div className={`flex justify-between ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                           <span className="flex items-center gap-1">
                             <span className="text-yellow-400">✂</span> Deduction:
                           </span>
@@ -862,22 +858,22 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                     </>
                   ) : returnType === "replacement" ? (
                     <>
-                      <div className="flex justify-between text-slate-300">
+                      <div className={`flex justify-between ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                         <span className="flex items-center gap-1">
                           <span className="text-red-400">↓</span> Returned Items ({returnItems.length}):
                         </span>
-                        <span className="font-bold text-white">Rs {returnTotal.toFixed(2)}</span>
+                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {returnTotal.toFixed(2)}</span>
                       </div>
                       
-                      <div className="flex justify-between text-slate-300">
+                      <div className={`flex justify-between ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                         <span className="flex items-center gap-1">
                           <span className="text-blue-400">↑</span> Replacement Items ({replacementItems.length}):
                         </span>
-                        <span className="font-bold text-white">Rs {replacementTotal.toFixed(2)}</span>
+                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {replacementTotal.toFixed(2)}</span>
                       </div>
                       
                       {priceAdjustment !== 0 && (
-                        <div className="flex justify-between text-slate-300">
+                        <div className={`flex justify-between ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                           <span className="flex items-center gap-1">
                             <span className="text-yellow-400">⚙</span> Adjustment:
                           </span>
@@ -890,8 +886,8 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                   ) : null}
                 </div>
                 
-                <div className="border-t border-slate-500 pt-3 flex justify-between items-center">
-                  <span className="font-semibold text-white">
+                <div className={`border-t pt-3 flex justify-between items-center ${isDarkTheme ? 'border-slate-500' : 'border-slate-300'}`}>
+                  <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                     {returnType === "refund" ? "Final Refund:" : "Net Amount:"}
                   </span>
                   <div className="text-right">
@@ -911,7 +907,7 @@ export default function ReturnsModal({ onClose }: { onClose: () => void }) {
                           : `${netAdjustment < 0 ? "-" : ""}Rs ${Math.abs(netAdjustment).toFixed(2)}`
                       }
                     </div>
-                    <div className="text-xs text-slate-400 mt-1">
+                    <div className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                       {returnType === "refund" && "Amount to refund customer"}
                       {returnType === "replacement" && (
                         <>

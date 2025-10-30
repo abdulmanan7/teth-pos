@@ -25,11 +25,8 @@ export interface Product {
   unit?: 'piece' | 'kg' | 'liter' | 'meter' | 'box' | 'pack' | 'dozen' | 'gram' | 'ml' | 'cm' | 'custom';
   unit_custom?: string; // For custom units like "bottle", "jar", etc.
   // Inventory system fields
-  reorder_point?: number;
-  safety_stock?: number;
   warehouse_id?: string;
   status?: 'active' | 'inactive' | 'discontinued';
-  lead_time_days?: number;
   hasSerialNumbers?: boolean; // Flag to indicate product has serial numbers
   createdAt: string;
   updatedAt: string;

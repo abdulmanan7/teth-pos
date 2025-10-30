@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useToast } from "@/components/ToastManager";
 import type { Product } from "@shared/api";
 
-export default function ProductsModal({ onClose }: { onClose: () => void }) {
+export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated }: { isDarkTheme: boolean; onClose: () => void; onProductsUpdated?: (products: Product[]) => void }) {
+  const { addToast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -21,18 +23,14 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
     price: "",
     quantity: "1",
     category: "",
     description: "",
     unit: "piece" as 'piece' | 'kg' | 'liter' | 'meter' | 'box' | 'pack' | 'dozen' | 'gram' | 'ml' | 'cm' | 'custom',
     unit_custom: "",
-    reorder_point: "10",
-    safety_stock: "5",
     warehouse_id: "",
     status: "active" as 'active' | 'inactive' | 'discontinued',
-    lead_time_days: "0",
   });
   const [submitting, setSubmitting] = useState(false);
   const { get, post, put, delete: deleteRequest } = useElectronApi();
@@ -68,27 +66,27 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
 
   const handleAddCategory = async () => {
     if (!newCategory.trim()) {
-      alert("Please enter a category name");
+      addToast("Please enter a category name", "warning");
       return;
     }
     if (categories.includes(newCategory)) {
-      alert("This category already exists");
+      addToast("This category already exists", "warning");
       return;
     }
     setCategories([...categories, newCategory]);
     setNewCategory("");
-    alert("Category added successfully!");
+    addToast("Category added successfully!", "success");
   };
 
   const handleDeleteCategory = (categoryToDelete: string) => {
     // Check if category is used by any products
     const productsInCategory = products.filter(p => p.category === categoryToDelete);
     if (productsInCategory.length > 0) {
-      alert(`Cannot delete "${categoryToDelete}" - it has ${productsInCategory.length} product(s). Please reassign them first.`);
+      addToast(`Cannot delete "${categoryToDelete}" - it has ${productsInCategory.length} product(s). Please reassign them first.`, "error");
       return;
     }
     setCategories(categories.filter(c => c !== categoryToDelete));
-    alert("Category deleted successfully!");
+    addToast("Category deleted successfully!", "success");
   };
 
   const filtered = products.filter((product) => {
@@ -103,26 +101,22 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
   const resetForm = () => {
     setFormData({
       name: "",
-      sku: "",
       price: "",
       quantity: "1",
       category: "",
       description: "",
       unit: "piece",
       unit_custom: "",
-      reorder_point: "10",
-      safety_stock: "5",
       warehouse_id: "",
       status: "active",
-      lead_time_days: "0",
     });
     setEditingId(null);
   };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.sku || !formData.price || !formData.quantity) {
-      alert("Please fill in all required fields");
+    if (!formData.name || !formData.price || !formData.quantity) {
+      addToast("Please fill in all required fields", "warning");
       return;
     }
 
@@ -130,34 +124,39 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
       setSubmitting(true);
       const payload = {
         name: formData.name,
-        sku: formData.sku,
         price: parseFloat(formData.price),
         quantity: parseFloat(formData.quantity),
         category: formData.category || "Uncategorized",
         description: formData.description,
         unit: formData.unit,
         unit_custom: formData.unit_custom,
-        reorder_point: parseInt(formData.reorder_point) || 10,
-        safety_stock: parseInt(formData.safety_stock) || 5,
         warehouse_id: formData.warehouse_id,
         status: formData.status,
-        lead_time_days: parseInt(formData.lead_time_days) || 0,
       };
 
       if (editingId) {
-        await put(`/api/products/${editingId}`, payload);
-        alert("Product updated successfully!");
+        const updatedProduct = await put(`/api/products/${editingId}`, payload);
+        // Update product in state instead of full refresh
+        const updatedProducts = products.map(p => p._id === editingId ? updatedProduct : p);
+        setProducts(updatedProducts);
+        // Notify parent component about the update
+        onProductsUpdated?.(updatedProducts);
+        addToast("Product updated successfully!", "success");
       } else {
-        await post("/api/products", payload);
-        alert("Product added successfully!");
+        const newProduct = await post("/api/products", payload);
+        // Add new product to state instead of full refresh
+        const updatedProducts = [...products, newProduct];
+        setProducts(updatedProducts);
+        // Notify parent component about the update
+        onProductsUpdated?.(updatedProducts);
+        addToast("Product added successfully!", "success");
       }
 
       resetForm();
       setShowAddForm(false);
-      await fetchProducts();
     } catch (error) {
       console.error("Error saving product:", error);
-      alert("Failed to save product");
+      addToast("Failed to save product", "error");
     } finally {
       setSubmitting(false);
     }
@@ -166,18 +165,14 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
   const handleEditProduct = (product: Product) => {
     setFormData({
       name: product.name,
-      sku: product.sku,
       price: product.price.toString(),
       quantity: (product.quantity || 1).toString(),
       category: product.category,
       description: product.description || "",
       unit: product.unit || "piece",
       unit_custom: product.unit_custom || "",
-      reorder_point: (product.reorder_point || 10).toString(),
-      safety_stock: (product.safety_stock || 5).toString(),
       warehouse_id: product.warehouse_id || "",
       status: product.status || "active",
-      lead_time_days: (product.lead_time_days || 0).toString(),
     });
     setEditingId(product._id);
     setShowAddForm(true);
@@ -187,11 +182,14 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
     if (confirm("Are you sure you want to delete this product?")) {
       try {
         await deleteRequest(`/api/products/${id}`);
-        alert("Product deleted successfully!");
-        await fetchProducts();
+        // Remove product from state instead of full refresh
+        const updatedProducts = products.filter(p => p._id !== id);
+        setProducts(updatedProducts);
+        // Notify parent component about the update
+        onProductsUpdated?.(updatedProducts);
+        addToast("Product deleted successfully!", "success");
       } catch (error) {
-        console.error("Error deleting product:", error);
-        alert("Failed to delete product");
+        addToast("Failed to delete product", "error");
       }
     }
   };
@@ -492,21 +490,6 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  SKU *
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g., PROD-001"
-                  value={formData.sku}
-                  onChange={(e) =>
-                    setFormData({ ...formData, sku: e.target.value })
-                  }
-                  className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -635,51 +618,6 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Reorder Point
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="10"
-                      value={formData.reorder_point}
-                      onChange={(e) =>
-                        setFormData({ ...formData, reorder_point: e.target.value })
-                      }
-                      className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Safety Stock
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="5"
-                      value={formData.safety_stock}
-                      onChange={(e) =>
-                        setFormData({ ...formData, safety_stock: e.target.value })
-                      }
-                      className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Lead Time (Days)
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={formData.lead_time_days}
-                      onChange={(e) =>
-                        setFormData({ ...formData, lead_time_days: e.target.value })
-                      }
-                      className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Status
                     </label>
                     <select
@@ -694,26 +632,25 @@ export default function ProductsModal({ onClose }: { onClose: () => void }) {
                       <option value="discontinued">Discontinued</option>
                     </select>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Warehouse
-                  </label>
-                  <select
-                    value={formData.warehouse_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, warehouse_id: e.target.value })
-                    }
-                    className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 text-sm"
-                  >
-                    <option value="">Select warehouse</option>
-                    {warehouses.map((warehouse) => (
-                      <option key={warehouse._id} value={warehouse._id}>
-                        {warehouse.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Warehouse
+                    </label>
+                    <select
+                      value={formData.warehouse_id}
+                      onChange={(e) =>
+                        setFormData({ ...formData, warehouse_id: e.target.value })
+                      }
+                      className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 text-sm"
+                    >
+                      <option value="">Select warehouse</option>
+                      {warehouses.map((warehouse) => (
+                        <option key={warehouse._id} value={warehouse._id}>
+                          {warehouse.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 

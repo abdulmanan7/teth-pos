@@ -1,0 +1,14 @@
+<svg width="50" height="50" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Icon Only - Tooth/Dental Logo -->
+<g clip-path="url(#clip0_101_2)">
+    <path d="M12 0H24V12H36V24H24V36H12V24H0V12H12V0Z" fill="#3B82F6"/>
+    <path d="M24 24H36V36H24V24Z" fill="#60A5FA"/>
+    <path d="M12 12H24V24H12V12Z" fill="#93C5FD"/>
+</g>
+
+<defs>
+    <clipPath id="clip0_101_2">
+        <rect width="36" height="36" fill="white"/>
+    </clipPath>
+</defs>
+</svg>

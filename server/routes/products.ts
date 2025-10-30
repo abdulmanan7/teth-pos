@@ -55,15 +55,20 @@ export const getProduct: RequestHandler = async (req, res) => {
 // Create product
 export const createProduct: RequestHandler = async (req, res) => {
   try {
-    const { name, sku, price, stock, category, description } = req.body;
+    const { name, sku, price, quantity, stock, category, description, unit, unit_custom, warehouse_id, status } = req.body;
     
     const product = new Product({
       name,
       sku,
       price,
-      stock,
+      quantity: quantity || 1,
+      stock: stock || 0,
       category,
       description,
+      unit: unit || 'piece',
+      unit_custom,
+      warehouse_id,
+      status: status || 'active',
     });
     
     await product.save();
@@ -78,12 +83,12 @@ export const createProduct: RequestHandler = async (req, res) => {
 export const updateProduct: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, sku, price, stock, category, description } = req.body;
+    const { name, sku, price, stock, quantity, category, description, unit, unit_custom, warehouse_id, status } = req.body;
     
     const product = await Product.findByIdAndUpdate(
       id,
-      { name, sku, price, stock, category, description },
-      { new: true }
+      { name, sku, price, stock, quantity, category, description, unit, unit_custom, warehouse_id, status },
+      { new: true, runValidators: true }
     );
     
     if (!product) {

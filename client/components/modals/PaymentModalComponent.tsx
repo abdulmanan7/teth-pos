@@ -7,6 +7,7 @@ interface StaffMember {
 }
 
 interface PaymentModalProps {
+  isDarkTheme: boolean;
   total: number;
   customer: string;
   staff: StaffMember | null;
@@ -23,6 +24,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function PaymentModalComponent({
+  isDarkTheme,
   total,
   customer,
   staff,

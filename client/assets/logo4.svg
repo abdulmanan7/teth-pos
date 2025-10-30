@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Background Circle -->
+<circle cx="256" cy="256" r="256" fill="#1e293b"/>
+
+<!-- Outer Ring -->
+<circle cx="256" cy="256" r="240" fill="none" stroke="#3B82F6" stroke-width="8"/>
+
+<!-- Icon - Tooth/Dental Logo (Scaled and Centered) -->
+<g transform="translate(256, 256) scale(8)">
+    <g clip-path="url(#clip0_101_2)">
+        <path d="M12 0H24V12H36V24H24V36H12V24H0V12H12V0Z" fill="#3B82F6"/>
+        <path d="M24 24H36V36H24V24Z" fill="#60A5FA"/>
+        <path d="M12 12H24V24H12V12Z" fill="#93C5FD"/>
+    </g>
+</g>
+
+<!-- Gradient Overlay for Depth -->
+<defs>
+    <radialGradient id="depthGradient" cx="50%" cy="30%">
+        <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.1" />
+        <stop offset="100%" style="stop-color:#000000;stop-opacity:0.2" />
+    </radialGradient>
+    <clipPath id="clip0_101_2">
+        <rect width="36" height="36" fill="white"/>
+    </clipPath>
+</defs>
+
+<!-- Depth Effect -->
+<circle cx="256" cy="256" r="256" fill="url(#depthGradient)"/>
+</svg>

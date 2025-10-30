@@ -68,20 +68,20 @@ export default function CustomersModal({ isDarkTheme, onClose }: { isDarkTheme: 
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h2 className="text-2xl font-bold text-white">Customers</h2>
+        <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+          <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Customers</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1"
+            className={`transition-colors ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Search */}
-        <div className="p-6 border-b border-slate-700">
+        <div className={`p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
           <div className="relative">
             <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
             <Input

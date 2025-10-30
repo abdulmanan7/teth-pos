@@ -202,20 +202,20 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h2 className="text-2xl font-bold text-white">Products</h2>
+        <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+          <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Products</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1"
+            className={`transition-colors ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Search and Filters */}
-        <div className="p-6 border-b border-slate-700 space-y-4">
+        <div className={`p-6 border-b space-y-4 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
           <div className="relative">
             <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
             <Input
@@ -246,7 +246,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === cat
                     ? "bg-blue-500 text-white"
-                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                    : isDarkTheme ? "bg-slate-700 text-slate-300 hover:bg-slate-600" : "bg-slate-200 text-slate-700 hover:bg-slate-300"
                 }`}
               >
                 {cat}
@@ -264,19 +264,19 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
           ) : (
             <div className="grid gap-3">
               {filtered.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
+                <div className={`text-center py-12 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                   <p>No products found</p>
                 </div>
               ) : (
                 filtered.map((product) => (
                   <div
                     key={product._id}
-                    className="p-4 bg-slate-700/30 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors"
+                    className={`p-4 border rounded-lg transition-colors ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-white truncate">{product.name}</h3>
+                          <h3 className={`font-semibold truncate ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{product.name}</h3>
                           <span className={`text-xs px-2 py-1 rounded ${
                             product.status === 'active' ? 'bg-green-900/30 text-green-400' :
                             product.status === 'inactive' ? 'bg-yellow-900/30 text-yellow-400' :
@@ -285,11 +285,11 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                             {product.status || 'active'}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 mb-2">
-                          <div>SKU: <span className="text-white font-mono">{product.sku}</span></div>
-                          <div>Unit: <span className="text-white">{product.unit_custom || product.unit || 'piece'}</span></div>
-                          <div>Qty/Unit: <span className="text-white font-semibold">{product.quantity} {product.unit_custom || product.unit || 'piece'}</span></div>
-                          <div>Category: <span className="text-white">{product.category}</span></div>
+                        <div className={`grid grid-cols-2 gap-2 text-xs mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                          <div>SKU: <span className={`font-mono ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{product.sku}</span></div>
+                          <div>Unit: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{product.unit_custom || product.unit || 'piece'}</span></div>
+                          <div>Qty/Unit: <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{product.quantity} {product.unit_custom || product.unit || 'piece'}</span></div>
+                          <div>Category: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{product.category}</span></div>
                           <div>Stock: <span className={`text-white font-semibold ${product.stock < (product.reorder_point || 10) ? 'text-red-400' : 'text-green-400'}`}>{product.stock} {product.unit_custom || product.unit || 'piece'}</span></div>
                           <div>Status: <span className={`text-white font-semibold ${product.status === 'active' ? 'text-green-400' : product.status === 'inactive' ? 'text-yellow-400' : 'text-red-400'}`}>{product.status || 'active'}</span></div>
                         </div>
@@ -298,7 +298,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                       <div className="text-right flex flex-col gap-2">
                         <div>
                           <p className="text-lg font-bold text-blue-400">Rs {product.price.toFixed(2)}</p>
-                          <p className="text-xs text-slate-400">Price</p>
+                          <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Price</p>
                         </div>
                         <div className="flex gap-1">
                           <button
@@ -306,7 +306,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                             className={`p-2 rounded transition-colors ${
                               copiedBarcode === product.sku
                                 ? 'bg-green-600 text-white'
-                                : 'bg-slate-600 hover:bg-slate-700 text-slate-300'
+                                : isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-slate-300' : 'bg-slate-300 hover:bg-slate-400 text-slate-700'
                             }`}
                             title="Copy SKU"
                           >

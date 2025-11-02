@@ -16,10 +16,11 @@ import { useToast } from "@/components/ToastManager";
 import type { StockAlert, Product } from "@shared/api";
 
 interface StockAlertsManagerProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
-export default function StockAlertsManager({ onClose }: StockAlertsManagerProps) {
+export default function StockAlertsManager({ isDarkTheme = true, onClose }: StockAlertsManagerProps) {
   const { addToast } = useToast();
   const [alerts, setAlerts] = useState<StockAlert[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -251,7 +252,7 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <Bell className="w-6 h-6" />
           Stock Alerts
         </h3>
@@ -381,7 +382,7 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+          className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
         >
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
@@ -391,14 +392,14 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+          className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
         >
           <option value="all">All Types</option>
           <option value="out_of_stock">Out of Stock</option>
           <option value="low_stock">Low Stock</option>
           <option value="overstock">Overstock</option>
         </select>
-        <span className="text-slate-400 text-sm py-2">
+        <span className={`text-sm py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           {filteredAlerts.length} alerts
         </span>
       </div>
@@ -409,7 +410,7 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
           <Loader className="w-8 h-8 text-blue-400 animate-spin" />
         </div>
       ) : filteredAlerts.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className={`text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           <p>No alerts found. Stock levels are healthy!</p>
         </div>
       ) : (
@@ -425,7 +426,7 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
                 <div className="mt-1">{getAlertIcon(alert.alert_type)}</div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-white">
+                    <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                       {getProductName(alert.product_id)}
                     </h4>
                     <span
@@ -436,11 +437,11 @@ export default function StockAlertsManager({ onClose }: StockAlertsManagerProps)
                       {getStatusLabel(alert.status)}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-400">
+                  <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-700'}`}>
                     {getTypeLabel(alert.alert_type)} • Current: {alert.current_stock} units •
                     Threshold: {alert.threshold} units
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-700'}`}>
                     {new Date(alert.createdAt).toLocaleDateString()}
                   </p>
                 </div>

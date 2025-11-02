@@ -15,10 +15,11 @@ import { useElectronApi } from "@/hooks/useElectronApi";
 import type { InventoryOverview, InventoryMetrics } from "@shared/api";
 
 interface AnalyticsDashboardProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
-export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
+export default function AnalyticsDashboard({ isDarkTheme = true, onClose }: AnalyticsDashboardProps) {
   const [overview, setOverview] = useState<InventoryOverview | null>(null);
   const [metrics, setMetrics] = useState<InventoryMetrics | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
@@ -203,7 +204,7 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-2xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <BarChart3 className="w-7 h-7" />
           Inventory Analytics
         </h3>
@@ -219,18 +220,18 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
       {/* Overview Cards */}
       {overview && (
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400">Total Products</p>
-            <p className="text-3xl font-bold text-white">{overview.total_products}</p>
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Products</p>
+            <p className={`text-3xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{overview.total_products}</p>
           </div>
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400">Total Stock Value</p>
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Stock Value</p>
             <p className="text-3xl font-bold text-green-400">
               ${overview.total_stock_value.toLocaleString()}
             </p>
           </div>
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400">Total Units</p>
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Units</p>
             <p className="text-3xl font-bold text-blue-400">{overview.total_units}</p>
           </div>
           <div
@@ -238,7 +239,7 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
               overview.health_score
             )}`}
           >
-            <p className="text-xs text-slate-400">Health Score</p>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Health Score</p>
             <p className={`text-3xl font-bold ${getHealthColor(overview.health_score)}`}>
               {overview.health_score}%
             </p>
@@ -277,13 +278,13 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-slate-600">
+      <div className={`flex gap-2 border-b ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
         <button
           onClick={() => setActiveTab("overview")}
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === "overview"
               ? "text-blue-400 border-b-2 border-blue-400"
-              : "text-slate-400 hover:text-white"
+              : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
           }`}
         >
           <Activity className="w-4 h-4 inline mr-2" />
@@ -294,7 +295,7 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === "categories"
               ? "text-blue-400 border-b-2 border-blue-400"
-              : "text-slate-400 hover:text-white"
+              : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
           }`}
         >
           <PieChart className="w-4 h-4 inline mr-2" />
@@ -305,7 +306,7 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === "warehouses"
               ? "text-blue-400 border-b-2 border-blue-400"
-              : "text-slate-400 hover:text-white"
+              : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
           }`}
         >
           <Package className="w-4 h-4 inline mr-2" />
@@ -316,7 +317,7 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === "performance"
               ? "text-blue-400 border-b-2 border-blue-400"
-              : "text-slate-400 hover:text-white"
+              : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
           }`}
         >
           <TrendingUp className="w-4 h-4 inline mr-2" />
@@ -329,14 +330,14 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
         {activeTab === "overview" && overview && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-                <p className="text-sm text-slate-400 mb-2">Avg Value per Product</p>
+              <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+                <p className={`text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Value per Product</p>
                 <p className="text-2xl font-bold text-green-400">
                   Rs {overview.average_value_per_product.toFixed(2)}
                 </p>
               </div>
-              <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-                <p className="text-sm text-slate-400 mb-2">Avg Units per Product</p>
+              <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+                <p className={`text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Units per Product</p>
                 <p className="text-2xl font-bold text-blue-400">
                   {overview.average_units_per_product.toFixed(1)}
                 </p>
@@ -345,22 +346,22 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
 
             {metrics && (
               <div className="space-y-3">
-                <h4 className="font-semibold text-white">Top Products by Value</h4>
+                <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top Products by Value</h4>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {metrics.top_products.map((product, idx) => (
                     <div
                       key={idx}
-                      className="bg-slate-700/30 border border-slate-600 rounded p-3 flex justify-between items-center"
+                      className={`border rounded p-3 flex justify-between items-center ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}
                     >
                       <div>
-                        <p className="text-white font-medium">{product.product_name}</p>
-                        <p className="text-xs text-slate-400">{product.sku}</p>
+                        <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{product.product_name}</p>
+                        <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{product.sku}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-green-400 font-bold">
                           ${product.value.toLocaleString()}
                         </p>
-                        <p className="text-xs text-slate-400">{product.stock} units</p>
+                        <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{product.stock} units</p>
                       </div>
                     </div>
                   ))}
@@ -372,21 +373,21 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
 
         {activeTab === "categories" && categories.length > 0 && (
           <div className="space-y-3">
-            <h4 className="font-semibold text-white">Category Distribution</h4>
+            <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Category Distribution</h4>
             <div className="space-y-2">
               {categories.map((cat, idx) => (
-                <div key={idx} className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
+                <div key={idx} className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
                   <div className="flex justify-between items-center mb-2">
-                    <p className="font-medium text-white">{cat.category}</p>
-                    <p className="text-sm text-slate-400">{cat.percentage.toFixed(1)}%</p>
+                    <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{cat.category}</p>
+                    <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{cat.percentage.toFixed(1)}%</p>
                   </div>
-                  <div className="w-full bg-slate-600 rounded-full h-2">
+                  <div className={`w-full rounded-full h-2 ${isDarkTheme ? 'bg-slate-600' : 'bg-slate-300'}`}>
                     <div
                       className="bg-blue-500 h-2 rounded-full"
                       style={{ width: `${cat.percentage}%` }}
                     />
                   </div>
-                  <div className="flex justify-between mt-2 text-xs text-slate-400">
+                  <div className={`flex justify-between mt-2 text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                     <span>{cat.units} units</span>
                     <span>${cat.value.toLocaleString()}</span>
                   </div>
@@ -398,23 +399,23 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
 
         {activeTab === "warehouses" && warehouses.length > 0 && (
           <div className="space-y-3">
-            <h4 className="font-semibold text-white">Warehouse Distribution</h4>
+            <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Warehouse Distribution</h4>
             <div className="space-y-2">
               {warehouses.map((wh, idx) => (
-                <div key={idx} className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
+                <div key={idx} className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
                   <div className="flex justify-between items-center mb-2">
-                    <p className="font-medium text-white">{wh.warehouse_name}</p>
-                    <p className="text-sm text-slate-400">
+                    <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{wh.warehouse_name}</p>
+                    <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                       {wh.capacity_utilization.toFixed(1)}% utilized
                     </p>
                   </div>
-                  <div className="w-full bg-slate-600 rounded-full h-2">
+                  <div className={`w-full rounded-full h-2 ${isDarkTheme ? 'bg-slate-600' : 'bg-slate-300'}`}>
                     <div
                       className="bg-green-500 h-2 rounded-full"
                       style={{ width: `${Math.min(wh.capacity_utilization, 100)}%` }}
                     />
                   </div>
-                  <div className="flex justify-between mt-2 text-xs text-slate-400">
+                  <div className={`flex justify-between mt-2 text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                     <span>{wh.total_units} units</span>
                     <span>${wh.total_value.toLocaleString()}</span>
                   </div>
@@ -427,16 +428,16 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
         {activeTab === "performance" && performance && (
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-white mb-3">Top 10 by Value</h4>
+              <h4 className={`font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top 10 by Value</h4>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {performance.top_by_value.map((product: any, idx: number) => (
                   <div
                     key={idx}
-                    className="bg-slate-700/30 border border-slate-600 rounded p-3 flex justify-between"
+                    className={`border rounded p-3 flex justify-between ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}
                   >
                     <div>
-                      <p className="text-white font-medium">{product.product_name}</p>
-                      <p className="text-xs text-slate-400">{product.sku}</p>
+                      <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{product.product_name}</p>
+                      <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{product.sku}</p>
                     </div>
                     <p className="text-green-400 font-bold">
                       ${product.value.toLocaleString()}
@@ -447,18 +448,20 @@ export default function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps)
             </div>
 
             <div>
-              <h4 className="font-semibold text-white mb-3">Top 10 by Quantity</h4>
+              <h4 className={`font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top 10 by Quantity</h4>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {performance.top_by_quantity.map((product: any, idx: number) => (
                   <div
                     key={idx}
-                    className="bg-slate-700/30 border border-slate-600 rounded p-3 flex justify-between"
+                    className={`border rounded p-3 flex justify-between ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}
                   >
                     <div>
-                      <p className="text-white font-medium">{product.product_name}</p>
-                      <p className="text-xs text-slate-400">{product.sku}</p>
+                      <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{product.product_name}</p>
+                      <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{product.sku}</p>
                     </div>
-                    <p className="text-blue-400 font-bold">{product.stock} units</p>
+                    <div className="text-right">
+                      <p className="text-blue-400 font-bold">{product.stock} units</p>
+                    </div>
                   </div>
                 ))}
               </div>

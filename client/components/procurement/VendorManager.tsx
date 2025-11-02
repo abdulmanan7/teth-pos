@@ -23,7 +23,11 @@ interface Vendor {
   notes?: string;
 }
 
-export default function VendorManager() {
+interface VendorManagerProps {
+  isDarkTheme?: boolean;
+}
+
+export default function VendorManager({ isDarkTheme = true }: VendorManagerProps) {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -139,7 +143,7 @@ export default function VendorManager() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-slate-400">Loading vendors...</p>
+        <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Loading vendors...</p>
       </div>
     );
   }
@@ -147,7 +151,7 @@ export default function VendorManager() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Vendor Management</h2>
+        <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Vendor Management</h2>
         <Button
           onClick={() => {
             resetForm();
@@ -163,20 +167,20 @@ export default function VendorManager() {
       {/* Vendors List */}
       <div className="grid gap-4">
         {vendors.length === 0 ? (
-          <div className="text-center py-8 bg-slate-800/50 rounded-lg border border-slate-700">
-            <p className="text-slate-400">No vendors yet. Add one to get started!</p>
+          <div className={`text-center py-8 rounded-lg border ${isDarkTheme ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>No vendors yet. Add one to get started!</p>
           </div>
         ) : (
           vendors.map((vendor) => (
             <div
               key={vendor._id}
-              className="bg-slate-800 border border-slate-700 rounded-lg p-4 hover:border-slate-600 transition-colors"
+              className={`border rounded-lg p-4 transition-colors ${isDarkTheme ? 'bg-slate-800 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-semibold text-white">{vendor.name}</h3>
-                    <span className="text-xs px-2 py-1 bg-slate-700 text-slate-300 rounded">
+                    <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{vendor.name}</h3>
+                    <span className={`text-xs px-2 py-1 rounded ${isDarkTheme ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'}`}>
                       {vendor.code}
                     </span>
                     {vendor.rating > 0 && (
@@ -187,25 +191,25 @@ export default function VendorManager() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-sm text-slate-400 mb-2">
-                    <div>Email: <span className="text-white">{vendor.email}</span></div>
-                    <div>Phone: <span className="text-white">{vendor.phone || "N/A"}</span></div>
+                  <div className={`grid grid-cols-2 gap-2 text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                    <div>Email: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{vendor.email}</span></div>
+                    <div>Phone: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{vendor.phone || "N/A"}</span></div>
                     {vendor.contact_person && (
-                      <div>Contact: <span className="text-white">{vendor.contact_person}</span></div>
+                      <div>Contact: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{vendor.contact_person}</span></div>
                     )}
                     {vendor.city && (
-                      <div>City: <span className="text-white">{vendor.city}</span></div>
+                      <div>City: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{vendor.city}</span></div>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-sm text-slate-400">
+                  <div className={`grid grid-cols-3 gap-2 text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                     <div>
-                      <p className="text-slate-500">Total Purchases</p>
-                      <p className="text-white font-semibold">{vendor.total_purchases}</p>
+                      <p className={isDarkTheme ? 'text-slate-500' : 'text-slate-600'}>Total Purchases</p>
+                      <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{vendor.total_purchases}</p>
                     </div>
                     <div>
-                      <p className="text-slate-500">Total Spent</p>
-                      <p className="text-white font-semibold">Rs {vendor.total_spent.toFixed(2)}</p>
+                      <p className={isDarkTheme ? 'text-slate-500' : 'text-slate-600'}>Total Spent</p>
+                      <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {vendor.total_spent.toFixed(2)}</p>
                     </div>
                     <div>
                       <p className="text-slate-500">Status</p>
@@ -219,14 +223,14 @@ export default function VendorManager() {
                 <div className="flex gap-2 ml-4">
                   <button
                     onClick={() => handleEditVendor(vendor)}
-                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                    className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-100 hover:bg-blue-200 text-blue-900'}`}
                     title="Edit vendor"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteVendor(vendor._id)}
-                    className="p-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                    className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-100 hover:bg-red-200 text-red-900'}`}
                     title="Delete vendor"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -241,9 +245,9 @@ export default function VendorManager() {
       {/* Add/Edit Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-            <div className="flex items-center justify-between p-6 border-b border-slate-700 sticky top-0 bg-slate-800">
-              <h3 className="text-xl font-bold text-white">
+          <div className={`rounded-lg border shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'}`}>
+            <div className={`flex items-center justify-between p-6 border-b sticky top-0 ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
+              <h3 className={`text-xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {editingId ? "Edit Vendor" : "Add New Vendor"}
               </h3>
               <button
@@ -251,7 +255,7 @@ export default function VendorManager() {
                   setShowForm(false);
                   resetForm();
                 }}
-                className="text-slate-400 hover:text-white transition-colors"
+                className={isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -260,7 +264,7 @@ export default function VendorManager() {
             <form onSubmit={handleSaveVendor} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Vendor Name *
                   </label>
                   <Input
@@ -268,11 +272,11 @@ export default function VendorManager() {
                     placeholder="e.g., Fresh Farms Co"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Vendor Code *
                   </label>
                   <Input
@@ -280,14 +284,14 @@ export default function VendorManager() {
                     placeholder="e.g., FF-001"
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Email *
                   </label>
                   <Input
@@ -295,11 +299,11 @@ export default function VendorManager() {
                     placeholder="sales@vendor.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Phone
                   </label>
                   <Input
@@ -307,13 +311,13 @@ export default function VendorManager() {
                     placeholder="+1-555-0123"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                   Address
                 </label>
                 <Input
@@ -321,13 +325,13 @@ export default function VendorManager() {
                   placeholder="Street address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                  className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     City
                   </label>
                   <Input
@@ -335,11 +339,11 @@ export default function VendorManager() {
                     placeholder="City"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     State
                   </label>
                   <Input
@@ -347,11 +351,11 @@ export default function VendorManager() {
                     placeholder="State"
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Zip Code
                   </label>
                   <Input
@@ -359,14 +363,14 @@ export default function VendorManager() {
                     placeholder="Zip code"
                     value={formData.zip_code}
                     onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Contact Person
                   </label>
                   <Input
@@ -374,11 +378,11 @@ export default function VendorManager() {
                     placeholder="John Smith"
                     value={formData.contact_person}
                     onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Payment Terms
                   </label>
                   <Input
@@ -386,40 +390,39 @@ export default function VendorManager() {
                     placeholder="Net 30"
                     value={formData.payment_terms}
                     onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                   Notes
                 </label>
                 <textarea
                   placeholder="Additional notes..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded px-3 py-2 text-sm"
-                  rows={3}
+                  className={`w-full rounded px-3 py-2 text-sm ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white placeholder-slate-400' : 'bg-white border border-slate-300 text-slate-900 placeholder-slate-500'}`}
+                  rows={2}
                 />
               </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button
+              <div className="flex gap-2">
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => {
                     setShowForm(false);
                     resetForm();
                   }}
-                  className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                  className={`flex-1 rounded px-4 py-2 font-medium transition-colors ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'}`}
                 >
                   Cancel
-                </Button>
+                </button>
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
+                  className={`flex-1 disabled:opacity-50 ${isDarkTheme ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 >
                   {submitting ? "Saving..." : editingId ? "Update Vendor" : "Add Vendor"}
                 </Button>

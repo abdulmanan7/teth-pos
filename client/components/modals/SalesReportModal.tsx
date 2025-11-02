@@ -54,47 +54,48 @@ export default function SalesReportModal({ isDarkTheme, onClose }: { isDarkTheme
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h2 className="text-2xl font-bold text-white">Sales Report</h2>
+        <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+          <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Sales Report</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1"
+            className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Key Metrics */}
-        <div className="p-6 border-b border-slate-700">
-          <h3 className="text-lg font-bold text-white mb-4">
+        <div className={`p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+          <h3 className={`text-lg font-bold mb-4 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
             Last 5 Days Overview
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <MetricBox label="Total Revenue" value={`Rs ${totalRevenue.toLocaleString()}`} trend="+12.5%" />
+            <MetricBox isDarkTheme={isDarkTheme} label="Total Revenue" value={`Rs ${totalRevenue.toLocaleString()}`} trend="+12.5%" />
             <MetricBox
+              isDarkTheme={isDarkTheme}
               label="Total Orders"
               value={totalOrders.toString()}
               trend="+8.2%"
             />
-            <MetricBox label="Avg Daily Revenue" value={`Rs ${avgRevenue}`} trend="+5.1%" />
-            <MetricBox label="Avg Order Value" value="Rs 137.04" trend="+2.3%" />
+            <MetricBox isDarkTheme={isDarkTheme} label="Avg Daily Revenue" value={`Rs ${avgRevenue}`} trend="+5.1%" />
+            <MetricBox isDarkTheme={isDarkTheme} label="Avg Order Value" value="Rs 137.04" trend="+2.3%" />
           </div>
         </div>
 
         {/* Daily Breakdown */}
         <div className="flex-1 overflow-auto p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Daily Breakdown</h3>
+          <h3 className={`text-lg font-bold mb-4 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Daily Breakdown</h3>
           <div className="space-y-3">
             {SALES_DATA.map((day, index) => (
               <div
                 key={index}
-                className="p-4 bg-slate-700/30 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors"
+                className={`p-4 border rounded-lg transition-colors ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <h4 className="font-bold text-white text-lg">{day.date}</h4>
+                    <h4 className={`font-bold text-lg ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{day.date}</h4>
                     <TrendingUp className="w-4 h-4 text-green-400" />
                   </div>
                   <p className="text-2xl font-bold text-green-400">
@@ -102,19 +103,19 @@ export default function SalesReportModal({ isDarkTheme, onClose }: { isDarkTheme
                   </p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 text-sm text-slate-300">
+                <div className={`grid grid-cols-3 gap-4 text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                   <div>
-                    <p className="text-slate-400 mb-1">Orders</p>
+                    <p className={`mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Orders</p>
                     <p className="font-semibold">{day.orders}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400 mb-1">Avg Order Value</p>
+                    <p className={`mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Order Value</p>
                     <p className="font-semibold">
                       Rs {day.avgOrderValue.toFixed(2)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-slate-400 mb-1">Top Product</p>
+                    <p className={`mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Top Product</p>
                     <p className="font-semibold text-blue-400">
                       {day.topProduct}
                     </p>
@@ -122,7 +123,7 @@ export default function SalesReportModal({ isDarkTheme, onClose }: { isDarkTheme
                 </div>
 
                 {/* Visual Bar */}
-                <div className="mt-3 h-2 bg-slate-600 rounded-full overflow-hidden">
+                <div className={`mt-3 h-2 rounded-full overflow-hidden ${isDarkTheme ? 'bg-slate-600' : 'bg-slate-300'}`}>
                   <div
                     className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all"
                     style={{
@@ -136,11 +137,10 @@ export default function SalesReportModal({ isDarkTheme, onClose }: { isDarkTheme
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-700 p-6 flex justify-between">
+        <div className={`border-t p-6 flex justify-between ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
           <Button
-            variant="outline"
             onClick={onClose}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            className={isDarkTheme ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}
           >
             Close
           </Button>
@@ -155,18 +155,19 @@ export default function SalesReportModal({ isDarkTheme, onClose }: { isDarkTheme
 }
 
 interface MetricBoxProps {
+  isDarkTheme: boolean;
   label: string;
   value: string;
   trend: string;
 }
 
-function MetricBox({ label, value, trend }: MetricBoxProps) {
+function MetricBox({ isDarkTheme, label, value, trend }: MetricBoxProps) {
   return (
-    <div className="p-4 bg-slate-700/30 border border-slate-600 rounded-lg">
-      <p className="text-xs text-slate-400 mb-2 uppercase font-semibold">
+    <div className={`p-4 border rounded-lg ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+      <p className={`text-xs mb-2 uppercase font-semibold ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
         {label}
       </p>
-      <p className="text-2xl font-bold text-white mb-1">{value}</p>
+      <p className={`text-2xl font-bold mb-1 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{value}</p>
       <p className="text-xs text-green-400 font-semibold">{trend}</p>
     </div>
   );

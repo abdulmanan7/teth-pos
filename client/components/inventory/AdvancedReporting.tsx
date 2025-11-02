@@ -14,10 +14,11 @@ import { useElectronApi } from "@/hooks/useElectronApi";
 import { showNotification } from "@/utils";
 
 interface AdvancedReportingProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
-export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
+export default function AdvancedReporting({ isDarkTheme = true, onClose }: AdvancedReportingProps) {
   const [reportType, setReportType] = useState<"inventory" | "transactions" | "expiry" | "stock-alerts" | "warehouses">("inventory");
   const [format, setFormat] = useState<"json" | "csv">("json");
   const [startDate, setStartDate] = useState("");
@@ -111,7 +112,7 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-2xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <FileText className="w-7 h-7" />
           Advanced Reporting
         </h3>
@@ -126,14 +127,14 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
             className={`p-4 rounded-lg border-2 transition-all text-left ${
               reportType === key
                 ? "bg-blue-900/30 border-blue-500"
-                : "bg-slate-700/30 border-slate-600 hover:border-slate-500"
+                : isDarkTheme ? "bg-slate-700/30 border-slate-600 hover:border-slate-500" : "bg-slate-100 border-slate-300 hover:border-slate-400"
             }`}
           >
             <div className="flex items-start gap-3">
               <config.icon className="w-5 h-5 mt-1 text-blue-400" />
               <div>
-                <h4 className="font-semibold text-white">{config.title}</h4>
-                <p className="text-xs text-slate-400 mt-1">
+                <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{config.title}</h4>
+                <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                   {config.description}
                 </p>
               </div>
@@ -143,8 +144,8 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
       </div>
 
       {/* Report Options */}
-      <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 space-y-4">
-        <h4 className="font-semibold text-white">Report Options</h4>
+      <div className={`border rounded-lg p-6 space-y-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+        <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Report Options</h4>
 
         {/* Date Range */}
         <div className="grid grid-cols-2 gap-4">
@@ -156,7 +157,7 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+              className={`w-full rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
             />
           </div>
           <div>
@@ -167,7 +168,7 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+              className={`w-full rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
             />
           </div>
         </div>
@@ -183,7 +184,7 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
               className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
                 format === "json"
                   ? "bg-blue-600 text-white"
-                  : "bg-slate-600 text-slate-300 hover:bg-slate-700"
+                  : isDarkTheme ? "bg-slate-600 text-slate-300 hover:bg-slate-700" : "bg-slate-200 text-slate-700 hover:bg-slate-300"
               }`}
             >
               JSON (Preview)
@@ -193,7 +194,7 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
               className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
                 format === "csv"
                   ? "bg-blue-600 text-white"
-                  : "bg-slate-600 text-slate-300 hover:bg-slate-700"
+                  : isDarkTheme ? "bg-slate-600 text-slate-300 hover:bg-slate-700" : "bg-slate-200 text-slate-700 hover:bg-slate-300"
               }`}
             >
               CSV (Download)
@@ -218,15 +219,15 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
 
       {/* Report Preview */}
       {showPreview && reportData && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 space-y-4">
+        <div className={`border rounded-lg p-6 space-y-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-white flex items-center gap-2">
+            <h4 className={`font-semibold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
               <Eye className="w-5 h-5" />
               Report Preview
             </h4>
             <button
               onClick={() => setShowPreview(false)}
-              className="text-slate-400 hover:text-white"
+              className={isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}
             >
               <X className="w-5 h-5" />
             </button>
@@ -234,12 +235,12 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
 
           {/* Report Header */}
           <div className="space-y-2 text-sm">
-            <p className="text-white font-semibold">{reportData.title}</p>
-            <p className="text-slate-400">
+            <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{reportData.title}</p>
+            <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>
               Generated: {new Date(reportData.generated_at).toLocaleString()}
             </p>
             {reportData.period && (
-              <p className="text-slate-400">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>
                 Period: {new Date(reportData.period.start).toLocaleDateString()} to{" "}
                 {new Date(reportData.period.end).toLocaleDateString()}
               </p>
@@ -248,17 +249,17 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
 
           {/* Summary */}
           {reportData.summary && (
-            <div className="border-t border-slate-600 pt-4">
-              <h5 className="font-semibold text-white mb-3">Summary</h5>
+            <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+              <h5 className={`font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Summary</h5>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {Object.entries(reportData.summary).map(([key, value]: [string, any]) => {
                   if (typeof value === "object") return null;
                   return (
-                    <div key={key} className="bg-slate-600/30 rounded p-2">
-                      <p className="text-xs text-slate-400 capitalize">
+                    <div key={key} className={`rounded p-2 ${isDarkTheme ? 'bg-slate-600/30' : 'bg-slate-200'}`}>
+                      <p className={`text-xs capitalize ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                         {key.replace(/_/g, " ")}
                       </p>
-                      <p className="text-white font-semibold">
+                      <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                         {typeof value === "number" ? formatValue(value) : value}
                       </p>
                     </div>
@@ -270,29 +271,29 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
 
           {/* Data Table */}
           {reportData.products && (
-            <div className="border-t border-slate-600 pt-4">
-              <h5 className="font-semibold text-white mb-3">Products</h5>
+            <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+              <h5 className={`font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Products</h5>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-600">
-                      <th className="text-left text-slate-400 py-2">Name</th>
-                      <th className="text-left text-slate-400 py-2">SKU</th>
-                      <th className="text-right text-slate-400 py-2">Price</th>
-                      <th className="text-right text-slate-400 py-2">Stock</th>
-                      <th className="text-right text-slate-400 py-2">Value</th>
+                    <tr className={`border-b ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+                      <th className={`text-left py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Name</th>
+                      <th className={`text-left py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>SKU</th>
+                      <th className={`text-right py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Price</th>
+                      <th className={`text-right py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Stock</th>
+                      <th className={`text-right py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Value</th>
                     </tr>
                   </thead>
                   <tbody>
                     {reportData.products.slice(0, 10).map((p: any, idx: number) => (
-                      <tr key={idx} className="border-b border-slate-700">
-                        <td className="text-white py-2">{p.name}</td>
-                        <td className="text-slate-400 py-2">{p.sku}</td>
-                        <td className="text-right text-white py-2">
+                      <tr key={idx} className={`border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+                        <td className={`py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{p.name}</td>
+                        <td className={`py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{p.sku}</td>
+                        <td className={`text-right py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                           Rs {p.price?.toFixed(2)}
                         </td>
-                        <td className="text-right text-white py-2">{p.stock}</td>
-                        <td className="text-right text-green-400 py-2">
+                        <td className={`text-right py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{p.stock}</td>
+                        <td className={`text-right py-2 ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
                           Rs {p.value?.toFixed(2)}
                         </td>
                       </tr>
@@ -301,7 +302,7 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
                 </table>
               </div>
               {reportData.products.length > 10 && (
-                <p className="text-xs text-slate-400 mt-2">
+                <p className={`text-xs mt-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                   Showing 10 of {reportData.products.length} products
                 </p>
               )}
@@ -310,27 +311,27 @@ export default function AdvancedReporting({ onClose }: AdvancedReportingProps) {
 
           {/* Transactions Table */}
           {reportData.transactions && (
-            <div className="border-t border-slate-600 pt-4">
-              <h5 className="font-semibold text-white mb-3">Transactions</h5>
+            <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+              <h5 className={`font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Transactions</h5>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-600">
-                      <th className="text-left text-slate-400 py-2">Type</th>
-                      <th className="text-right text-slate-400 py-2">Qty</th>
-                      <th className="text-right text-slate-400 py-2">Value</th>
-                      <th className="text-left text-slate-400 py-2">Date</th>
+                    <tr className={`border-b ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+                      <th className={`text-left py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Type</th>
+                      <th className={`text-right py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Qty</th>
+                      <th className={`text-right py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Value</th>
+                      <th className={`text-left py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Date</th>
                     </tr>
                   </thead>
                   <tbody>
                     {reportData.transactions.slice(0, 10).map((t: any, idx: number) => (
-                      <tr key={idx} className="border-b border-slate-700">
-                        <td className="text-white py-2 capitalize">{t.type}</td>
-                        <td className="text-right text-white py-2">{t.quantity}</td>
-                        <td className="text-right text-green-400 py-2">
+                      <tr key={idx} className={`border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+                        <td className={`py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{t.type}</td>
+                        <td className={`text-right py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{t.quantity}</td>
+                        <td className={`text-right py-2 ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
                           Rs {t.value?.toFixed(2)}
                         </td>
-                        <td className="text-slate-400 py-2">
+                        <td className={`py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                           {new Date(t.date).toLocaleDateString()}
                         </td>
                       </tr>

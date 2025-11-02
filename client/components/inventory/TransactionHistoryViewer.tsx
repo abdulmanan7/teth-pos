@@ -17,10 +17,12 @@ import { useElectronApi } from "@/hooks/useElectronApi";
 import type { TransactionHistory, Product } from "@shared/api";
 
 interface TransactionHistoryViewerProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
 export default function TransactionHistoryViewer({
+  isDarkTheme = true,
   onClose,
 }: TransactionHistoryViewerProps) {
   const [transactions, setTransactions] = useState<TransactionHistory[]>([]);
@@ -208,7 +210,7 @@ export default function TransactionHistoryViewer({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <History className="w-6 h-6" />
           Transaction History
         </h3>
@@ -224,9 +226,9 @@ export default function TransactionHistoryViewer({
       {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-5 gap-2">
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Total</p>
-            <p className="text-2xl font-bold text-white">
+          <div className={`border rounded-lg p-3 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
               {summary.total_transactions}
             </p>
           </div>
@@ -259,15 +261,15 @@ export default function TransactionHistoryViewer({
 
       {/* Detail View */}
       {showDetail && selectedTransaction && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 space-y-4">
+        <div className={`border rounded-lg p-4 space-y-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-white flex items-center gap-2">
+            <h4 className={`font-semibold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
               {getTransactionIcon(selectedTransaction.transaction_type)}
               {getProductName(selectedTransaction.product_id)}
             </h4>
             <button
               onClick={() => setShowDetail(false)}
-              className="text-slate-400 hover:text-white"
+              className={isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}
             >
               <X className="w-5 h-5" />
             </button>
@@ -275,21 +277,21 @@ export default function TransactionHistoryViewer({
 
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <p className="text-slate-400">Transaction ID</p>
-              <p className="text-white font-mono text-xs">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Transaction ID</p>
+              <p className={`font-mono text-xs ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {selectedTransaction.transaction_id}
               </p>
             </div>
             <div>
-              <p className="text-slate-400">Type</p>
-              <p className="text-white font-medium">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Type</p>
+              <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {getTypeLabel(selectedTransaction.transaction_type)}
               </p>
             </div>
             <div>
-              <p className="text-slate-400">Status</p>
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Status</p>
               <p
-                className={`text-white font-medium px-2 py-1 rounded text-xs w-fit ${getStatusColor(
+                className={`font-medium px-2 py-1 rounded text-xs w-fit ${isDarkTheme ? 'text-white' : 'text-slate-900'} ${getStatusColor(
                   selectedTransaction.status
                 )}`}
               >
@@ -297,63 +299,63 @@ export default function TransactionHistoryViewer({
               </p>
             </div>
             <div>
-              <p className="text-slate-400">Quantity</p>
-              <p className="text-white font-medium">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Quantity</p>
+              <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {selectedTransaction.quantity} units
               </p>
             </div>
             <div>
-              <p className="text-slate-400">Unit Price</p>
-              <p className="text-white font-medium">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Unit Price</p>
+              <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 Rs {selectedTransaction.unit_price?.toFixed(2) || "N/A"}
               </p>
             </div>
             <div>
-              <p className="text-slate-400">Total Value</p>
-              <p className="text-white font-medium">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Total Value</p>
+              <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 Rs {selectedTransaction.total_value?.toLocaleString() || "N/A"}
               </p>
             </div>
             {selectedTransaction.from_warehouse && (
               <div>
-                <p className="text-slate-400">From Warehouse</p>
-                <p className="text-white font-medium">
+                <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>From Warehouse</p>
+                <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                   {selectedTransaction.from_warehouse}
                 </p>
               </div>
             )}
             {selectedTransaction.to_warehouse && (
               <div>
-                <p className="text-slate-400">To Warehouse</p>
-                <p className="text-white font-medium">
+                <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>To Warehouse</p>
+                <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                   {selectedTransaction.to_warehouse}
                 </p>
               </div>
             )}
             <div>
-              <p className="text-slate-400">Date</p>
-              <p className="text-white font-medium">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Date</p>
+              <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {new Date(selectedTransaction.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
 
           {selectedTransaction.notes && (
-            <div className="border-t border-slate-600 pt-4">
-              <p className="text-slate-400 text-sm">Notes</p>
-              <p className="text-white">{selectedTransaction.notes}</p>
+            <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Notes</p>
+              <p className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{selectedTransaction.notes}</p>
             </div>
           )}
 
           {selectedTransaction.serial_numbers &&
             selectedTransaction.serial_numbers.length > 0 && (
-              <div className="border-t border-slate-600 pt-4">
-                <p className="text-slate-400 text-sm mb-2">Serial Numbers</p>
+              <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+                <p className={`text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Serial Numbers</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedTransaction.serial_numbers.map((sn, idx) => (
                     <span
                       key={idx}
-                      className="bg-slate-600 text-white px-2 py-1 rounded text-xs font-mono"
+                      className={`px-2 py-1 rounded text-xs font-mono ${isDarkTheme ? 'bg-slate-600 text-white' : 'bg-slate-200 text-slate-900'}`}
                     >
                       {sn}
                     </span>
@@ -369,7 +371,7 @@ export default function TransactionHistoryViewer({
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm"
+          className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
         >
           <option value="all">All Types</option>
           <option value="stock_in">Stock In</option>
@@ -383,21 +385,21 @@ export default function TransactionHistoryViewer({
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm"
+          className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
         >
           <option value="all">All Statuses</option>
           <option value="completed">Completed</option>
           <option value="pending">Pending</option>
           <option value="cancelled">Cancelled</option>
         </select>
-        <span className="text-slate-400 text-sm py-2">
+        <span className={`text-sm py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           {filteredTransactions.length} transactions
         </span>
       </div>
 
       {/* List */}
       {filteredTransactions.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className={`text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           <p>No transactions found.</p>
         </div>
       ) : (

@@ -40,7 +40,11 @@ interface TransactionSummary {
   total_value: number;
 }
 
-export default function InventoryWidgets() {
+interface InventoryWidgetsProps {
+  isDarkTheme?: boolean;
+}
+
+export default function InventoryWidgets({ isDarkTheme = true }: InventoryWidgetsProps) {
   const [stats, setStats] = useState<InventoryStats | null>(null);
   const [barcodeStats, setBarcodeStats] = useState<BarcodeStats | null>(null);
   const [transactions, setTransactions] = useState<TransactionSummary | null>(null);
@@ -174,15 +178,15 @@ export default function InventoryWidgets() {
     <div className="space-y-4">
       {/* Header with Refresh */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Inventory Dashboard</h2>
+        <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Inventory Dashboard</h2>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-400">
+          <span className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
             Last updated: {lastUpdated.toLocaleTimeString()}
           </span>
           <button
             onClick={fetchWidgetData}
             disabled={loading}
-            className="p-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors disabled:opacity-50"
+            className={`p-2 rounded transition-colors disabled:opacity-50 ${isDarkTheme ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
             title="Refresh data"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -260,26 +264,26 @@ export default function InventoryWidgets() {
       {/* Alert Summary */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400 mb-1">Low Stock</p>
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-yellow-900/20 border-yellow-600' : 'bg-yellow-100 border-yellow-300'}`}>
+            <p className={`text-xs mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Low Stock</p>
             <p className="text-2xl font-bold text-yellow-400">
               {stats.low_stock_alerts}
             </p>
           </div>
-          <div className="bg-red-900/20 border border-red-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400 mb-1">Out of Stock</p>
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-red-900/20 border-red-600' : 'bg-red-100 border-red-300'}`}>
+            <p className={`text-xs mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Out of Stock</p>
             <p className="text-2xl font-bold text-red-400">
               {stats.out_of_stock_alerts}
             </p>
           </div>
-          <div className="bg-orange-900/20 border border-orange-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400 mb-1">Expired</p>
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-orange-900/20 border-orange-600' : 'bg-orange-100 border-orange-300'}`}>
+            <p className={`text-xs mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Expired</p>
             <p className="text-2xl font-bold text-orange-400">
               {stats.expired_products}
             </p>
           </div>
-          <div className="bg-pink-900/20 border border-pink-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400 mb-1">Expiring Soon</p>
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-pink-900/20 border-pink-600' : 'bg-pink-100 border-pink-300'}`}>
+            <p className={`text-xs mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Expiring Soon</p>
             <p className="text-2xl font-bold text-pink-400">
               {stats.expiring_soon_products}
             </p>
@@ -289,17 +293,17 @@ export default function InventoryWidgets() {
 
       {/* Transaction Activity */}
       {transactions && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <div className={`border rounded-lg p-6 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+          <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
             <Clock className="w-5 h-5" />
             Recent Activity
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="text-center">
-              <p className="text-3xl font-bold text-white">
+              <p className={`text-3xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {transactions.total_transactions}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Total</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
@@ -308,7 +312,7 @@ export default function InventoryWidgets() {
                   {transactions.stock_in}
                 </p>
               </div>
-              <p className="text-xs text-slate-400 mt-1">In</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>In</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
@@ -317,25 +321,25 @@ export default function InventoryWidgets() {
                   {transactions.stock_out}
                 </p>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Out</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Out</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-400">
                 {transactions.adjustments}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Adjustments</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Adjustments</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-400">
                 {transactions.transfers}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Transfers</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Transfers</p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-600">
-            <p className="text-sm text-slate-400">
+          <div className={`mt-4 pt-4 border-t ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+            <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
               Total Transaction Value:{" "}
-              <span className="text-white font-semibold">
+              <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {formatCurrency(transactions.total_value)}
               </span>
             </p>
@@ -345,38 +349,38 @@ export default function InventoryWidgets() {
 
       {/* Barcode Stats */}
       {barcodeStats && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Barcode Coverage</h3>
+        <div className={`border rounded-lg p-6 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+          <h3 className={`text-lg font-semibold mb-4 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Barcode Coverage</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="text-center">
-              <p className="text-3xl font-bold text-white">
+              <p className={`text-3xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {barcodeStats.total_barcodes}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Total</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-400">
                 {barcodeStats.active_barcodes}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Active</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Active</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-400">
                 {barcodeStats.sku_barcodes}
               </p>
-              <p className="text-xs text-slate-400 mt-1">SKU</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>SKU</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-400">
                 {barcodeStats.lot_barcodes}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Lot</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Lot</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-yellow-400">
                 {barcodeStats.serial_barcodes}
               </p>
-              <p className="text-xs text-slate-400 mt-1">Serial</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Serial</p>
             </div>
           </div>
         </div>
@@ -385,23 +389,23 @@ export default function InventoryWidgets() {
       {/* Quick Stats */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400 mb-2">Avg Stock Level</p>
-            <p className="text-2xl font-bold text-white">
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={`text-xs mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Stock Level</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
               {(stats.total_units / stats.total_products).toFixed(1)}
             </p>
-            <p className="text-xs text-slate-500 mt-1">units per product</p>
+            <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-600'}`}>units per product</p>
           </div>
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400 mb-2">Avg Product Value</p>
-            <p className="text-2xl font-bold text-white">
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={`text-xs mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Product Value</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
               Rs {(stats.total_stock_value / stats.total_products).toFixed(0)}
             </p>
-            <p className="text-xs text-slate-500 mt-1">per product</p>
+            <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-600'}`}>per product</p>
           </div>
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-            <p className="text-xs text-slate-400 mb-2">Alert Rate</p>
-            <p className="text-2xl font-bold text-white">
+          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={`text-xs mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Alert Rate</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
               {(
                 ((stats.low_stock_alerts +
                   stats.out_of_stock_alerts +
@@ -411,7 +415,7 @@ export default function InventoryWidgets() {
               ).toFixed(1)}
               %
             </p>
-            <p className="text-xs text-slate-500 mt-1">of products</p>
+            <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-600'}`}>of products</p>
           </div>
         </div>
       )}

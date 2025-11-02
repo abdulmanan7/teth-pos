@@ -17,10 +17,11 @@ import { useElectronApi } from "@/hooks/useElectronApi";
 import type { BarcodeMapping, BarcodeResult, Product } from "@shared/api";
 
 interface BarcodeScannerProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
-export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
+export default function BarcodeScanner({ isDarkTheme = true, onClose }: BarcodeScannerProps) {
   const [scanInput, setScanInput] = useState("");
   const [scanResult, setScanResult] = useState<BarcodeResult | null>(null);
   const [barcodes, setBarcodes] = useState<BarcodeMapping[]>([]);
@@ -245,7 +246,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <Barcode className="w-6 h-6" />
           Barcode Scanner
         </h3>
@@ -265,7 +266,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === "scan"
               ? "text-blue-400 border-b-2 border-blue-400"
-              : "text-slate-400 hover:text-white"
+              : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
           }`}
         >
           <Barcode className="w-4 h-4 inline mr-2" />
@@ -276,7 +277,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === "manage"
               ? "text-blue-400 border-b-2 border-blue-400"
-              : "text-slate-400 hover:text-white"
+              : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
           }`}
         >
           <Plus className="w-4 h-4 inline mr-2" />
@@ -287,7 +288,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === "stats"
               ? "text-blue-400 border-b-2 border-blue-400"
-              : "text-slate-400 hover:text-white"
+              : isDarkTheme ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"
           }`}
         >
           <Search className="w-4 h-4 inline mr-2" />
@@ -309,7 +310,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
                 value={scanInput}
                 onChange={(e) => setScanInput(e.target.value)}
                 placeholder="Scan barcode or enter manually..."
-                className="w-full bg-slate-700 border border-slate-600 text-white rounded px-4 py-2 focus:outline-none focus:border-blue-500"
+                className={`w-full rounded px-4 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
                 autoComplete="off"
               />
             </div>
@@ -339,25 +340,25 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
                   <AlertCircle className="w-5 h-5 text-red-400 mt-1" />
                 )}
                 <div className="flex-1">
-                  <p className="font-semibold text-white">
+                  <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                     {scanResult.found ? "Product Found" : "Not Found"}
                   </p>
-                  <p className="text-sm text-slate-400 mt-1">
+                  <p className={`text-sm mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                     Barcode: <span className="font-mono">{scanResult.barcode}</span>
                   </p>
                   {scanResult.product && (
                     <>
-                      <p className="text-sm text-slate-400 mt-1">
-                        Product: <span className="text-white font-medium">{scanResult.product.name}</span>
+                      <p className={`text-sm mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                        Product: <span className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{scanResult.product.name}</span>
                       </p>
-                      <p className="text-sm text-slate-400">
-                        Stock: <span className="text-white font-medium">{scanResult.product.stock} units</span>
+                      <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                        Stock: <span className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{scanResult.product.stock} units</span>
                       </p>
                     </>
                   )}
                   {scanResult.lot && (
-                    <p className="text-sm text-slate-400 mt-1">
-                      Lot: <span className="text-white font-medium">{scanResult.lot.lot_number}</span>
+                    <p className={`text-sm mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Lot: <span className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{scanResult.lot.lot_number}</span>
                     </p>
                   )}
                 </div>
@@ -371,8 +372,8 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
       {activeTab === "manage" && (
         <div className="space-y-4">
           {/* Create New Barcode */}
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 space-y-3">
-            <h4 className="font-semibold text-white">Create New Barcode</h4>
+          <div className={`border rounded-lg p-4 space-y-3 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Create New Barcode</h4>
             <form onSubmit={handleCreateBarcode} className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">
@@ -385,7 +386,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
                     setNewBarcode({ ...newBarcode, barcode: e.target.value })
                   }
                   placeholder="Enter barcode..."
-                  className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm"
+                  className={`w-full rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -401,7 +402,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
                         barcode_type: e.target.value as any,
                       })
                     }
-                    className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm"
+                    className={`w-full rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
                   >
                     <option value="sku">SKU</option>
                     <option value="lot">Lot</option>
@@ -418,7 +419,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
                     onChange={(e) =>
                       setNewBarcode({ ...newBarcode, product_id: e.target.value })
                     }
-                    className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm"
+                    className={`w-full rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
                   >
                     <option value="">Select product...</option>
                     {products.map((p) => (
@@ -447,7 +448,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search barcodes..."
-              className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm"
+              className={`w-full rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
             />
           </div>
 
@@ -457,7 +458,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
               <Loader className="w-8 h-8 text-blue-400 animate-spin" />
             </div>
           ) : barcodes.length === 0 ? (
-            <div className="text-center py-8 text-slate-400">
+            <div className={`text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
               <p>No barcodes found.</p>
             </div>
           ) : (
@@ -465,7 +466,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
               {barcodes.map((barcode) => (
                 <div
                   key={barcode._id}
-                  className="bg-slate-700/30 border border-slate-600 rounded-lg p-3 flex items-center justify-between"
+                  className={`border rounded-lg p-3 flex items-center justify-between ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -476,11 +477,11 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
                       >
                         {getTypeLabel(barcode.barcode_type)}
                       </span>
-                      <p className="font-mono text-white text-sm truncate">
+                      <p className={`font-mono text-sm truncate ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                         {barcode.barcode}
                       </p>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                       {getProductName(barcode.product_id)}
                     </p>
                   </div>
@@ -490,7 +491,7 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
                         setSelectedBarcode(barcode);
                         setShowDetail(true);
                       }}
-                      className="p-2 bg-slate-600 hover:bg-slate-700 text-white rounded transition-colors"
+                      className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
                       title="View details"
                     >
                       <Eye className="w-4 h-4" />
@@ -523,29 +524,29 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
       {/* Stats Tab */}
       {activeTab === "stats" && stats && (
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Total Barcodes</p>
-            <p className="text-2xl font-bold text-white">{stats.total_barcodes}</p>
+          <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-slate-700/30 border border-slate-600' : 'bg-slate-100 border border-slate-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Barcodes</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{stats.total_barcodes}</p>
           </div>
-          <div className="bg-green-900/20 border border-green-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Active</p>
-            <p className="text-2xl font-bold text-green-400">
+          <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-green-900/20 border border-green-600' : 'bg-green-100 border border-green-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Active</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
               {stats.active_barcodes}
             </p>
           </div>
-          <div className="bg-blue-900/20 border border-blue-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">SKU Barcodes</p>
-            <p className="text-2xl font-bold text-blue-400">{stats.sku_barcodes}</p>
+          <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-blue-900/20 border border-blue-600' : 'bg-blue-100 border border-blue-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>SKU Barcodes</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-blue-400' : 'text-blue-600'}`}>{stats.sku_barcodes}</p>
           </div>
-          <div className="bg-purple-900/20 border border-purple-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Lot Barcodes</p>
-            <p className="text-2xl font-bold text-purple-400">
+          <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/20 border border-purple-600' : 'bg-purple-100 border border-purple-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Lot Barcodes</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-purple-400' : 'text-purple-600'}`}>
               {stats.lot_barcodes}
             </p>
           </div>
-          <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Serial Barcodes</p>
-            <p className="text-2xl font-bold text-yellow-400">
+          <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-yellow-900/20 border border-yellow-600' : 'bg-yellow-100 border border-yellow-300'}`}>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Serial Barcodes</p>
+            <p className={`text-2xl font-bold ${isDarkTheme ? 'text-yellow-400' : 'text-yellow-600'}`}>
               {stats.serial_barcodes}
             </p>
           </div>
@@ -554,24 +555,24 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
 
       {/* Detail Modal */}
       {showDetail && selectedBarcode && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 space-y-3">
+        <div className={`rounded-lg p-4 space-y-3 ${isDarkTheme ? 'bg-slate-700/30 border border-slate-600' : 'bg-slate-100 border border-slate-300'}`}>
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-white">Barcode Details</h4>
+            <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Barcode Details</h4>
             <button
               onClick={() => setShowDetail(false)}
-              className="text-slate-400 hover:text-white"
+              className={isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}
             >
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="space-y-2 text-sm">
             <div>
-              <p className="text-slate-400">Barcode</p>
-              <p className="text-white font-mono">{selectedBarcode.barcode}</p>
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Barcode</p>
+              <p className={`font-mono ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{selectedBarcode.barcode}</p>
             </div>
             <div>
-              <p className="text-slate-400">Type</p>
-              <p className="text-white">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Type</p>
+              <p className={isDarkTheme ? 'text-white' : 'text-slate-900'}>
                 <span
                   className={`text-xs text-white px-2 py-1 rounded ${getTypeColor(
                     selectedBarcode.barcode_type
@@ -582,28 +583,30 @@ export default function BarcodeScanner({ onClose }: BarcodeScannerProps) {
               </p>
             </div>
             <div>
-              <p className="text-slate-400">Product</p>
-              <p className="text-white">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Product</p>
+              <p className={isDarkTheme ? 'text-white' : 'text-slate-900'}>
                 {getProductName(selectedBarcode.product_id)}
               </p>
             </div>
             {selectedBarcode.lot_id && (
               <div>
-                <p className="text-slate-400">Lot ID</p>
-                <p className="text-white font-mono text-xs">
+                <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Lot ID</p>
+                <p className={`font-mono text-xs ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                   {selectedBarcode.lot_id}
                 </p>
               </div>
             )}
             {selectedBarcode.serial_number && (
               <div>
-                <p className="text-slate-400">Serial Number</p>
-                <p className="text-white font-mono">{selectedBarcode.serial_number}</p>
+                <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Serial Number</p>
+                <p className={`font-mono ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                  {selectedBarcode.serial_number}
+                </p>
               </div>
             )}
             <div>
-              <p className="text-slate-400">Created</p>
-              <p className="text-white text-xs">
+              <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Created</p>
+              <p className={`text-xs ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                 {new Date(selectedBarcode.createdAt).toLocaleString()}
               </p>
             </div>

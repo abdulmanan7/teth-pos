@@ -131,13 +131,13 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <div className={`rounded-lg border shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h2 className="text-2xl font-bold text-white">Staff Management</h2>
+        <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+          <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Staff Management</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors"
+            className={`transition-colors ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
           >
             <X className="w-6 h-6" />
           </button>
@@ -160,10 +160,10 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
 
           {showForm ? (
             // Form
-            <form onSubmit={handleSubmit} className="space-y-4 bg-slate-700/30 p-4 rounded-lg border border-slate-600">
+            <form onSubmit={handleSubmit} className={`space-y-4 p-4 rounded-lg border ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Name *
                   </label>
                   <input
@@ -173,12 +173,12 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Role *
                   </label>
                   <select
@@ -189,7 +189,7 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                         role: e.target.value as any,
                       })
                     }
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                   >
                     <option value="Cashier">Cashier</option>
                     <option value="Manager">Manager</option>
@@ -201,7 +201,7 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     {editingId ? "New PIN (leave blank to keep current)" : "PIN *"}
                   </label>
                   <input
@@ -212,12 +212,12 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                       setFormData({ ...formData, pin: e.target.value })
                     }
                     maxLength={6}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     Email
                   </label>
                   <input
@@ -227,13 +227,13 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                   Phone
                 </label>
                 <input
@@ -243,12 +243,12 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                   Notes
                 </label>
                 <textarea
@@ -257,7 +257,7 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
                   }
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
                   rows={2}
                 />
               </div>
@@ -269,7 +269,7 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                     setShowForm(false);
                     resetForm();
                   }}
-                  className="flex-1 px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded font-medium transition-colors"
+                  className={`flex-1 px-4 py-2 rounded font-medium transition-colors ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
                 >
                   Cancel
                 </button>
@@ -290,7 +290,7 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                   <Loader className="w-8 h-8 text-blue-400 animate-spin" />
                 </div>
               ) : staff.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
+                <div className={`text-center py-12 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                   <p>No staff members yet</p>
                 </div>
               ) : (
@@ -298,11 +298,11 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
                   {staff.map((s) => (
                     <div
                       key={s._id}
-                      className="p-4 bg-slate-700/30 border border-slate-600 rounded-lg flex items-center justify-between"
+                      className={`p-4 border rounded-lg flex items-center justify-between ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}
                     >
                       <div className="flex-1">
-                        <h3 className="font-semibold text-white">{s.name}</h3>
-                        <div className="text-xs text-slate-400 mt-1 space-y-0.5">
+                        <h3 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{s.name}</h3>
+                        <div className={`text-xs mt-1 space-y-0.5 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                           <p>Role: {s.role}</p>
                           <p>
                             Status:{" "}
@@ -358,10 +358,10 @@ export default function StaffManagementModal({ isDarkTheme, onClose }: StaffMana
 
         {/* Footer */}
         {!showForm && (
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded font-medium transition-colors"
+              className={`flex-1 px-4 py-2 rounded font-medium transition-colors ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
             >
               Close
             </button>

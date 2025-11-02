@@ -6,10 +6,11 @@ import { useElectronApi } from "@/hooks/useElectronApi";
 import type { Warehouse } from "@shared/api";
 
 interface WarehousesManagerProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
-export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
+export default function WarehousesManager({ isDarkTheme = true, onClose }: WarehousesManagerProps) {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -123,7 +124,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <Building2 className="w-6 h-6" />
           Warehouse Management
         </h3>
@@ -137,7 +138,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
       </div>
 
       {showForm && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
+        <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <Input
@@ -147,7 +148,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
               <Input
                 type="text"
@@ -156,7 +157,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, code: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
             </div>
             <Input
@@ -166,7 +167,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
               onChange={(e) =>
                 setFormData({ ...formData, address: e.target.value })
               }
-              className="bg-slate-700 border-slate-600 text-white"
+              className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
             />
             <div className="grid grid-cols-3 gap-3">
               <Input
@@ -176,7 +177,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, city: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
               <Input
                 type="text"
@@ -185,7 +186,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, state: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
               <Input
                 type="text"
@@ -194,7 +195,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, zip_code: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -205,7 +206,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
               <Input
                 type="email"
@@ -214,7 +215,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
             </div>
             <div className="flex gap-2">
@@ -227,7 +228,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
               <Button
                 type="button"
                 onClick={resetForm}
-                className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+                className={`flex-1 ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
               >
                 Cancel
               </Button>
@@ -241,7 +242,7 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
           <Loader className="w-8 h-8 text-blue-400 animate-spin" />
         </div>
       ) : warehouses.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className={`text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           <p>No warehouses found. Create one to get started.</p>
         </div>
       ) : (
@@ -249,11 +250,11 @@ export default function WarehousesManager({ onClose }: WarehousesManagerProps) {
           {warehouses.map((warehouse) => (
             <div
               key={warehouse._id}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 flex items-center justify-between hover:border-slate-500 transition-colors"
+              className={`border rounded-lg p-4 flex items-center justify-between transition-colors ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex-1">
-                <h4 className="font-semibold text-white">{warehouse.name}</h4>
-                <p className="text-sm text-slate-400">
+                <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{warehouse.name}</h4>
+                <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                   {warehouse.code}
                   {warehouse.city && ` • ${warehouse.city}`}
                 </p>

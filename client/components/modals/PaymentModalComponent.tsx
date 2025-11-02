@@ -39,19 +39,19 @@ export default function PaymentModalComponent({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-md w-full">
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+      <div className={`rounded-lg border shadow-xl max-w-md w-full ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+        <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
           <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-6 h-6 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
               <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
               <line x1="1" y1="10" x2="23" y2="10"></line>
               <circle cx="17" cy="17" r="3"></circle>
             </svg>
-            <h2 className="text-2xl font-bold text-white">Payment</h2>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Payment</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors"
+            className={`transition-colors ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -62,25 +62,25 @@ export default function PaymentModalComponent({
 
         <div className="p-6 space-y-4">
           {/* Order Summary */}
-          <div className="p-4 bg-slate-700/50 rounded-lg space-y-2">
-            <div className="flex justify-between text-slate-400 text-sm">
+          <div className={`p-4 rounded-lg space-y-2 ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
+            <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
               <span>Total Amount:</span>
               <span className="text-green-400 font-bold text-lg">Rs {total.toFixed(2)}</span>
             </div>
             {paymentAmount && (
               <>
-                <div className="flex justify-between text-slate-400 text-sm border-t border-slate-600 pt-2">
+                <div className={`flex justify-between text-sm border-t pt-2 ${isDarkTheme ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600'}`}>
                   <span>Amount Paid:</span>
-                  <span className="text-white font-bold">Rs {paymentAmountNum.toFixed(2)}</span>
+                  <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {paymentAmountNum.toFixed(2)}</span>
                 </div>
                 {isValidPayment && (
-                  <div className="flex justify-between text-slate-400 text-sm">
+                  <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                     <span>Change to Return:</span>
                     <span className="text-yellow-400 font-bold text-lg">Rs {change.toFixed(2)}</span>
                   </div>
                 )}
                 {!isValidPayment && (
-                  <div className="flex justify-between text-slate-400 text-sm">
+                  <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                     <span>Still Due:</span>
                     <span className="text-red-400 font-bold">Rs {(total - paymentAmountNum).toFixed(2)}</span>
                   </div>
@@ -91,22 +91,22 @@ export default function PaymentModalComponent({
 
           {/* Payment Amount Input */}
           <div className="space-y-2">
-            <label className="text-white font-semibold text-sm">Enter Payment Amount</label>
+            <label className={`font-semibold text-sm ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Enter Payment Amount</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white font-bold">Rs</span>
+              <span className={`absolute left-3 top-1/2 -translate-y-1/2 font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs</span>
               <input
                 type="number"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full pl-8 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-lg font-bold focus:outline-none focus:border-blue-500"
+                className={`w-full pl-8 pr-4 py-3 border rounded-lg text-lg font-bold focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
               />
             </div>
           </div>
 
           {/* Payment Methods */}
           <div className="space-y-2">
-            <label className="text-white font-semibold text-sm">Select Payment Method</label>
+            <label className={`font-semibold text-sm ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Select Payment Method</label>
             <div className="space-y-2 max-h-48 overflow-auto">
               {PAYMENT_METHODS.map((method) => (
                 <button
@@ -114,11 +114,11 @@ export default function PaymentModalComponent({
                   onClick={() => setSelectedMethod(method.id)}
                   className={`w-full p-3 border-2 rounded-lg transition-all text-left flex items-center gap-2 ${
                     selectedMethod === method.id
-                      ? "border-blue-500 bg-blue-600/20"
-                      : "border-slate-600 bg-slate-700/30 hover:border-slate-500"
+                      ? isDarkTheme ? "border-blue-500 bg-blue-600/20" : "border-blue-500 bg-blue-100"
+                      : isDarkTheme ? "border-slate-600 bg-slate-700/30 hover:border-slate-500" : "border-slate-300 bg-slate-100 hover:border-slate-400"
                   }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 flex-shrink-0 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                     {method.svgIcon === "card" && (
                       <>
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
@@ -145,8 +145,8 @@ export default function PaymentModalComponent({
                     )}
                   </svg>
                   <div className="flex-1">
-                    <p className="font-semibold text-white text-sm">{method.name}</p>
-                    <p className="text-xs text-slate-400">{method.description}</p>
+                    <p className={`font-semibold text-sm ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{method.name}</p>
+                    <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{method.description}</p>
                   </div>
                   {selectedMethod === method.id && (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-blue-400 flex-shrink-0">
@@ -158,26 +158,26 @@ export default function PaymentModalComponent({
             </div>
           </div>
 
-          <div className="text-xs text-slate-400 p-3 bg-slate-700/20 rounded space-y-2">
+          <div className={`text-xs p-3 rounded space-y-2 ${isDarkTheme ? 'text-slate-400 bg-slate-700/20' : 'text-slate-600 bg-slate-100'}`}>
             <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-4 h-4 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
-              <span>Staff: <span className="text-white font-medium">{staff?.name}</span></span>
+              <span>Staff: <span className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{staff?.name}</span></span>
             </div>
             <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-4 h-4 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
               </svg>
-              <span>Customer: <span className="text-white font-medium">{customer}</span></span>
+              <span>Customer: <span className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{customer}</span></span>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-slate-700 p-6 space-y-2">
+        <div className={`border-t p-6 space-y-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
           <button
             onClick={() => {
               if (!selectedMethod) {
@@ -197,7 +197,7 @@ export default function PaymentModalComponent({
           </button>
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+            className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${isDarkTheme ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
           >
             Cancel
           </button>

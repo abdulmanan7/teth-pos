@@ -49,7 +49,11 @@ interface PurchaseOrder {
   notes?: string;
 }
 
-export default function PurchaseOrderManager() {
+interface PurchaseOrderManagerProps {
+  isDarkTheme?: boolean;
+}
+
+export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrderManagerProps) {
   const { addToast } = useToast();
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -268,7 +272,7 @@ export default function PurchaseOrderManager() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-slate-400">Loading purchase orders...</p>
+        <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Loading purchase orders...</p>
       </div>
     );
   }
@@ -276,7 +280,7 @@ export default function PurchaseOrderManager() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Purchase Orders</h2>
+        <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Purchase Orders</h2>
         <Button
           onClick={() => {
             resetForm();
@@ -290,16 +294,16 @@ export default function PurchaseOrderManager() {
       </div>
 
       {/* Search Field */}
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+      <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
         <Input
           type="text"
           placeholder="Search by PO number, vendor, status, or amount..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+          className={`${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'}`}
         />
         {searchTerm && (
-          <p className="text-xs text-slate-400 mt-2">
+          <p className={`text-xs mt-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
             Found {filteredPOs.length} of {purchaseOrders.length} purchase orders
           </p>
         )}
@@ -308,23 +312,23 @@ export default function PurchaseOrderManager() {
       {/* Purchase Orders List */}
       <div className="grid gap-4">
         {purchaseOrders.length === 0 ? (
-          <div className="text-center py-8 bg-slate-800/50 rounded-lg border border-slate-700">
-            <p className="text-slate-400">No purchase orders yet. Create one to get started!</p>
+          <div className={`text-center py-8 rounded-lg border ${isDarkTheme ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>No purchase orders yet. Create one to get started!</p>
           </div>
         ) : filteredPOs.length === 0 ? (
-          <div className="text-center py-8 bg-slate-800/50 rounded-lg border border-slate-700">
-            <p className="text-slate-400">No purchase orders match your search.</p>
+          <div className={`text-center py-8 rounded-lg border ${isDarkTheme ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
+            <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>No purchase orders match your search.</p>
           </div>
         ) : (
           filteredPOs.map((po) => (
             <div
               key={po._id}
-              className="bg-slate-800 border border-slate-700 rounded-lg p-4 hover:border-slate-600 transition-colors"
+              className={`border rounded-lg p-4 hover:transition-colors ${isDarkTheme ? 'bg-slate-800 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-semibold text-white">{po.po_number}</h3>
+                    <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{po.po_number}</h3>
                     <span className={`text-xs px-2 py-1 rounded text-white ${getStatusColor(po.status)}`}>
                       {po.status}
                     </span>
@@ -337,21 +341,21 @@ export default function PurchaseOrderManager() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-sm text-slate-400 mb-2">
-                    <div>Vendor: <span className="text-white">{getVendorName(po.vendor_id)}</span></div>
-                    <div>Total: <span className="text-white font-semibold">Rs {po.total_amount.toFixed(2)}</span></div>
-                    <div>Order Date: <span className="text-white">{new Date(po.order_date).toLocaleDateString()}</span></div>
+                  <div className={`grid grid-cols-2 gap-2 text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                    <div>Vendor: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{getVendorName(po.vendor_id)}</span></div>
+                    <div>Total: <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {po.total_amount.toFixed(2)}</span></div>
+                    <div>Order Date: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{new Date(po.order_date).toLocaleDateString()}</span></div>
                     {po.expected_delivery && (
-                      <div>Expected: <span className="text-white">{new Date(po.expected_delivery).toLocaleDateString()}</span></div>
+                      <div>Expected: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{new Date(po.expected_delivery).toLocaleDateString()}</span></div>
                     )}
                   </div>
 
                   {/* Items Summary */}
-                  <div className="bg-slate-700/50 rounded p-2 mb-2">
-                    <p className="text-xs text-slate-400 mb-1">Items ({po.items.length}):</p>
+                  <div className={`rounded p-2 mb-2 ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
+                    <p className={`text-xs mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Items ({po.items.length}):</p>
                     <div className="space-y-1">
                       {po.items.map((item, idx) => (
-                        <div key={idx} className="text-xs text-slate-300">
+                        <div key={idx} className={`text-xs ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                           {getProductName(item.product_id)} - {item.quantity} × Rs {item.purchase_price.toFixed(2)} = Rs {item.line_total.toFixed(2)}
                         </div>
                       ))}
@@ -365,14 +369,14 @@ export default function PurchaseOrderManager() {
                       setSelectedPO(po);
                       setShowDetailsModal(true);
                     }}
-                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                    className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-100 hover:bg-blue-200 text-blue-900'}`}
                     title="View & Update Status"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDeletePO(po._id)}
-                    className="p-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                    className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-100 hover:bg-red-200 text-red-900'}`}
                     title="Delete PO"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -387,15 +391,15 @@ export default function PurchaseOrderManager() {
       {/* Create PO Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-            <div className="flex items-center justify-between p-6 border-b border-slate-700 sticky top-0 bg-slate-800">
-              <h3 className="text-xl font-bold text-white">Create Purchase Order</h3>
+          <div className={`rounded-lg border shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'}`}>
+            <div className={`flex items-center justify-between p-6 border-b sticky top-0 ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-300'}`}>
+              <h3 className={`text-xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Create Purchase Order</h3>
               <button
                 onClick={() => {
                   setShowForm(false);
                   resetForm();
                 }}
-                className="text-slate-400 hover:text-white transition-colors"
+                className={isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -409,7 +413,7 @@ export default function PurchaseOrderManager() {
                 <select
                   value={formData.vendor_id}
                   onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
-                  className="w-full bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 text-sm"
+                  className={`w-full rounded px-3 py-2 text-sm ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
                 >
                   <option value="">Select a vendor</option>
                   {vendors.map((vendor) => (
@@ -428,14 +432,14 @@ export default function PurchaseOrderManager() {
                   type="date"
                   value={formData.expected_delivery}
                   onChange={(e) => setFormData({ ...formData, expected_delivery: e.target.value })}
-                  className="bg-slate-700 border-slate-600 text-white"
+                  className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
                 />
               </div>
 
               {/* Items Section */}
-              <div className="border-t border-slate-600 pt-4">
+              <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-white">Items *</h4>
+                  <h4 className={`text-sm font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Items *</h4>
                   <Button
                     type="button"
                     onClick={handleAddItem}
@@ -449,14 +453,14 @@ export default function PurchaseOrderManager() {
 
                 <div className="space-y-3">
                   {formData.items.map((item, index) => (
-                    <div key={index} className="bg-slate-700/50 p-3 rounded space-y-2">
+                    <div key={index} className={`p-3 rounded space-y-2 ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
                       <div className="grid grid-cols-3 gap-2">
                         <div>
-                          <label className="text-xs text-slate-400">Product</label>
+                          <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Product</label>
                           <select
                             value={item.product_id}
                             onChange={(e) => handleItemChange(index, "product_id", e.target.value)}
-                            className="w-full bg-slate-600 border border-slate-500 text-white rounded px-2 py-1 text-sm"
+                            className={`w-full rounded px-2 py-2 text-sm ${isDarkTheme ? 'bg-slate-600 border border-slate-500 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
                           >
                             <option value="">Select product</option>
                             {products.map((product) => (
@@ -467,38 +471,39 @@ export default function PurchaseOrderManager() {
                           </select>
                         </div>
                         <div>
-                          <label className="text-xs text-slate-400">Quantity</label>
+                          <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Quantity</label>
                           <Input
                             type="number"
                             min="1"
                             value={item.quantity}
                             onChange={(e) => handleItemChange(index, "quantity", parseInt(e.target.value))}
-                            className="bg-slate-600 border-slate-500 text-white text-sm"
+                            className={isDarkTheme ? 'bg-slate-600 border-slate-500 text-white text-sm' : 'bg-white border-slate-300 text-slate-900 text-sm'}
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-slate-400">Price</label>
+                          <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Price</label>
                           <Input
                             type="number"
                             min="0"
                             step="0.01"
                             value={item.purchase_price}
                             onChange={(e) => handleItemChange(index, "purchase_price", parseFloat(e.target.value))}
-                            className="bg-slate-600 border-slate-500 text-white text-sm"
+                            className={isDarkTheme ? 'bg-slate-600 border-slate-500 text-white text-sm' : 'bg-white border-slate-300 text-slate-900 text-sm'}
                           />
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-300">
+                        <span className={`text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                           Line Total: Rs {(item.quantity * item.purchase_price).toFixed(2)}
                         </span>
                         {formData.items.length > 1 && (
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(index)}
-                            className="text-red-400 hover:text-red-300 text-sm"
+                            className={`p-1 rounded transition-colors ${isDarkTheme ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-100 hover:bg-red-200 text-red-900'}`}
+                            title="Remove item"
                           >
-                            Remove
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
@@ -506,43 +511,56 @@ export default function PurchaseOrderManager() {
                   ))}
                 </div>
 
-                <div className="mt-3 p-3 bg-slate-700/50 rounded">
+                <div className={`mt-3 p-3 rounded ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-white">Total Amount:</span>
+                    <span className={`text-sm font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Total Amount:</span>
                     <span className="text-lg font-bold text-green-400">Rs {calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
+              {/* Summary */}
+              <div className={`border rounded p-3 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Subtotal:</p>
+                    <p className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {calculateTotal().toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Total Items:</p>
+                    <p className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{formData.items.reduce((sum, item) => sum + item.quantity, 0)}</p>
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                   Notes
                 </label>
                 <textarea
                   placeholder="Additional notes..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded px-3 py-2 text-sm"
+                  className={`w-full rounded px-3 py-2 text-sm ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-white placeholder-slate-400' : 'bg-white border border-slate-300 text-slate-900 placeholder-slate-500'}`}
                   rows={2}
                 />
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => {
                     setShowForm(false);
                     resetForm();
                   }}
-                  className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                  className={`flex-1 rounded px-4 py-2 font-medium transition-colors ${isDarkTheme ? 'bg-slate-700 border border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'}`}
                 >
                   Cancel
-                </Button>
+                </button>
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
+                  className={`flex-1 disabled:opacity-50 ${isDarkTheme ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 >
                   {submitting ? "Creating..." : "Create PO"}
                 </Button>

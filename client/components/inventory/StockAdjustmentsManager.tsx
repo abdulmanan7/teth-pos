@@ -17,6 +17,7 @@ import { useToast } from "@/components/ToastManager";
 import type { StockAdjustment, Product, Warehouse } from "@shared/api";
 
 interface StockAdjustmentsManagerProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
@@ -32,7 +33,7 @@ interface AdjustmentLine {
   notes?: string;
 }
 
-export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsManagerProps) {
+export default function StockAdjustmentsManager({ isDarkTheme = true, onClose }: StockAdjustmentsManagerProps) {
   const { addToast } = useToast();
   const [adjustments, setAdjustments] = useState<StockAdjustment[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -311,7 +312,7 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <AlertCircle className="w-6 h-6" />
           Stock Adjustments
         </h3>
@@ -326,8 +327,8 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
 
       {/* Create Form */}
       {showForm && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 space-y-4">
-          <h4 className="font-semibold text-white">Create Stock Adjustment</h4>
+        <div className={`border rounded-lg p-4 space-y-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+          <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Create Stock Adjustment</h4>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -542,9 +543,9 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
 
       {/* Detail View */}
       {showDetail && selectedAdjustment && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 space-y-4">
+        <div className={`border rounded-lg p-4 space-y-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-white">
+            <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
               {selectedAdjustment.adjustment_number}
             </h4>
             <button
@@ -641,7 +642,7 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+          className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
         >
           <option value="all">All Statuses</option>
           <option value="draft">Draft</option>
@@ -649,7 +650,7 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
           <option value="approved">Approved</option>
           <option value="rejected">Rejected</option>
         </select>
-        <span className="text-slate-400 text-sm py-2">
+        <span className={`text-sm py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           {filteredAdjustments.length} adjustments
         </span>
       </div>
@@ -668,11 +669,11 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
           {filteredAdjustments.map((adjustment) => (
             <div
               key={adjustment._id}
-              className="border rounded-lg p-4 flex items-center justify-between bg-slate-700/30 border-slate-600 hover:border-slate-500 transition-colors"
+              className={`border rounded-lg p-4 flex items-center justify-between transition-colors ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-semibold text-white">
+                  <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                     {adjustment.adjustment_number}
                   </h4>
                   <span
@@ -683,11 +684,11 @@ export default function StockAdjustmentsManager({ onClose }: StockAdjustmentsMan
                     {getStatusLabel(adjustment.status)}
                   </span>
                 </div>
-                <p className="text-sm text-slate-400">
+                <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-700'}`}>
                   {getWarehouseName(adjustment.warehouse_id)} • {adjustment.reason} •{" "}
                   {adjustment.lines.length} items
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-700'}`}>
                   {new Date(adjustment.adjustment_date).toLocaleDateString()}
                 </p>
               </div>

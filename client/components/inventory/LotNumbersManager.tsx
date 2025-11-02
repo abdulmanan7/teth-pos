@@ -7,10 +7,11 @@ import { useToast } from "@/components/ToastManager";
 import type { LotNumber, Product, Warehouse } from "@shared/api";
 
 interface LotNumbersManagerProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
-export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
+export default function LotNumbersManager({ isDarkTheme = true, onClose }: LotNumbersManagerProps) {
   const { addToast } = useToast();
   const [lotNumbers, setLotNumbers] = useState<LotNumber[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -225,7 +226,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <Package className="w-6 h-6" />
           Lot Numbers Management
         </h3>
@@ -239,7 +240,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
       </div>
 
       {showForm && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
+        <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <Input
@@ -249,7 +250,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, lot_number: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
               <Input
                 type="text"
@@ -258,7 +259,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -267,7 +268,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, product_id: e.target.value })
                 }
-                className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
               >
                 <option value="">Select Product</option>
                 {products.map((product) => (
@@ -292,7 +293,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, warehouse_id: e.target.value })
                 }
-                className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
               >
                 <option value="">Select Warehouse</option>
                 {warehouses.map((warehouse) => (
@@ -304,7 +305,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
+                <label className={`block text-xs font-medium mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                   Manufacture Date (Optional)
                 </label>
                 <Input
@@ -313,11 +314,11 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, manufacture_date: e.target.value })
                   }
-                  className="bg-slate-700 border-slate-600 text-white w-full"
+                  className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white w-full' : 'bg-white border-slate-300 text-slate-900 w-full'}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
+                <label className={`block text-xs font-medium mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                   Expiry Date (Optional)
                 </label>
                 <Input
@@ -326,7 +327,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, expiry_date: e.target.value })
                   }
-                  className="bg-slate-700 border-slate-600 text-white w-full"
+                  className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white w-full' : 'bg-white border-slate-300 text-slate-900 w-full'}
                 />
               </div>
             </div>
@@ -349,7 +350,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
               <Button
                 type="button"
                 onClick={resetForm}
-                className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+                className={`flex-1 ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
               >
                 Cancel
               </Button>
@@ -363,7 +364,7 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
           <Loader className="w-8 h-8 text-blue-400 animate-spin" />
         </div>
       ) : lotNumbers.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className={`text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           <p>No lot numbers found. Create one to get started.</p>
         </div>
       ) : (
@@ -373,15 +374,15 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
               key={lot._id}
               className={`border rounded-lg p-4 flex items-center justify-between transition-colors ${
                 isExpired(lot.expiry_date)
-                  ? "bg-red-900/20 border-red-600"
+                  ? isDarkTheme ? "bg-red-900/20 border-red-600" : "bg-red-100 border-red-300"
                   : isExpiringSoon(lot.expiry_date)
-                    ? "bg-yellow-900/20 border-yellow-600"
-                    : "bg-slate-700/30 border-slate-600 hover:border-slate-500"
+                    ? isDarkTheme ? "bg-yellow-900/20 border-yellow-600" : "bg-yellow-100 border-yellow-300"
+                    : isDarkTheme ? "bg-slate-700/30 border-slate-600 hover:border-slate-500" : "bg-slate-100 border-slate-300 hover:border-slate-400"
               }`}
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-semibold text-white">
+                  <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                     {lot.title ? `${lot.title} (${lot.lot_number})` : lot.lot_number}
                   </h4>
                   {isExpired(lot.expiry_date) && (
@@ -395,11 +396,11 @@ export default function LotNumbersManager({ onClose }: LotNumbersManagerProps) {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-slate-400">
+                <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-700'}`}>
                   Product: {getProductName(lot.product_id)} • Qty: {lot.quantity} • Warehouse: {getWarehouseName(lot.warehouse_id)}
                 </p>
                 {lot.expiry_date && (
-                  <p className="text-xs text-slate-500">
+                  <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-700'}`}>
                     Expires: {new Date(lot.expiry_date).toLocaleDateString()}
                   </p>
                 )}

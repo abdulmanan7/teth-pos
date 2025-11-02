@@ -17,10 +17,12 @@ import { useToast } from "@/components/ToastManager";
 import type { ExpiryNotification, Product, LotNumber } from "@shared/api";
 
 interface ExpiryNotificationsManagerProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
 export default function ExpiryNotificationsManager({
+  isDarkTheme = true,
   onClose,
 }: ExpiryNotificationsManagerProps) {
   const { addToast } = useToast();
@@ -299,7 +301,7 @@ export default function ExpiryNotificationsManager({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <Calendar className="w-6 h-6" />
           Expiry Notifications
         </h3>
@@ -459,7 +461,7 @@ export default function ExpiryNotificationsManager({
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+          className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
         >
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
@@ -469,14 +471,14 @@ export default function ExpiryNotificationsManager({
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="bg-slate-700 border border-slate-600 text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+          className={`border rounded px-3 py-2 focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
         >
           <option value="all">All Types</option>
           <option value="expired">Expired</option>
           <option value="expiring_soon">Expiring Soon</option>
           <option value="upcoming">Upcoming</option>
         </select>
-        <span className="text-slate-400 text-sm py-2">
+        <span className={`text-sm py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           {filteredNotifications.length} notifications
         </span>
       </div>
@@ -487,7 +489,7 @@ export default function ExpiryNotificationsManager({
           <Loader className="w-8 h-8 text-blue-400 animate-spin" />
         </div>
       ) : filteredNotifications.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className={`text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           <p>No expiry notifications found. All products are fresh!</p>
         </div>
       ) : (
@@ -505,7 +507,7 @@ export default function ExpiryNotificationsManager({
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-white">
+                    <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                       {getProductName(notification.product_id)}
                     </h4>
                     <span
@@ -516,13 +518,13 @@ export default function ExpiryNotificationsManager({
                       {getStatusLabel(notification.status)}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-400">
+                  <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-700'}`}>
                     {getTypeLabel(notification.notification_type)} • Qty:{" "}
                     {notification.quantity} • Expires:{" "}
                     {new Date(notification.expiry_date).toLocaleDateString()} •{" "}
                     {notification.days_until_expiry} days
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-700'}`}>
                     Lot: {getLotNumber(notification.lot_id)}
                   </p>
                 </div>

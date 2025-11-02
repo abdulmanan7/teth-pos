@@ -926,10 +926,10 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
 
         {/* Footer */}
         {tab === "create" && (
-          <div className="border-t border-slate-700 p-6 flex gap-3 justify-end">
+          <div className={`border-t p-6 flex gap-3 justify-end ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <button
               onClick={onClose}
-              className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+              className={`px-6 py-2 rounded-lg font-medium transition-colors ${isDarkTheme ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
             >
               Cancel
             </button>

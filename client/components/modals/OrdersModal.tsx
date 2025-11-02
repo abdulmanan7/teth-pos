@@ -45,28 +45,28 @@ export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boo
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h2 className="text-2xl font-bold text-white">Active Orders</h2>
+        <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+          <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Active Orders</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1"
+            className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Search and Filters */}
-        <div className="p-6 border-b border-slate-700 space-y-4">
+        <div className={`p-6 border-b space-y-4 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
           <div className="relative">
-            <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+            <Search className={`absolute left-3 top-3 w-5 h-5 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`} />
             <Input
               type="text"
               placeholder="Search by order number or customer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+              className={isDarkTheme ? 'pl-10 bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'pl-10 bg-white border-slate-300 text-slate-900 placeholder-slate-500'}
             />
           </div>
 
@@ -77,7 +77,7 @@ export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boo
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 statusFilter === null
                   ? "bg-blue-500 text-white"
-                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                  : isDarkTheme ? "bg-slate-700 text-slate-300 hover:bg-slate-600" : "bg-slate-200 text-slate-700 hover:bg-slate-300"
               }`}
             >
               All
@@ -91,7 +91,7 @@ export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boo
                 className={`px-4 py-2 rounded-lg font-medium transition-colors capitalize ${
                   statusFilter === status
                     ? "bg-blue-500 text-white"
-                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                    : isDarkTheme ? "bg-slate-700 text-slate-300 hover:bg-slate-600" : "bg-slate-200 text-slate-700 hover:bg-slate-300"
                 }`}
               >
                 {status}
@@ -109,7 +109,7 @@ export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boo
           ) : (
             <div className="space-y-3">
               {filtered.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
+                <div className={`text-center py-12 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                   <p>No orders found</p>
                 </div>
               ) : (
@@ -119,11 +119,11 @@ export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boo
                   return (
                     <div
                       key={order._id}
-                      className="p-4 bg-slate-700/30 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors"
+                      className={`p-4 border rounded-lg transition-colors ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-4">
-                          <h3 className="font-bold text-white text-lg">
+                          <h3 className={`font-bold text-lg ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                             {order.orderNumber}
                           </h3>
                           <span
@@ -138,17 +138,17 @@ export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boo
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4 text-sm text-slate-300">
+                      <div className={`grid grid-cols-3 gap-4 text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                         <div>
-                          <p className="text-slate-400 mb-1">Customer</p>
+                          <p className={`mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Customer</p>
                           <p>{order.customer}</p>
                         </div>
                         <div>
-                          <p className="text-slate-400 mb-1">Items</p>
+                          <p className={`mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Items</p>
                           <p>{order.items.length} products</p>
                         </div>
                         <div>
-                          <p className="text-slate-400 mb-1">Order Time</p>
+                          <p className={`mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Order Time</p>
                           <p>{new Date(order.createdAt).toLocaleString()}</p>
                         </div>
                       </div>
@@ -161,11 +161,10 @@ export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boo
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-700 p-6">
+        <div className={`border-t p-6 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
           <Button
-            variant="outline"
             onClick={onClose}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            className={isDarkTheme ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}
           >
             Close
           </Button>

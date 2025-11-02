@@ -31,23 +31,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "warehouses") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <WarehousesManager onClose={onClose} />
+            <WarehousesManager isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -66,23 +66,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "lot-numbers") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <LotNumbersManager onClose={onClose} />
+            <LotNumbersManager isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -101,23 +101,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "reorder-rules") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <ReorderRulesManager onClose={onClose} />
+            <ReorderRulesManager isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -136,23 +136,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "serial-numbers") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <SerialNumbersManager onClose={onClose} />
+            <SerialNumbersManager isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -171,23 +171,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "stock-adjustments") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <StockAdjustmentsManager onClose={onClose} />
+            <StockAdjustmentsManager isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -206,23 +206,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "stock-alerts") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <StockAlertsManager onClose={onClose} />
+            <StockAlertsManager isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -241,23 +241,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "expiry-notifications") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <ExpiryNotificationsManager onClose={onClose} />
+            <ExpiryNotificationsManager isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -287,12 +287,12 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <AnalyticsDashboard onClose={onClose} />
+            <AnalyticsDashboard isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -322,12 +322,12 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <TransactionHistoryViewer onClose={onClose} />
+            <TransactionHistoryViewer isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -357,12 +357,12 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <BarcodeScanner onClose={onClose} />
+            <BarcodeScanner isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -392,12 +392,12 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <AdvancedReporting onClose={onClose} />
+            <AdvancedReporting isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -416,23 +416,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "vendors") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <VendorManager />
+            <VendorManager isDarkTheme={isDarkTheme} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -451,23 +451,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "purchase-orders") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <PurchaseOrderManager />
+            <PurchaseOrderManager isDarkTheme={isDarkTheme} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -486,23 +486,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "goods-receipts") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <GoodsReceiptManager />
+            <GoodsReceiptManager isDarkTheme={isDarkTheme} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -521,23 +521,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "staff") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
           </div>
           <div className="flex-1 overflow-auto p-6">
-            <StaffManagementModal onClose={onClose} />
+            <StaffManagementModal isDarkTheme={isDarkTheme} onClose={onClose} />
           </div>
-          <div className="border-t border-slate-700 p-6 flex gap-2">
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
               onClick={() => setActiveTab("overview")}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
             >
               Back
             </Button>
@@ -555,13 +555,13 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <div className={`rounded-lg border shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+          <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1"
+            className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
           >
             <X className="w-6 h-6" />
           </button>
@@ -573,15 +573,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Warehouse Management */}
             <button
               onClick={() => setActiveTab("warehouses")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
                   <Warehouse className="w-6 h-6 text-purple-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Warehouses</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Warehouses</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Configure warehouse locations and storage zones
               </p>
             </button>
@@ -589,15 +589,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Lot Numbers */}
             <button
               onClick={() => setActiveTab("lot-numbers")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
                   <Package className="w-6 h-6 text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Lot Numbers</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Lot Numbers</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Manage batch/lot tracking with expiry dates
               </p>
             </button>
@@ -605,15 +605,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Reorder Rules */}
             <button
               onClick={() => setActiveTab("reorder-rules")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
                   <Truck className="w-6 h-6 text-green-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Reorder Rules</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Reorder Rules</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Set minimum stock levels and reorder points
               </p>
             </button>
@@ -621,15 +621,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Serial Numbers */}
             <button
               onClick={() => setActiveTab("serial-numbers")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-orange-500/20 rounded-lg group-hover:bg-orange-500/30 transition-colors">
                   <Barcode className="w-6 h-6 text-orange-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Serial Numbers</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Serial Numbers</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Track individual unit serial numbers and status
               </p>
             </button>
@@ -637,15 +637,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Stock Adjustments */}
             <button
               onClick={() => setActiveTab("stock-adjustments")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
                   <AlertCircle className="w-6 h-6 text-red-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Stock Adjustments</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Stock Adjustments</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Manage inventory discrepancies and adjustments with approval workflow
               </p>
             </button>
@@ -653,15 +653,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Stock Alerts */}
             <button
               onClick={() => setActiveTab("stock-alerts")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-orange-500/20 rounded-lg group-hover:bg-orange-500/30 transition-colors">
                   <Bell className="w-6 h-6 text-orange-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Stock Alerts</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Stock Alerts</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Monitor low stock, out of stock, and overstock alerts
               </p>
             </button>
@@ -669,15 +669,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Expiry Notifications */}
             <button
               onClick={() => setActiveTab("expiry-notifications")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-pink-500/20 rounded-lg group-hover:bg-pink-500/30 transition-colors">
                   <Calendar className="w-6 h-6 text-pink-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Expiry Notifications</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Expiry Notifications</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Track expired, expiring soon, and upcoming product expiries
               </p>
             </button>
@@ -685,15 +685,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Analytics Dashboard */}
             <button
               onClick={() => setActiveTab("analytics")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
                   <BarChart3 className="w-6 h-6 text-purple-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Analytics Dashboard</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Analytics Dashboard</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 View inventory metrics, trends, and performance analytics
               </p>
             </button>
@@ -701,15 +701,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Transaction History */}
             <button
               onClick={() => setActiveTab("transactions")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-cyan-500/20 rounded-lg group-hover:bg-cyan-500/30 transition-colors">
                   <History className="w-6 h-6 text-cyan-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Transaction History</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Transaction History</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 View detailed log of all inventory movements and transactions
               </p>
             </button>
@@ -717,15 +717,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Barcode Scanner */}
             <button
               onClick={() => setActiveTab("barcode-scanner")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
                   <QrCode className="w-6 h-6 text-red-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Barcode Scanner</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Barcode Scanner</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Scan and manage product barcodes, QR codes, and serial numbers
               </p>
             </button>
@@ -733,15 +733,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Advanced Reporting */}
             <button
               onClick={() => setActiveTab("reporting")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-indigo-500/20 rounded-lg group-hover:bg-indigo-500/30 transition-colors">
                   <FileText className="w-6 h-6 text-indigo-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Advanced Reporting</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Advanced Reporting</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Generate and export comprehensive inventory reports in JSON or CSV
               </p>
             </button>
@@ -749,15 +749,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Vendor Management */}
             <button
               onClick={() => setActiveTab("vendors")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
                   <Truck className="w-6 h-6 text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Vendor Management</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Vendor Management</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Manage vendors, track ratings, and monitor purchase history
               </p>
             </button>
@@ -765,15 +765,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Purchase Orders */}
             <button
               onClick={() => setActiveTab("purchase-orders")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
                   <ShoppingCart className="w-6 h-6 text-green-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Purchase Orders</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Purchase Orders</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Create and manage purchase orders with multi-vendor support
               </p>
             </button>
@@ -781,15 +781,15 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Goods Receipts */}
             <button
               onClick={() => setActiveTab("goods-receipts")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
                   <Package className="w-6 h-6 text-purple-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Goods Receipts</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Goods Receipts</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Receive goods with quality checks, barcode scanning, and damage tracking
               </p>
             </button>
@@ -797,37 +797,37 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
             {/* Staff Management */}
             <button
               onClick={() => setActiveTab("staff")}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:border-slate-500 transition-colors cursor-pointer group text-left"
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-cyan-500/20 rounded-lg group-hover:bg-cyan-500/30 transition-colors">
                   <Users className="w-6 h-6 text-cyan-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Staff Management</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Staff Management</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Add, edit, and manage staff members and their roles
               </p>
             </button>
 
             {/* Coming Soon */}
-            <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 opacity-50 cursor-not-allowed">
+            <div className={`border rounded-lg p-6 opacity-50 cursor-not-allowed ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-slate-500/20 rounded-lg">
                   <BarChart3 className="w-6 h-6 text-slate-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Analytics</h3>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Analytics</h3>
               </div>
-              <p className="text-sm text-slate-400">
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Coming soon: Inventory reports and valuations
               </p>
             </div>
           </div>
 
           {/* Info Section */}
-          <div className="mt-6 p-4 bg-slate-700/20 border border-slate-600 rounded-lg">
-            <h4 className="text-sm font-semibold text-white mb-2">Inventory System</h4>
-            <p className="text-xs text-slate-400">
+          <div className={`mt-6 p-4 border rounded-lg ${isDarkTheme ? 'bg-slate-700/20 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+            <h4 className={`text-sm font-semibold mb-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Inventory System</h4>
+            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
               Full inventory management system with support for lot numbers, serial tracking, 
               warehouse management, stock adjustments, and reorder rules. All features are 
               designed for multi-location operations.
@@ -836,7 +836,7 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-700 p-6">
+        <div className={`border-t p-6 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
           <Button
             onClick={onClose}
             className="w-full bg-blue-500 hover:bg-blue-600 text-white"

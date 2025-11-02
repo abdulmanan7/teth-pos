@@ -7,10 +7,11 @@ import { useToast } from "@/components/ToastManager";
 import type { ReorderRule, Product, Warehouse } from "@shared/api";
 
 interface ReorderRulesManagerProps {
+  isDarkTheme?: boolean;
   onClose: () => void;
 }
 
-export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProps) {
+export default function ReorderRulesManager({ isDarkTheme = true, onClose }: ReorderRulesManagerProps) {
   const { addToast } = useToast();
   const [rules, setRules] = useState<ReorderRule[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -160,7 +161,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
           <Truck className="w-6 h-6" />
           Reorder Rules Management
         </h3>
@@ -174,7 +175,8 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
       </div>
 
       {showForm && (
-        <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
+        <div className={`border rounded-lg p-4 space-y-3 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+          <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Create Reorder Rule</h4>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               {/* Product Dropdown */}
@@ -182,21 +184,21 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                 <button
                   type="button"
                   onClick={() => setShowProductDropdown(!showProductDropdown)}
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 text-white rounded text-left flex items-center justify-between hover:border-slate-500 transition-colors"
+                  className={`w-full px-4 py-2 border rounded text-left flex items-center justify-between transition-colors ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white hover:border-slate-500' : 'bg-white border-slate-300 text-slate-900 hover:border-slate-400'}`}
                 >
-                  <span className={formData.product_name ? "text-white" : "text-slate-400"}>
+                  <span className={formData.product_name ? (isDarkTheme ? "text-white" : "text-slate-900") : (isDarkTheme ? "text-slate-400" : "text-slate-600")}>
                     {formData.product_name || "Select Product *"}
                   </span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {showProductDropdown && (
-                  <div className="absolute top-full mt-1 left-0 right-0 bg-slate-700 border border-slate-600 rounded shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className={`absolute top-full mt-1 left-0 right-0 border rounded shadow-lg z-50 max-h-48 overflow-y-auto ${isDarkTheme ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'}`}>
                     <input
                       type="text"
                       placeholder="Search products..."
                       value={productSearch}
                       onChange={(e) => setProductSearch(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-600 border-b border-slate-500 text-white placeholder-slate-400 sticky top-0"
+                      className={`w-full px-3 py-2 border-b sticky top-0 ${isDarkTheme ? 'bg-slate-600 border-slate-500 text-white placeholder-slate-400' : 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-600'}`}
                       autoFocus
                     />
                     <div className="max-h-40 overflow-y-auto">
@@ -211,10 +213,10 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                               setShowProductDropdown(false);
                               setProductSearch("");
                             }}
-                            className="w-full text-left px-3 py-2 hover:bg-slate-600 text-white text-sm border-b border-slate-600 last:border-0"
+                            className={`w-full text-left px-3 py-2 text-sm border-b last:border-0 ${isDarkTheme ? 'hover:bg-slate-600 text-white border-slate-600' : 'hover:bg-slate-100 text-slate-900 border-slate-300'}`}
                           >
                             <div className="font-medium">{product.name}</div>
-                            <div className="text-xs text-slate-400">SKU: {product.sku}</div>
+                            <div className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>SKU: {product.sku}</div>
                           </button>
                         ))}
                     </div>
@@ -227,21 +229,21 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                 <button
                   type="button"
                   onClick={() => setShowWarehouseDropdown(!showWarehouseDropdown)}
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 text-white rounded text-left flex items-center justify-between hover:border-slate-500 transition-colors"
+                  className={`w-full px-4 py-2 border rounded text-left flex items-center justify-between transition-colors ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white hover:border-slate-500' : 'bg-white border-slate-300 text-slate-900 hover:border-slate-400'}`}
                 >
-                  <span className={formData.warehouse_name ? "text-white" : "text-slate-400"}>
+                  <span className={formData.warehouse_name ? (isDarkTheme ? "text-white" : "text-slate-900") : (isDarkTheme ? "text-slate-400" : "text-slate-600")}>
                     {formData.warehouse_name || "Select Warehouse (optional)"}
                   </span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {showWarehouseDropdown && (
-                  <div className="absolute top-full mt-1 left-0 right-0 bg-slate-700 border border-slate-600 rounded shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className={`absolute top-full mt-1 left-0 right-0 border rounded shadow-lg z-50 max-h-48 overflow-y-auto ${isDarkTheme ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'}`}>
                     <input
                       type="text"
                       placeholder="Search warehouses..."
                       value={warehouseSearch}
                       onChange={(e) => setWarehouseSearch(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-600 border-b border-slate-500 text-white placeholder-slate-400 sticky top-0"
+                      className={`w-full px-3 py-2 border-b sticky top-0 ${isDarkTheme ? 'bg-slate-600 border-slate-500 text-white placeholder-slate-400' : 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-600'}`}
                       autoFocus
                     />
                     <button
@@ -251,7 +253,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                         setShowWarehouseDropdown(false);
                         setWarehouseSearch("");
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-slate-600 text-slate-300 text-sm border-b border-slate-600"
+                      className={`w-full text-left px-3 py-2 text-sm border-b ${isDarkTheme ? 'hover:bg-slate-600 text-slate-300 border-slate-600' : 'hover:bg-slate-100 text-slate-600 border-slate-300'}`}
                     >
                       <div className="font-medium">None (All Warehouses)</div>
                     </button>
@@ -267,10 +269,10 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                               setShowWarehouseDropdown(false);
                               setWarehouseSearch("");
                             }}
-                            className="w-full text-left px-3 py-2 hover:bg-slate-600 text-white text-sm border-b border-slate-600 last:border-0"
+                            className={`w-full text-left px-3 py-2 text-sm border-b last:border-0 ${isDarkTheme ? 'hover:bg-slate-600 text-white border-slate-600' : 'hover:bg-slate-100 text-slate-900 border-slate-300'}`}
                           >
                             <div className="font-medium">{warehouse.name}</div>
-                            <div className="text-xs text-slate-400">{warehouse.code}</div>
+                            <div className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{warehouse.code}</div>
                           </button>
                         ))}
                     </div>
@@ -286,7 +288,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                 onChange={(e) =>
                   setFormData({ ...formData, minimum_quantity: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
               <Input
                 type="number"
@@ -295,7 +297,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                 onChange={(e) =>
                   setFormData({ ...formData, reorder_point: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -306,7 +308,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                 onChange={(e) =>
                   setFormData({ ...formData, reorder_quantity: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
               <Input
                 type="number"
@@ -315,7 +317,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                 onChange={(e) =>
                   setFormData({ ...formData, safety_stock: e.target.value })
                 }
-                className="bg-slate-700 border-slate-600 text-white"
+                className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
               />
             </div>
             <Input
@@ -325,7 +327,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
               onChange={(e) =>
                 setFormData({ ...formData, lead_time_days: e.target.value })
               }
-              className="bg-slate-700 border-slate-600 text-white"
+              className={isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}
             />
             <div className="flex gap-2">
               <Button
@@ -337,7 +339,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
               <Button
                 type="button"
                 onClick={resetForm}
-                className="flex-1 bg-slate-600 hover:bg-slate-700 text-white"
+                className={`flex-1 ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-900'}`}
               >
                 Cancel
               </Button>
@@ -351,7 +353,7 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
           <Loader className="w-8 h-8 text-blue-400 animate-spin" />
         </div>
       ) : rules.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className={`text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
           <p>No reorder rules found. Create one to get started.</p>
         </div>
       ) : (
@@ -359,12 +361,12 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
           {rules.map((rule) => (
             <div
               key={rule._id}
-              className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-slate-500 transition-colors"
+              className={`border rounded-lg p-4 transition-colors ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold text-white">
+                    <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                       {products.find(p => p._id === rule.product_id)?.name || rule.product_id}
                     </h4>
                     {!rule.is_active && (
@@ -375,26 +377,26 @@ export default function ReorderRulesManager({ onClose }: ReorderRulesManagerProp
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-slate-400">Reorder Point</p>
-                      <p className="text-white font-semibold">{rule.reorder_point}</p>
+                      <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Reorder Point</p>
+                      <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{rule.reorder_point}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Reorder Qty</p>
-                      <p className="text-white font-semibold">{rule.reorder_quantity}</p>
+                      <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Reorder Qty</p>
+                      <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{rule.reorder_quantity}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Min Quantity</p>
-                      <p className="text-white font-semibold">{rule.minimum_quantity}</p>
+                      <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Min Quantity</p>
+                      <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{rule.minimum_quantity}</p>
                     </div>
                     {rule.safety_stock && (
                       <div>
-                        <p className="text-slate-400">Safety Stock</p>
-                        <p className="text-white font-semibold">{rule.safety_stock}</p>
+                        <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Safety Stock</p>
+                        <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{rule.safety_stock}</p>
                       </div>
                     )}
                   </div>
                   {rule.warehouse_id && (
-                    <p className="text-xs text-slate-500 mt-2">
+                    <p className={`text-xs mt-2 ${isDarkTheme ? 'text-slate-500' : 'text-slate-700'}`}>
                       Warehouse: {warehouses.find(w => w._id === rule.warehouse_id)?.name || rule.warehouse_id}
                     </p>
                   )}

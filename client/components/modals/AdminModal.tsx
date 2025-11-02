@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Package, Warehouse, Settings, BarChart3, Truck, Barcode, AlertCircle, Bell, Calendar, History, QrCode, FileText, ShoppingCart, Users } from "lucide-react";
+import { X, Package, Warehouse, Settings, BarChart3, Truck, Barcode, AlertCircle, Bell, Calendar, History, QrCode, FileText, ShoppingCart, Users, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WarehousesManager from "@/components/inventory/WarehousesManager";
 import LotNumbersManager from "@/components/inventory/LotNumbersManager";
@@ -16,6 +16,7 @@ import VendorManager from "@/components/procurement/VendorManager";
 import PurchaseOrderManager from "@/components/procurement/PurchaseOrderManager";
 import GoodsReceiptManager from "@/components/procurement/GoodsReceiptManager";
 import StaffManagementModal from "@/components/modals/StaffManagementModal";
+import BrandingManager from "@/components/modals/BrandingManager";
 
 interface AdminModalProps {
   isDarkTheme: boolean;
@@ -23,7 +24,7 @@ interface AdminModalProps {
   userRole?: string;
 }
 
-type AdminTab = "overview" | "warehouses" | "lot-numbers" | "reorder-rules" | "serial-numbers" | "stock-adjustments" | "stock-alerts" | "expiry-notifications" | "analytics" | "transactions" | "barcode-scanner" | "reporting" | "vendors" | "purchase-orders" | "goods-receipts" | "staff" | null;
+type AdminTab = "overview" | "warehouses" | "lot-numbers" | "reorder-rules" | "serial-numbers" | "stock-adjustments" | "stock-alerts" | "expiry-notifications" | "analytics" | "transactions" | "barcode-scanner" | "reporting" | "vendors" | "purchase-orders" | "goods-receipts" | "staff" | "branding" | null;
 
 export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModalProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
@@ -553,6 +554,41 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
     );
   }
 
+  if (activeTab === "branding") {
+    return (
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
+            <button
+              onClick={onClose}
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-6">
+            <BrandingManager isDarkTheme={isDarkTheme} onClose={onClose} />
+          </div>
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <Button
+              onClick={() => setActiveTab("overview")}
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
+            >
+              Back
+            </Button>
+            <Button
+              onClick={onClose}
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
       <div className={`rounded-lg border shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
@@ -807,6 +843,22 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
               </div>
               <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                 Add, edit, and manage staff members and their roles
+              </p>
+            </button>
+
+            {/* Store Branding */}
+            <button
+              onClick={() => setActiveTab("branding")}
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-orange-500/20 rounded-lg group-hover:bg-orange-500/30 transition-colors">
+                  <Store className="w-6 h-6 text-orange-400" />
+                </div>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Store Branding</h3>
+              </div>
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                Configure store name, contact info, address, and business details
               </p>
             </button>
 

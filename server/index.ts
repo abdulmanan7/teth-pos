@@ -723,5 +723,16 @@ export async function createServer() {
     return deleteReturn(req, res, next);
   });
 
+  // Branding configuration routes
+  app.get("/api/branding/config", async (req, res, next) => {
+    const { getBrandingConfig } = await import("./routes/branding");
+    return getBrandingConfig(req, res, next);
+  });
+
+  app.post("/api/branding/config", async (req, res, next) => {
+    const { saveBrandingConfig } = await import("./routes/branding");
+    return saveBrandingConfig(req, res, next);
+  });
+
   return app;
 }

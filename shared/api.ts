@@ -123,11 +123,21 @@ export interface Customer {
 }
 
 // Order Types
+export interface DiscountConfig {
+  type: 'percentage' | 'fixed';
+  value: number;
+  reason?: string;
+}
+
 export interface OrderItem {
   productId: string;
   name: string;
   price: number;
   quantity: number;
+  discount?: DiscountConfig;
+  discountAmount?: number;
+  subtotal?: number;
+  totalAfterDiscount?: number;
 }
 
 export interface Order {
@@ -136,6 +146,14 @@ export interface Order {
   customer: string;
   items: OrderItem[];
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
+  subtotal?: number;
+  itemDiscountTotal?: number;
+  checkoutDiscount?: DiscountConfig;
+  checkoutDiscountAmount?: number;
+  subtotalAfterDiscount?: number;
+  totalBeforeTax?: number;
+  taxRate?: number;
+  taxAmount?: number;
   total: number;
   staffId?: string;
   staffName?: string;

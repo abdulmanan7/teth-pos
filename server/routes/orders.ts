@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import { Order } from '../db/models/Order';
 import { Product } from '../db/models/Product';
 import { Customer } from '../db/models/Customer';
+import { calculateOrderTotal, validateDiscount } from '../utils/discountCalculator';
 
 // Get all orders
 export const getAllOrders: RequestHandler = async (req, res) => {
@@ -41,17 +42,33 @@ export const getOrder: RequestHandler = async (req, res) => {
   }
 };
 
-// Create order with stock deduction
+// Create order with stock deduction and discount calculation
 export const createOrder: RequestHandler = async (req, res) => {
   try {
-    const { orderNumber, customer, items, total, staffId, paymentMethod } = req.body;
+    const {
+      orderNumber,
+      customer,
+      items,
+      staffId,
+      paymentMethod,
+      checkoutDiscount,
+      taxRate = 0,
+    } = req.body;
     
     // Validate items exist
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'Order must contain at least one item' });
     }
 
-    // Deduct stock for each item
+    // Validate checkout discount if provided
+    if (checkoutDiscount) {
+      const validation = validateDiscount(checkoutDiscount);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+    }
+
+    // Deduct stock for each item and validate discounts
     for (const item of items) {
       const product = await Product.findById(item.productId);
       
@@ -65,27 +82,67 @@ export const createOrder: RequestHandler = async (req, res) => {
         });
       }
 
+      // Validate item discount if provided
+      if (item.discount) {
+        const validation = validateDiscount(item.discount);
+        if (!validation.valid) {
+          return res.status(400).json({ error: `Invalid discount for ${product.name}: ${validation.error}` });
+        }
+      }
+
       // Deduct stock
       product.stock -= item.quantity;
       await product.save();
     }
+
+    // Calculate order total with all discounts
+    const orderCalculation = calculateOrderTotal(items, checkoutDiscount);
+    const subtotalAfterDiscount = orderCalculation.subtotalAfterItemDiscounts;
+    const taxableAmount = Math.max(0, subtotalAfterDiscount - orderCalculation.checkoutDiscountAmount);
+    const normalizedTaxRate = typeof taxRate === 'number' && taxRate > 0 ? taxRate : 0;
+    const taxAmount = Math.round(taxableAmount * normalizedTaxRate * 100) / 100;
+    const grandTotal = Math.round((taxableAmount + taxAmount) * 100) / 100;
 
     // Update customer stats if not walk-in
     if (customer && customer !== 'Walk-in') {
       const customerDoc = await Customer.findOne({ name: customer });
       if (customerDoc) {
         customerDoc.totalOrders += 1;
-        customerDoc.totalSpent += total;
+        customerDoc.totalSpent += orderCalculation.finalTotal;
         await customerDoc.save();
       }
     }
 
-    // Create order with additional fields
+    // Create order with discount information
     const order = new Order({
       orderNumber,
       customer,
-      items,
-      total,
+      items: items.map((item: any) => {
+        const baseSubtotal = item.price * item.quantity;
+        const discountValue = item.discount
+          ? item.discount.type === 'percentage'
+            ? (baseSubtotal * item.discount.value) / 100
+            : item.discount.value
+          : 0;
+        const normalizedDiscount = Math.min(Math.max(discountValue, 0), baseSubtotal);
+        const totalAfterDiscount = baseSubtotal - normalizedDiscount;
+
+        return {
+          ...item,
+          subtotal: Math.round(baseSubtotal * 100) / 100,
+          discountAmount: Math.round(normalizedDiscount * 100) / 100,
+          totalAfterDiscount: Math.round(totalAfterDiscount * 100) / 100,
+        };
+      }),
+      subtotal: orderCalculation.orderSubtotal,
+      itemDiscountTotal: orderCalculation.totalItemDiscounts,
+      subtotalAfterDiscount,
+      checkoutDiscount,
+      checkoutDiscountAmount: orderCalculation.checkoutDiscountAmount,
+      totalBeforeTax: taxableAmount,
+      taxRate: normalizedTaxRate,
+      taxAmount,
+      total: grandTotal,
       status: 'completed',
       staffId,
       paymentMethod,

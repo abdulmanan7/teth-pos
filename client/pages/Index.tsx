@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import logoSvg from "@/assets/logo.svg";
 import logoDark from "@/assets/logo-dark.svg";
@@ -20,6 +20,8 @@ import {
   Moon,
   Sun,
   Printer,
+  Percent,
+  Tag,
 } from "lucide-react";
 import ProductsModal from "@/components/modals/ProductsModal";
 import CustomersModal from "@/components/modals/CustomersModal";
@@ -32,13 +34,20 @@ import StaffManagementModal from "@/components/modals/StaffManagementModal";
 import ResumeOrderModal from "@/components/modals/ResumeOrderModal";
 import PaymentModalComponent from "@/components/modals/PaymentModalComponent";
 import ReturnsModal from "@/components/modals/ReturnsModal";
+import DiscountModalComponent from "@/components/modals/DiscountModalComponent";
 import ThermalReceipt from "@/components/receipts/ThermalReceipt";
 import InventoryWidgets from "@/components/dashboard/InventoryWidgets";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import { useBrandingConfig } from "@/hooks/useBrandingConfig";
 import { useAuthCheck, useFilter } from "@/hooks";
-import { showNotification, storage, calculateTotals } from "@/utils";
-import type { Product as ApiProduct, Customer as ApiCustomer, StaffLoginResponse, Order } from "@shared/api";
+import { showNotification, storage } from "@/utils";
+import type {
+  Product as ApiProduct,
+  Customer as ApiCustomer,
+  StaffLoginResponse,
+  Order,
+  DiscountConfig,
+} from "@shared/api";
 
 type ModalType =
   | "products"
@@ -69,6 +78,11 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  discount?: {
+    type: 'percentage' | 'fixed';
+    value: number;
+    reason?: string;
+  };
 }
 
 interface DraftOrder {
@@ -79,6 +93,52 @@ interface DraftOrder {
   createdAt: string;
   total: number;
 }
+
+const roundToTwo = (value: number): number => Math.round(value * 100) / 100;
+
+const calculateItemTotals = (item: CartItem) => {
+  const subtotal = roundToTwo(item.price * item.quantity);
+  let discountAmount = 0;
+
+  if (item.discount && item.discount.value > 0) {
+    discountAmount =
+      item.discount.type === "percentage"
+        ? subtotal * (item.discount.value / 100)
+        : item.discount.value;
+    if (discountAmount > subtotal) {
+      discountAmount = subtotal;
+    }
+  }
+
+  discountAmount = roundToTwo(discountAmount);
+  const totalAfterDiscount = roundToTwo(subtotal - discountAmount);
+
+  return {
+    subtotal,
+    discountAmount,
+    totalAfterDiscount,
+  };
+};
+
+const calculateCheckoutDiscountAmount = (
+  baseAmount: number,
+  discount?: DiscountConfig | null
+) => {
+  if (!discount || discount.value <= 0) {
+    return 0;
+  }
+
+  let discountAmount =
+    discount.type === "percentage"
+      ? baseAmount * (discount.value / 100)
+      : discount.value;
+
+  if (discountAmount > baseAmount) {
+    discountAmount = baseAmount;
+  }
+
+  return roundToTwo(discountAmount);
+};
 
 interface StaffMember {
   id: number;
@@ -104,6 +164,10 @@ export default function Index() {
   const [draftOrders, setDraftOrders] = useState<DraftOrder[]>([]);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [discountingItemId, setDiscountingItemId] = useState<string | null>(null);
+  const [showCheckoutDiscountModal, setShowCheckoutDiscountModal] = useState(false);
+  const [checkoutDiscount, setCheckoutDiscount] = useState<DiscountConfig | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<ApiCustomer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,6 +180,55 @@ export default function Index() {
     const savedTheme = storage.get<boolean>("isDarkTheme");
     return savedTheme !== undefined ? savedTheme : true;
   });
+
+  const {
+    itemsWithTotals,
+    subtotalBeforeDiscount,
+    itemDiscountTotal,
+    subtotalAfterItemDiscount,
+    checkoutDiscountAmount,
+    taxableAmount,
+    tax,
+    total,
+  } = useMemo(() => {
+    const itemsWithTotals = cartItems.map((item) => {
+      const { subtotal, discountAmount, totalAfterDiscount } = calculateItemTotals(item);
+      return {
+        ...item,
+        subtotal,
+        discountAmount,
+        totalAfterDiscount,
+      };
+    });
+
+    const subtotalBeforeDiscount = roundToTwo(
+      itemsWithTotals.reduce((sum, item) => sum + item.subtotal, 0)
+    );
+    const itemDiscountTotal = roundToTwo(
+      itemsWithTotals.reduce((sum, item) => sum + item.discountAmount, 0)
+    );
+    const subtotalAfterItemDiscount = roundToTwo(subtotalBeforeDiscount - itemDiscountTotal);
+    const checkoutDiscountAmount = calculateCheckoutDiscountAmount(
+      subtotalAfterItemDiscount,
+      checkoutDiscount
+    );
+    const taxableAmount = roundToTwo(
+      Math.max(0, subtotalAfterItemDiscount - checkoutDiscountAmount)
+    );
+    const tax = roundToTwo(taxableAmount * taxRate);
+    const total = roundToTwo(taxableAmount + tax);
+
+    return {
+      itemsWithTotals,
+      subtotalBeforeDiscount,
+      itemDiscountTotal,
+      subtotalAfterItemDiscount,
+      checkoutDiscountAmount,
+      taxableAmount,
+      tax,
+      total,
+    };
+  }, [cartItems, checkoutDiscount, taxRate]);
 
   // Load draft orders and staff session from localStorage on mount
   useEffect(() => {
@@ -267,6 +380,19 @@ export default function Index() {
     setCartItems(cartItems.filter((item) => item.productId !== productId));
   };
 
+  const applyItemDiscount = (productId: string, discount: DiscountConfig | null) => {
+    setCartItems((current) =>
+      current.map((item) => {
+        if (item.productId !== productId) return item;
+        if (!discount || discount.value <= 0) {
+          const { discount: _removed, ...rest } = item;
+          return rest;
+        }
+        return { ...item, discount };
+      })
+    );
+  };
+
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
@@ -279,8 +405,6 @@ export default function Index() {
     }
   };
 
-  const { subtotal, tax, total } = calculateTotals(cartItems, taxRate);
-
   const saveDraftOrder = () => {
     if (cartItems.length === 0) {
       showNotification.emptyDraft();
@@ -290,7 +414,7 @@ export default function Index() {
     const newDraft: DraftOrder = {
       id: Date.now().toString(),
       customer: selectedCustomer || "Walk-in",
-      items: cartItems,
+      items: itemsWithTotals,
       notes: "",
       createdAt: new Date().toLocaleString(),
       total: total,
@@ -344,12 +468,29 @@ export default function Index() {
       const orderData = {
         orderNumber,
         customer: selectedCustomer || "Walk-in",
-        items: cartItems.map(item => ({
-          productId: item.productId,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-        })),
+        items: itemsWithTotals.map((item) => {
+          const payload: any = {
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            subtotal: item.subtotal,
+            discountAmount: item.discountAmount,
+            totalAfterDiscount: item.totalAfterDiscount,
+          };
+          if (item.discount) {
+            payload.discount = item.discount;
+          }
+          return payload;
+        }),
+        subtotal: subtotalBeforeDiscount,
+        itemDiscountTotal,
+        subtotalAfterDiscount: subtotalAfterItemDiscount,
+        checkoutDiscount: checkoutDiscount ?? undefined,
+        checkoutDiscountAmount,
+        totalBeforeTax: taxableAmount,
+        taxRate,
+        taxAmount: tax,
         total,
         staffId: currentStaff?._id,
         staffName: currentStaff?.name,
@@ -369,6 +510,7 @@ export default function Index() {
         // Clear cart and reset
         setSelectedCustomer("Walk-in");
         setCartItems([]);
+        setCheckoutDiscount(null);
         closeModal();
         
         // Soft refresh - refetch recent orders without hard page reload
@@ -813,24 +955,51 @@ export default function Index() {
                       <p>No items</p>
                     </div>
                   ) : (
-                    cartItems.map((item) => (
+                    itemsWithTotals.map((item) => (
                       <div key={item.productId} className={`p-2 rounded border ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
                         <div className="flex justify-between items-center mb-1">
                           <h4 className={`font-semibold text-xs flex-1 line-clamp-1 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                             {item.name}
                           </h4>
-                          <button
-                            onClick={() => removeFromCart(item.productId)}
-                            className="text-red-400 hover:text-red-300 ml-1"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                setDiscountingItemId(item.productId);
+                                setShowDiscountModal(true);
+                              }}
+                              className={`text-xs px-1.5 py-0.5 rounded transition-colors ${
+                                item.discount
+                                  ? isDarkTheme
+                                    ? 'bg-green-600/50 text-green-300 hover:bg-green-600'
+                                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                  : isDarkTheme
+                                  ? 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                                  : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                              }`}
+                              title="Apply discount"
+                            >
+                              <Percent className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => removeFromCart(item.productId)}
+                              className="text-red-400 hover:text-red-300"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
 
                         <div className="flex justify-between items-center text-xs">
-                          <span className={`font-bold ${isDarkTheme ? 'text-blue-400' : 'text-blue-600'}`}>
-                            Rs {(item.price * item.quantity).toFixed(2)}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className={`font-bold ${isDarkTheme ? 'text-blue-400' : 'text-blue-600'}`}>
+                              Rs {item.totalAfterDiscount.toFixed(2)}
+                            </span>
+                            {item.discountAmount > 0 && (
+                              <span className={`text-xs ${isDarkTheme ? 'text-red-400' : 'text-red-600'}`}>
+                                -Rs {item.discountAmount.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-0.5">
                             <button
                               type="button"
@@ -898,17 +1067,60 @@ export default function Index() {
                   </div>
                 </div>
 
+                {/* Checkout Discount */}
+                <div className={`border-t pt-4 mb-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+                  <button
+                    onClick={() => setShowCheckoutDiscountModal(true)}
+                    className={`w-full py-2 px-3 rounded font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
+                      checkoutDiscount
+                        ? isDarkTheme
+                          ? 'bg-green-600/50 text-green-300 hover:bg-green-600'
+                          : 'bg-green-100 text-green-700 hover:bg-green-200'
+                        : isDarkTheme
+                        ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                    }`}
+                  >
+                    <Tag className="w-4 h-4" />
+                    {checkoutDiscount
+                      ? `Checkout Discount: ${checkoutDiscount.type === 'percentage' ? `${checkoutDiscount.value}%` : `Rs ${checkoutDiscount.value}`}`
+                      : 'Add Checkout Discount'}
+                  </button>
+                </div>
+
                 {/* Summary */}
                 <div className={`border-t pt-4 space-y-2 mb-6 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
                   <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <span>TAX ({(taxRate * 100).toFixed(1)}%)</span>
+                    <span>Subtotal</span>
+                    <span>Rs {subtotalBeforeDiscount.toFixed(2)}</span>
+                  </div>
+                  {itemDiscountTotal > 0 && (
+                    <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-red-400' : 'text-red-600'}`}>
+                      <span>Item Discounts</span>
+                      <span>-Rs {itemDiscountTotal.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <span>Subtotal After Discounts</span>
+                    <span>Rs {subtotalAfterItemDiscount.toFixed(2)}</span>
+                  </div>
+                  {checkoutDiscountAmount > 0 && (
+                    <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-red-400' : 'text-red-600'}`}>
+                      <span>
+                        Checkout Discount
+                        {checkoutDiscount && checkoutDiscount.type === 'percentage'
+                          ? ` (${checkoutDiscount.value}%)`
+                          : ''}
+                      </span>
+                      <span>-Rs {checkoutDiscountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <span>Tax ({(taxRate * 100).toFixed(1)}%)</span>
                     <span>Rs {tax.toFixed(2)}</span>
                   </div>
-                  <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <span>NET</span>
-                    <span>Rs {subtotal.toFixed(2)}</span>
-                  </div>
                   <div className={`flex justify-between text-2xl font-bold pt-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                    <span>Total</span>
                     <span>Rs {total.toFixed(2)}</span>
                   </div>
                 </div>
@@ -1031,6 +1243,39 @@ export default function Index() {
             email: branding.email,
           }}
           onClose={() => setShowReceipt(false)}
+        />
+      )}
+      {showDiscountModal && discountingItemId && (
+        <DiscountModalComponent
+          isDarkTheme={isDarkTheme}
+          itemName={cartItems.find((item) => item.productId === discountingItemId)?.name}
+          subtotal={
+            (cartItems.find((item) => item.productId === discountingItemId)?.price || 0) *
+            (cartItems.find((item) => item.productId === discountingItemId)?.quantity || 1)
+          }
+          currentDiscount={cartItems.find((item) => item.productId === discountingItemId)?.discount}
+          onApply={(discount) => {
+            applyItemDiscount(discountingItemId, discount);
+            setShowDiscountModal(false);
+            setDiscountingItemId(null);
+          }}
+          onClose={() => {
+            setShowDiscountModal(false);
+            setDiscountingItemId(null);
+          }}
+        />
+      )}
+      {showCheckoutDiscountModal && (
+        <DiscountModalComponent
+          isDarkTheme={isDarkTheme}
+          itemName="Checkout Discount"
+          subtotal={subtotalAfterItemDiscount}
+          currentDiscount={checkoutDiscount}
+          onApply={(discount) => {
+            setCheckoutDiscount(discount);
+            setShowCheckoutDiscountModal(false);
+          }}
+          onClose={() => setShowCheckoutDiscountModal(false)}
         />
       )}
       {activeModal === "security" && (

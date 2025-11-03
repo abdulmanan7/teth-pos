@@ -100,6 +100,36 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
     );
   }
 
+  const deriveNumber = (value: any, fallback: number = 0) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  const itemSubtotalSum = Array.isArray(order.items)
+    ? order.items.reduce((sum, item) => {
+        const base = deriveNumber(item.subtotal, item.price * item.quantity);
+        return sum + base;
+      }, 0)
+    : 0;
+
+  const subtotal = deriveNumber(order.subtotal, itemSubtotalSum);
+  const itemDiscountTotal = deriveNumber(order.itemDiscountTotal);
+  const checkoutDiscountAmount = deriveNumber(order.checkoutDiscountAmount);
+  const subtotalAfterDiscount = deriveNumber(
+    (order as any).subtotalAfterDiscount,
+    subtotal - itemDiscountTotal
+  );
+  const preTaxTotal = deriveNumber(
+    (order as any).totalBeforeTax,
+    subtotalAfterDiscount - checkoutDiscountAmount
+  );
+  const taxAmount = deriveNumber(order.taxAmount, deriveNumber((order as any).tax));
+  const grandTotal = deriveNumber(order.total, preTaxTotal + taxAmount);
+
+  const hasItemDiscounts = itemDiscountTotal > 0.009;
+  const hasCheckoutDiscount = checkoutDiscountAmount > 0.009;
+  const hasTax = taxAmount > 0.009;
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
@@ -211,30 +241,32 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
 
             {/* Items */}
             <div style={{ marginBottom: "12px" }}>
-              {order.items && order.items.length > 0 ? order.items.map((item, index) => (
-                <div key={index} style={{ marginBottom: "6px", fontSize: "10px" }}>
-                  <div style={{ textAlign: "left", marginBottom: "2px" }}>
-                    {item.name}
+              {order.items && order.items.length > 0 ? order.items.map((item, index) => {
+                const quantity = Math.max(deriveNumber(item.quantity, 1), 1);
+                const unitPrice = deriveNumber(item.price);
+                const rawSubtotal = deriveNumber(item.subtotal, unitPrice * quantity);
+                const lineDiscount = deriveNumber(item.discountAmount);
+                const lineTotal = deriveNumber(item.totalAfterDiscount, rawSubtotal - lineDiscount);
+                const effectiveUnitPrice = lineTotal / quantity;
+
+                return (
+                  <div key={index} style={{ marginBottom: "6px", fontSize: "10px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        color: "#222",
+                      }}
+                    >
+                      <span style={{ flex: 1, textAlign: "left", fontWeight: "bold" }}>{item.name}</span>
+                      <span style={{ width: "40px", textAlign: "center" }}>{quantity}</span>
+                      <span style={{ width: "50px", textAlign: "right" }}>{formatCurrency(effectiveUnitPrice)}</span>
+                      <span style={{ width: "50px", textAlign: "right" }}>{formatCurrency(lineTotal)}</span>
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "9px",
-                      color: "#666",
-                    }}
-                  >
-                    <span style={{ flex: 1 }}></span>
-                    <span style={{ width: "40px", textAlign: "center" }}>{item.quantity}</span>
-                    <span style={{ width: "50px", textAlign: "right" }}>
-                      {formatCurrency(item.price)}
-                    </span>
-                    <span style={{ width: "50px", textAlign: "right" }}>
-                      {formatCurrency(item.price * item.quantity)}
-                    </span>
-                  </div>
-                </div>
-              )) : (
+                );
+              }) : (
                 <div style={{ textAlign: "center", fontSize: "10px", color: "#666" }}>
                   No items
                 </div>
@@ -255,13 +287,92 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  fontWeight: "bold",
-                  fontSize: "12px",
-                  marginBottom: "4px",
+                  fontSize: "10px",
+                  marginBottom: "3px",
                 }}
               >
-                <span>TOTAL:</span>
-                <span>{formatCurrency(order.total)}</span>
+                <span>Subtotal</span>
+                <span>{formatCurrency(subtotal)}</span>
+              </div>
+              {hasItemDiscounts && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "10px",
+                    marginBottom: "3px",
+                    color: "#b91c1c",
+                  }}
+                >
+                  <span>Item Discounts</span>
+                  <span>-{formatCurrency(itemDiscountTotal)}</span>
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "10px",
+                  marginBottom: "3px",
+                }}
+              >
+                <span>After Item Discounts</span>
+                <span>{formatCurrency(subtotalAfterDiscount)}</span>
+              </div>
+              {hasCheckoutDiscount && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "10px",
+                    marginBottom: "3px",
+                    color: "#b91c1c",
+                  }}
+                >
+                  <span>
+                    Checkout Discount
+                    {order.checkoutDiscount?.type === "percentage"
+                      ? ` (${order.checkoutDiscount.value}%)`
+                      : ""}
+                  </span>
+                  <span>-{formatCurrency(checkoutDiscountAmount)}</span>
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "10px",
+                  marginBottom: "3px",
+                }}
+              >
+                <span>Taxable Amount</span>
+                <span>{formatCurrency(preTaxTotal)}</span>
+              </div>
+              {hasTax && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "10px",
+                    marginBottom: "3px",
+                  }}
+                >
+                  <span>Tax</span>
+                  <span>{formatCurrency(taxAmount)}</span>
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontWeight: "bold",
+                  fontSize: "12px",
+                  marginTop: "4px",
+                }}
+              >
+                <span>TOTAL DUE</span>
+                <span>{formatCurrency(grandTotal)}</span>
               </div>
               {order.paymentMethod && (
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px" }}>

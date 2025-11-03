@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Package, Warehouse, Settings, BarChart3, Truck, Barcode, AlertCircle, Bell, Calendar, History, QrCode, FileText, ShoppingCart, Users, Store } from "lucide-react";
+import { X, Package, Warehouse, Settings, BarChart3, Truck, Barcode, AlertCircle, Bell, Calendar, History, QrCode, FileText, ShoppingCart, Users, Store, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WarehousesManager from "@/components/inventory/WarehousesManager";
 import LotNumbersManager from "@/components/inventory/LotNumbersManager";
@@ -17,6 +17,7 @@ import PurchaseOrderManager from "@/components/procurement/PurchaseOrderManager"
 import GoodsReceiptManager from "@/components/procurement/GoodsReceiptManager";
 import StaffManagementModal from "@/components/modals/StaffManagementModal";
 import BrandingManager from "@/components/modals/BrandingManager";
+import TaxRatesManager from "@/components/modals/TaxRatesManager";
 
 interface AdminModalProps {
   isDarkTheme: boolean;
@@ -24,7 +25,7 @@ interface AdminModalProps {
   userRole?: string;
 }
 
-type AdminTab = "overview" | "warehouses" | "lot-numbers" | "reorder-rules" | "serial-numbers" | "stock-adjustments" | "stock-alerts" | "expiry-notifications" | "analytics" | "transactions" | "barcode-scanner" | "reporting" | "vendors" | "purchase-orders" | "goods-receipts" | "staff" | "branding" | null;
+type AdminTab = "overview" | "warehouses" | "lot-numbers" | "reorder-rules" | "serial-numbers" | "stock-adjustments" | "stock-alerts" | "expiry-notifications" | "analytics" | "transactions" | "barcode-scanner" | "reporting" | "vendors" | "purchase-orders" | "goods-receipts" | "staff" | "branding" | "tax-rates" | null;
 
 export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModalProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
@@ -44,6 +45,41 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
           </div>
           <div className="flex-1 overflow-auto p-6">
             <WarehousesManager isDarkTheme={isDarkTheme} onClose={onClose} />
+          </div>
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <Button
+              onClick={() => setActiveTab("overview")}
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
+            >
+              Back
+            </Button>
+            <Button
+              onClick={onClose}
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (activeTab === "tax-rates") {
+    return (
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
+            <button
+              onClick={onClose}
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-6">
+            <TaxRatesManager isDarkTheme={isDarkTheme} />
           </div>
           <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
             <Button
@@ -622,6 +658,22 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
               </p>
             </button>
 
+            {/* Tax Rates */}
+            <button
+              onClick={() => setActiveTab("tax-rates")}
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
+                  <Percent className="w-6 h-6 text-emerald-400" />
+                </div>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Tax Rates</h3>
+              </div>
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                Configure tax presets used during checkout
+              </p>
+            </button>
+
             {/* Lot Numbers */}
             <button
               onClick={() => setActiveTab("lot-numbers")}
@@ -846,7 +898,23 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
               </p>
             </button>
 
-            {/* Store Branding */}
+            {/* Tax Rates */}
+            <button
+              onClick={() => setActiveTab("tax-rates")}
+              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-yellow-500/20 rounded-lg group-hover:bg-yellow-500/30 transition-colors">
+                  <Percent className="w-6 h-6 text-yellow-400" />
+                </div>
+                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Tax Rates</h3>
+              </div>
+              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                Manage tax rates for different regions and products
+              </p>
+            </button>
+
+            {/* Branding */}
             <button
               onClick={() => setActiveTab("branding")}
               className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}

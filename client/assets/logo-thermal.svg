@@ -1,0 +1,17 @@
+<svg width="200" height="50" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Icon - exact match to main logo but optimized for thermal printer (black only) -->
+<g clip-path="url(#clip0_101_2)">
+    <path d="M12 0H24V12H36V24H24V36H12V24H0V12H12V0Z" fill="black"/>
+    <path d="M24 24H36V36H24V24Z" fill="black"/>
+    <path d="M12 12H24V24H12V12Z" fill="black"/>
+</g>
+
+<!-- Wordmark - same as main logo but in black for thermal printer -->
+<text x="50" y="35" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="600" font-size="36" fill="black">teth</text>
+
+<defs>
+    <clipPath id="clip0_101_2">
+        <rect width="36" height="36" fill="white"/>
+    </clipPath>
+</defs>
+</svg>

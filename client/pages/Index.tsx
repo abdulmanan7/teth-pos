@@ -19,6 +19,7 @@ import {
   Activity,
   Moon,
   Sun,
+  Printer,
 } from "lucide-react";
 import ProductsModal from "@/components/modals/ProductsModal";
 import CustomersModal from "@/components/modals/CustomersModal";
@@ -31,11 +32,13 @@ import StaffManagementModal from "@/components/modals/StaffManagementModal";
 import ResumeOrderModal from "@/components/modals/ResumeOrderModal";
 import PaymentModalComponent from "@/components/modals/PaymentModalComponent";
 import ReturnsModal from "@/components/modals/ReturnsModal";
+import ThermalReceipt from "@/components/receipts/ThermalReceipt";
 import InventoryWidgets from "@/components/dashboard/InventoryWidgets";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { useBrandingConfig } from "@/hooks/useBrandingConfig";
 import { useAuthCheck, useFilter } from "@/hooks";
 import { showNotification, storage, calculateTotals } from "@/utils";
-import type { Product as ApiProduct, Customer as ApiCustomer, StaffLoginResponse } from "@shared/api";
+import type { Product as ApiProduct, Customer as ApiCustomer, StaffLoginResponse, Order } from "@shared/api";
 
 type ModalType =
   | "products"
@@ -89,6 +92,7 @@ interface StaffMember {
 
 export default function Index() {
   const { get, post } = useElectronApi();
+  const { config: branding } = useBrandingConfig();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedCustomer, setSelectedCustomer] = useState("Walk-in");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -98,6 +102,8 @@ export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedProductIndex, setSelectedProductIndex] = useState(-1);
   const [draftOrders, setDraftOrders] = useState<DraftOrder[]>([]);
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<ApiCustomer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,6 +185,19 @@ export default function Index() {
   };
 
   const closeModal = () => setActiveModal(null);
+
+  // Soft refresh - refetch recent orders without page reload
+  const fetchRecentOrders = async () => {
+    try {
+      const ordersData = await get("/api/orders");
+      const recent = ordersData
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5);
+      setRecentOrders(recent);
+    } catch (error) {
+      console.error("Error refetching recent orders:", error);
+    }
+  };
 
   const filteredProducts = products.filter((product: any) => {
     const searchLower = searchTerm.toLowerCase();
@@ -341,14 +360,20 @@ export default function Index() {
       const response = await post("/api/orders", orderData);
 
       if (response.success) {
+        // Set the completed order for receipt printing
+        // The actual order data is in response.order, not the response itself
+        const orderForReceipt = response.order || response.data || response;
+        setCompletedOrder(orderForReceipt);
+        setShowReceipt(true);
+        
         // Clear cart and reset
         setSelectedCustomer("Walk-in");
         setCartItems([]);
         closeModal();
         
-        // Silently refresh page to update recent orders list
+        // Soft refresh - refetch recent orders without hard page reload
         setTimeout(() => {
-          window.location.reload();
+          fetchRecentOrders();
         }, 500);
       } else {
         showNotification.error(response.error || "Failed to create order");
@@ -574,13 +599,25 @@ export default function Index() {
                         })();
 
                         return (
-                          <div key={order._id} className={`p-2 rounded border cursor-pointer transition-colors ${isDarkTheme ? 'bg-slate-700/50 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}>
-                            <div className="flex justify-between items-start">
+                          <div key={order._id} className={`p-2 rounded border transition-colors ${isDarkTheme ? 'bg-slate-700/50 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}>
+                            <div className="flex justify-between items-start gap-2">
                               <div className="flex-1 min-w-0">
                                 <p className={`text-xs font-semibold truncate ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{order.orderNumber}</p>
                                 <p className={`text-xs truncate ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{order.customer}</p>
                               </div>
-                              <p className={`text-xs font-bold ${isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'}`}>Rs {order.total.toFixed(2)}</p>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <p className={`text-xs font-bold ${isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'}`}>Rs {order.total.toFixed(2)}</p>
+                                <button
+                                  onClick={() => {
+                                    setCompletedOrder(order);
+                                    setShowReceipt(true);
+                                  }}
+                                  className={`p-1 rounded transition-colors ${isDarkTheme ? 'hover:bg-slate-600 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'}`}
+                                  title="Print receipt"
+                                >
+                                  <Printer className="w-3 h-3" />
+                                </button>
+                              </div>
                             </div>
                             <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>{timeAgo}</p>
                           </div>
@@ -982,6 +1019,18 @@ export default function Index() {
           staff={null}
           onPayment={handlePayment}
           onClose={closeModal}
+        />
+      )}
+      {showReceipt && completedOrder && branding && (
+        <ThermalReceipt
+          order={completedOrder}
+          brandingConfig={{
+            storeName: branding.storeName,
+            phone: branding.phone,
+            city: branding.city,
+            email: branding.email,
+          }}
+          onClose={() => setShowReceipt(false)}
         />
       )}
       {activeModal === "security" && (

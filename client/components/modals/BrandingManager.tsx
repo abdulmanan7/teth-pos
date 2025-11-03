@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Save, Loader, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useElectronApi } from "@/hooks/useElectronApi";
 
 interface BrandingConfig {
   _id?: string;
@@ -27,6 +28,7 @@ interface BrandingManagerProps {
 }
 
 export default function BrandingManager({ isDarkTheme = true, onClose }: BrandingManagerProps) {
+  const { get, post } = useElectronApi();
   const [config, setConfig] = useState<BrandingConfig>({
     storeName: "",
     phone: "",
@@ -52,11 +54,8 @@ export default function BrandingManager({ isDarkTheme = true, onClose }: Brandin
   const fetchBrandingConfig = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/branding/config");
-      if (response.ok) {
-        const data = await response.json();
-        setConfig(data);
-      }
+      const data = await get("/api/branding/config");
+      setConfig(data);
     } catch (error) {
       console.error("Error fetching branding config:", error);
       setMessage({ type: "error", text: "Failed to load branding configuration" });
@@ -70,20 +69,10 @@ export default function BrandingManager({ isDarkTheme = true, onClose }: Brandin
       setSaving(true);
       setMessage(null);
 
-      const response = await fetch("/api/branding/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setConfig(data);
-        setMessage({ type: "success", text: "Branding configuration saved successfully!" });
-        setTimeout(() => setMessage(null), 3000);
-      } else {
-        setMessage({ type: "error", text: "Failed to save branding configuration" });
-      }
+      const data = await post("/api/branding/config", config);
+      setConfig(data);
+      setMessage({ type: "success", text: "Branding configuration saved successfully!" });
+      setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       console.error("Error saving branding config:", error);
       setMessage({ type: "error", text: "Error saving configuration" });

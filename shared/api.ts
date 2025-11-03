@@ -137,6 +137,10 @@ export interface Order {
   items: OrderItem[];
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
   total: number;
+  staffId?: string;
+  staffName?: string;
+  paymentMethod?: 'cash' | 'card' | 'check' | 'transfer' | 'other';
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -163,6 +163,30 @@ export interface Order {
   updatedAt: string;
 }
 
+export interface TaxRateConfig {
+  _id: string;
+  name: string;
+  rate: number; // decimal (0.15 = 15%)
+  description?: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTaxRatePayload {
+  name: string;
+  rate: number; // Accept decimal or percentage input
+  description?: string;
+  isDefault?: boolean;
+}
+
+export interface UpdateTaxRatePayload {
+  name?: string;
+  rate?: number;
+  description?: string;
+  isDefault?: boolean;
+}
+
 // Inventory Types
 export interface LotNumber {
   _id: string;

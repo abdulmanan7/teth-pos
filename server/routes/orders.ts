@@ -53,6 +53,8 @@ export const createOrder: RequestHandler = async (req, res) => {
       paymentMethod,
       checkoutDiscount,
       taxRate = 0,
+      taxRateId,
+      taxRateLabel,
     } = req.body;
     
     // Validate items exist
@@ -142,6 +144,8 @@ export const createOrder: RequestHandler = async (req, res) => {
       totalBeforeTax: taxableAmount,
       taxRate: normalizedTaxRate,
       taxAmount,
+      taxRateId,
+      taxRateLabel,
       total: grandTotal,
       status: 'completed',
       staffId,

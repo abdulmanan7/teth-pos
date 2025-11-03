@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import logoSvg from "@/assets/logo.svg";
 import logoDark from "@/assets/logo-dark.svg";
@@ -47,6 +47,7 @@ import type {
   StaffLoginResponse,
   Order,
   DiscountConfig,
+  TaxRateConfig,
 } from "@shared/api";
 
 type ModalType =
@@ -95,6 +96,9 @@ interface DraftOrder {
 }
 
 const roundToTwo = (value: number): number => Math.round(value * 100) / 100;
+const TAX_SELECTION_KEY = "selectedTaxRateId";
+const CUSTOM_TAX_VALUE_KEY = "customTaxRateValue";
+const CUSTOM_TAX_OPTION = "__custom__";
 
 const calculateItemTotals = (item: CartItem) => {
   const subtotal = roundToTwo(item.price * item.quantity);
@@ -173,7 +177,12 @@ export default function Index() {
   const [loading, setLoading] = useState(true);
   const [currentStaff, setCurrentStaff] = useState<StaffLoginResponse | null>(null);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
-  const [taxRate, setTaxRate] = useState(0); // Dynamic tax rate (0% by default)
+  const [taxRate, setTaxRate] = useState(0);
+  const [taxRates, setTaxRates] = useState<TaxRateConfig[]>([]);
+  const [selectedTaxRateId, setSelectedTaxRateId] = useState<string>(CUSTOM_TAX_OPTION);
+  const [taxRateLabel, setTaxRateLabel] = useState<string | null>(null);
+  const [taxRatesLoading, setTaxRatesLoading] = useState(false);
+  const [taxRatesError, setTaxRatesError] = useState<string | null>(null);
   const [clickingProductId, setClickingProductId] = useState<string | null>(null); // Track which product is being clicked
   const [isDarkTheme, setIsDarkTheme] = useState(() => {
     // Load theme from localStorage on mount, default to dark
@@ -230,7 +239,105 @@ export default function Index() {
     };
   }, [cartItems, checkoutDiscount, taxRate]);
 
-  // Load draft orders and staff session from localStorage on mount
+  const applyPresetTaxRate = useCallback((rate: TaxRateConfig) => {
+    setSelectedTaxRateId(rate._id);
+    setTaxRate(rate.rate);
+    setTaxRateLabel(rate.name);
+    storage.set(TAX_SELECTION_KEY, rate._id);
+    storage.remove(CUSTOM_TAX_VALUE_KEY);
+  }, []);
+
+  const fetchTaxRates = useCallback(async () => {
+    try {
+      setTaxRatesLoading(true);
+      setTaxRatesError(null);
+      const data = await get("/api/tax-rates");
+      const list = Array.isArray(data) ? (data as TaxRateConfig[]) : [];
+      setTaxRates(list);
+
+      if (!list.length) {
+        setSelectedTaxRateId(CUSTOM_TAX_OPTION);
+        setTaxRateLabel(null);
+        storage.set(TAX_SELECTION_KEY, CUSTOM_TAX_OPTION);
+        return;
+      }
+
+      const storedSelection = storage.get<string>(TAX_SELECTION_KEY);
+      if (storedSelection && storedSelection !== CUSTOM_TAX_OPTION) {
+        const matched = list.find((rate) => rate._id === storedSelection);
+        if (matched) {
+          applyPresetTaxRate(matched);
+          return;
+        }
+      }
+
+      if (storedSelection === CUSTOM_TAX_OPTION) {
+        const storedCustom = storage.get<number>(CUSTOM_TAX_VALUE_KEY, 0) ?? 0;
+        setSelectedTaxRateId(CUSTOM_TAX_OPTION);
+        setTaxRate(Number.isFinite(storedCustom) ? storedCustom : 0);
+        setTaxRateLabel(null);
+        return;
+      }
+
+      const defaultRate = list.find((rate) => rate.isDefault) ?? list[0];
+      if (defaultRate) {
+        applyPresetTaxRate(defaultRate);
+      }
+    } catch (error) {
+      console.error("Failed to load tax rates", error);
+      setTaxRates([]);
+      setTaxRatesError("Failed to load tax presets. Using custom rate.");
+      setSelectedTaxRateId(CUSTOM_TAX_OPTION);
+      setTaxRateLabel(null);
+      showNotification.error("Failed to load tax rates");
+    } finally {
+      setTaxRatesLoading(false);
+    }
+  }, [applyPresetTaxRate, get]);
+
+  useEffect(() => {
+    fetchTaxRates();
+  }, [fetchTaxRates]);
+
+  const handleTaxRateSelect = (value: string) => {
+    if (value === CUSTOM_TAX_OPTION) {
+      setSelectedTaxRateId(CUSTOM_TAX_OPTION);
+      setTaxRateLabel(null);
+      storage.set(TAX_SELECTION_KEY, CUSTOM_TAX_OPTION);
+      const storedCustom = storage.get<number>(CUSTOM_TAX_VALUE_KEY, taxRate) ?? taxRate;
+      setTaxRate(Number.isFinite(storedCustom) ? storedCustom : 0);
+      return;
+    }
+
+    const matched = taxRates.find((rate) => rate._id === value);
+    if (matched) {
+      applyPresetTaxRate(matched);
+      return;
+    }
+
+    // Fallback to custom mode if preset disappeared between renders
+    setSelectedTaxRateId(CUSTOM_TAX_OPTION);
+    setTaxRateLabel(null);
+  };
+
+  const handleCustomTaxRateChange = (rawValue: string) => {
+    const parsed = parseFloat(rawValue);
+    const safePercent = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    const normalized = safePercent / 100;
+    setTaxRate(normalized);
+    if (selectedTaxRateId !== CUSTOM_TAX_OPTION) {
+      setSelectedTaxRateId(CUSTOM_TAX_OPTION);
+    }
+    setTaxRateLabel(null);
+    storage.set(TAX_SELECTION_KEY, CUSTOM_TAX_OPTION);
+    storage.set(CUSTOM_TAX_VALUE_KEY, normalized);
+  };
+
+  const handleRetryFetchTaxRates = () => {
+    if (!taxRatesLoading) {
+      fetchTaxRates();
+    }
+  };
   useEffect(() => {
     const savedDrafts = storage.get<DraftOrder[]>("draftOrders", []);
     if (savedDrafts && savedDrafts.length > 0) {
@@ -490,8 +597,10 @@ export default function Index() {
         checkoutDiscountAmount,
         totalBeforeTax: taxableAmount,
         taxRate,
+        taxRateId: selectedTaxRateId !== CUSTOM_TAX_OPTION ? selectedTaxRateId : undefined,
+        taxRateLabel: taxRateLabel ?? undefined,
         taxAmount: tax,
-        total,
+        total: total,
         staffId: currentStaff?._id,
         staffName: currentStaff?.name,
         paymentMethod,
@@ -1050,20 +1159,49 @@ export default function Index() {
                 {/* Tax Rate Control */}
                 <div className={`border-t pt-4 mb-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
                   <label className={`block text-xs font-semibold mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                    TAX RATE (%)
+                    TAX RATE
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={taxRate * 100}
-                      onChange={(e) => setTaxRate(parseFloat(e.target.value) / 100)}
-                      className={`flex-1 border rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}`}
-                      placeholder="0"
-                    />
-                    <span className={`text-sm font-semibold py-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>%</span>
+                  {taxRatesError && (
+                    <div className={`flex items-center justify-between text-xs mb-2 rounded border px-3 py-2 ${isDarkTheme ? 'border-red-500/40 bg-red-900/40 text-red-200' : 'border-red-200 bg-red-50 text-red-700'}`}>
+                      <span>{taxRatesError}</span>
+                      <button
+                        type="button"
+                        onClick={handleRetryFetchTaxRates}
+                        className={`ml-2 text-xs font-semibold underline ${isDarkTheme ? 'text-red-200 hover:text-red-100' : 'text-red-700 hover:text-red-800'}`}
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <select
+                      value={selectedTaxRateId}
+                      onChange={(e) => handleTaxRateSelect(e.target.value)}
+                      disabled={taxRatesLoading}
+                      className={`w-full border rounded px-2 py-2 text-sm focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}`}
+                    >
+                      {taxRates.map((rate) => (
+                        <option key={rate._id} value={rate._id}>
+                          {rate.name} ({(rate.rate * 100).toFixed(2)}%)
+                        </option>
+                      ))}
+                      <option value={CUSTOM_TAX_OPTION}>Custom</option>
+                    </select>
+                    {selectedTaxRateId === CUSTOM_TAX_OPTION && (
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          value={(taxRate * 100).toFixed(2)}
+                          onChange={(e) => handleCustomTaxRateChange(e.target.value)}
+                          className={`flex-1 border rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'}`}
+                          placeholder="0"
+                        />
+                        <span className={`text-sm font-semibold py-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>%</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1116,7 +1254,9 @@ export default function Index() {
                     </div>
                   )}
                   <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
-                    <span>Tax ({(taxRate * 100).toFixed(1)}%)</span>
+                    <span>
+                      Tax ({(taxRate * 100).toFixed(1)}%{taxRateLabel ? ` • ${taxRateLabel}` : ""})
+                    </span>
                     <span>Rs {tax.toFixed(2)}</span>
                   </div>
                   <div className={`flex justify-between text-2xl font-bold pt-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>

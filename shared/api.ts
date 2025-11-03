@@ -154,6 +154,8 @@ export interface Order {
   totalBeforeTax?: number;
   taxRate?: number;
   taxAmount?: number;
+  taxRateId?: string;
+  taxRateLabel?: string;
   total: number;
   staffId?: string;
   staffName?: string;

@@ -33,6 +33,8 @@ export interface IOrder extends Document {
   totalBeforeTax: number; // total after discounts before tax
   taxRate?: number;
   taxAmount: number;
+  taxRateId?: string;
+  taxRateLabel?: string;
   total: number; // final total after all discounts
   staffId?: string;
   staffName?: string;
@@ -149,6 +151,13 @@ const OrderSchema = new Schema<IOrder>(
       type: Number,
       default: 0,
       min: 0,
+    },
+    taxRateId: {
+      type: String,
+    },
+    taxRateLabel: {
+      type: String,
+      trim: true,
     },
     total: {
       type: Number,

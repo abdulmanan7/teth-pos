@@ -1,4 +1,4 @@
-import { X, Plus, Eye, Trash2, Check, AlertCircle } from "lucide-react";
+import { X, Plus, Eye, Trash2, Check, AlertCircle, Package, Calendar, User, FileText, TrendingUp, TrendingDown, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -267,69 +267,215 @@ export default function GoodsReceiptManager({ isDarkTheme = true }: GoodsReceipt
       {/* Goods Receipts List */}
       <div className="grid gap-4">
         {goodsReceipts.length === 0 ? (
-          <div className={`text-center py-8 rounded-lg border ${isDarkTheme ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
-            <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>No goods receipts yet. Create one to get started!</p>
+          <div className={`text-center py-12 rounded-lg border ${isDarkTheme ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
+            <Package className={`w-16 h-16 mx-auto mb-4 ${isDarkTheme ? 'text-slate-600' : 'text-slate-400'}`} />
+            <p className={`text-lg font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>No goods receipts yet</p>
+            <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Create one to start receiving inventory from purchase orders</p>
           </div>
         ) : (
-          goodsReceipts.map((gr) => (
-            <div
-              key={gr._id}
-              className={`border rounded-lg p-4 transition-colors ${isDarkTheme ? 'bg-slate-800 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{gr.receipt_number}</h3>
-                    <span className={`text-xs px-2 py-1 rounded text-white ${getStatusColor(gr.status)}`}>
-                      {gr.status}
-                    </span>
-                  </div>
+          goodsReceipts.map((gr) => {
+            const totalOrdered = gr.items.reduce((sum, item) => sum + item.po_quantity, 0);
+            const receivePercentage = totalOrdered > 0 ? Math.round((gr.total_received / totalOrdered) * 100) : 0;
+            const hasQualityIssues = gr.items.some(item => item.quality_check === 'fail' || item.damaged_quantity > 0);
+            const allQualityPassed = gr.items.every(item => item.quality_check === 'pass');
 
-                  <div className={`grid grid-cols-2 gap-2 text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                    <div>PO: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{gr.po_number}</span></div>
-                    <div>Received: <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{gr.total_received}</span></div>
-                    <div>Damaged: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{gr.total_damaged}</span></div>
-                    <div>Date: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{new Date(gr.receipt_date).toLocaleDateString()}</span></div>
-                  </div>
-
-                  {/* Items Summary */}
-                  <div className={`rounded p-2 mb-2 ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
-                    <p className={`text-xs mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Items ({gr.items.length}):</p>
-                    <div className="space-y-1">
-                      {gr.items.map((item, idx) => (
-                        <div key={idx} className={`text-xs flex items-center justify-between ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
-                          <span>{getProductName(item.product_id)} - {item.received_quantity}/{item.po_quantity}</span>
-                          <span className={`px-2 py-0.5 rounded text-xs ${getQualityColor(item.quality_check)}`}>
-                            {item.quality_check}
+            return (
+              <div
+                key={gr._id}
+                className={`border rounded-lg overflow-hidden transition-all hover:shadow-lg ${isDarkTheme ? 'bg-slate-800 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-300 hover:border-slate-400'}`}
+              >
+                {/* Header */}
+                <div className={`p-4 border-b ${isDarkTheme ? 'border-slate-700 bg-slate-700/30' : 'border-slate-200 bg-slate-50'}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className={`text-xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                          {gr.receipt_number}
+                        </h3>
+                        <span className={`text-xs px-3 py-1 rounded-full text-white font-medium ${getStatusColor(gr.status)}`}>
+                          {gr.status.toUpperCase()}
+                        </span>
+                        {hasQualityIssues && (
+                          <span className="text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-400 font-medium border border-red-500/30">
+                            ⚠️ QUALITY ISSUES
                           </span>
-                        </div>
-                      ))}
+                        )}
+                        {allQualityPassed && gr.status === 'complete' && (
+                          <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 font-medium border border-green-500/30">
+                            ✓ ALL PASSED
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className={`flex items-center gap-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                          <FileText className="w-4 h-4" />
+                          PO: <span className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{gr.po_number}</span>
+                        </span>
+                        <span className={`flex items-center gap-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                          <Calendar className="w-4 h-4" />
+                          {new Date(gr.receipt_date).toLocaleDateString()}
+                        </span>
+                        {gr.received_by && (
+                          <span className={`flex items-center gap-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                            <User className="w-4 h-4" />
+                            {gr.received_by}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedGR(gr);
+                          setShowDetailsModal(true);
+                        }}
+                        className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteGR(gr._id)}
+                        className="p-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                        title="Delete GR"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={() => {
-                      setSelectedGR(gr);
-                      setShowDetailsModal(true);
-                    }}
-                    className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-100 hover:bg-blue-200 text-blue-900'}`}
-                    title="View Details"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteGR(gr._id)}
-                    className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-100 hover:bg-red-200 text-red-900'}`}
-                    title="Delete GR"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                {/* Body */}
+                <div className="p-4">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-slate-700/30' : 'bg-slate-100'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Package className={`w-4 h-4 ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}`} />
+                        <span className={`text-xs font-medium ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Items</span>
+                      </div>
+                      <p className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                        {gr.items.length}
+                      </p>
+                    </div>
+
+                    <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-green-500/10 border border-green-500/30' : 'bg-green-50 border border-green-200'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <TrendingUp className="w-4 h-4 text-green-400" />
+                        <span className={`text-xs font-medium ${isDarkTheme ? 'text-green-300' : 'text-green-700'}`}>Received</span>
+                      </div>
+                      <p className="text-2xl font-bold text-green-400">
+                        {gr.total_received}
+                      </p>
+                      <p className={`text-xs ${isDarkTheme ? 'text-green-300' : 'text-green-600'}`}>
+                        {receivePercentage}% of {totalOrdered}
+                      </p>
+                    </div>
+
+                    <div className={`rounded-lg p-3 ${gr.total_damaged > 0 ? (isDarkTheme ? 'bg-red-500/10 border border-red-500/30' : 'bg-red-50 border border-red-200') : (isDarkTheme ? 'bg-slate-700/30' : 'bg-slate-100')}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <TrendingDown className={`w-4 h-4 ${gr.total_damaged > 0 ? 'text-red-400' : (isDarkTheme ? 'text-slate-400' : 'text-slate-500')}`} />
+                        <span className={`text-xs font-medium ${gr.total_damaged > 0 ? (isDarkTheme ? 'text-red-300' : 'text-red-700') : (isDarkTheme ? 'text-slate-400' : 'text-slate-600')}`}>Damaged</span>
+                      </div>
+                      <p className={`text-2xl font-bold ${gr.total_damaged > 0 ? 'text-red-400' : (isDarkTheme ? 'text-slate-500' : 'text-slate-400')}`}>
+                        {gr.total_damaged}
+                      </p>
+                    </div>
+
+                    <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-slate-700/30' : 'bg-slate-100'}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {allQualityPassed ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-400" />
+                        ) : hasQualityIssues ? (
+                          <XCircle className="w-4 h-4 text-red-400" />
+                        ) : (
+                          <Clock className={`w-4 h-4 ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}`} />
+                        )}
+                        <span className={`text-xs font-medium ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Quality</span>
+                      </div>
+                      <p className={`text-sm font-bold ${allQualityPassed ? 'text-green-400' : hasQualityIssues ? 'text-red-400' : (isDarkTheme ? 'text-yellow-400' : 'text-yellow-600')}`}>
+                        {allQualityPassed ? 'All Pass' : hasQualityIssues ? 'Issues' : 'Pending'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Receive Progress Bar */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-sm font-medium ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                        Receipt Progress
+                      </span>
+                      <span className={`text-sm font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                        {receivePercentage}%
+                      </span>
+                    </div>
+                    <div className={`w-full rounded-full h-2 ${isDarkTheme ? 'bg-slate-700' : 'bg-slate-300'}`}>
+                      <div
+                        className={`h-2 rounded-full transition-all ${receivePercentage === 100 ? 'bg-green-500' : receivePercentage >= 50 ? 'bg-blue-500' : 'bg-yellow-500'}`}
+                        style={{ width: `${receivePercentage}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Items List */}
+                  <div>
+                    <p className={`text-sm font-semibold mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                      Items ({gr.items.length})
+                    </p>
+                    <div className="space-y-2">
+                      {gr.items.map((item, idx) => {
+                        const receivedPercent = item.po_quantity > 0 ? Math.round((item.received_quantity / item.po_quantity) * 100) : 0;
+                        
+                        return (
+                          <div key={idx} className={`rounded-lg p-3 border ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex-1">
+                                <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                                  {getProductName(item.product_id)}
+                                </p>
+                                <div className="flex items-center gap-3 text-xs mt-1">
+                                  <span className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>
+                                    Ordered: <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{item.po_quantity}</span>
+                                  </span>
+                                  <span className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>
+                                    Received: <span className={`font-semibold ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>{item.received_quantity}</span>
+                                  </span>
+                                  {item.damaged_quantity > 0 && (
+                                    <span className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>
+                                      Damaged: <span className="font-semibold text-red-400">{item.damaged_quantity}</span>
+                                    </span>
+                                  )}
+                                  <span className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>
+                                    {receivedPercent}%
+                                  </span>
+                                </div>
+                              </div>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${getQualityColor(item.quality_check)}`}>
+                                {item.quality_check.toUpperCase()}
+                              </span>
+                            </div>
+                            {item.quality_notes && (
+                              <p className={`text-xs mt-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                                📝 {item.quality_notes}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  {gr.notes && (
+                    <div className={`mt-4 rounded-lg p-3 ${isDarkTheme ? 'bg-blue-500/10 border border-blue-500/30' : 'bg-blue-50 border border-blue-200'}`}>
+                      <p className={`text-xs font-medium mb-1 ${isDarkTheme ? 'text-blue-300' : 'text-blue-700'}`}>Notes:</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-blue-200' : 'text-blue-600'}`}>{gr.notes}</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

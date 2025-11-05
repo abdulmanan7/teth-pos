@@ -173,7 +173,11 @@ export default function StockAlertsManager({ isDarkTheme = true, onClose }: Stoc
 
   const getProductName = (productId: string) => {
     const product = products.find((p) => p._id === productId);
-    return product ? `${product.name} (${product.sku})` : productId;
+    if (!product) return productId;
+    
+    // SKU is now included in product via aggregation lookup
+    const sku = product.sku || "N/A";
+    return `${product.name} (${sku})`;
   };
 
   const getAlertIcon = (type: string) => {

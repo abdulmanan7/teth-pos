@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { StockAdjustment } from "../../db/models/StockAdjustment";
 import { Product } from "../../db/models/Product";
 import { InventoryTransaction } from "../../db/models/InventoryTransaction";
+import { createStockAdjustmentAccountingEntries } from "../../utils/orderAccountingIntegration";
 
 // Retry helper for database operations
 async function withRetry<T>(
@@ -242,6 +243,10 @@ export const approveAdjustment: RequestHandler = async (req, res) => {
         .json({ error: "Only draft or pending adjustments can be approved" });
     }
 
+    // Track total adjustment value for accounting
+    let totalIncreaseValue = 0;
+    let totalDecreaseValue = 0;
+
     // Apply inventory changes for each line item
     for (const line of adjustment.lines) {
       const product = await withRetry(async () =>
@@ -258,6 +263,16 @@ export const approveAdjustment: RequestHandler = async (req, res) => {
 
       await withRetry(() => product.save());
 
+      // Calculate value for accounting (use unit_cost if provided, otherwise use product cost)
+      const unitCost = line.unit_cost || product.cost || 0;
+      const lineValue = Math.abs(difference) * unitCost;
+
+      if (difference > 0) {
+        totalIncreaseValue += lineValue;
+      } else if (difference < 0) {
+        totalDecreaseValue += lineValue;
+      }
+
       // Create transaction record
       const transaction = new InventoryTransaction({
         product_id: line.product_id,
@@ -272,6 +287,28 @@ export const approveAdjustment: RequestHandler = async (req, res) => {
       });
 
       await withRetry(() => transaction.save());
+    }
+
+    // Create accounting entries for increases
+    if (totalIncreaseValue > 0) {
+      await createStockAdjustmentAccountingEntries(
+        totalIncreaseValue,
+        true,
+        adjustment._id,
+        adjustment.adjustment_number,
+        adjustment.reason
+      );
+    }
+
+    // Create accounting entries for decreases
+    if (totalDecreaseValue > 0) {
+      await createStockAdjustmentAccountingEntries(
+        totalDecreaseValue,
+        false,
+        adjustment._id,
+        adjustment.adjustment_number,
+        adjustment.reason
+      );
     }
 
     // Update adjustment status to approved

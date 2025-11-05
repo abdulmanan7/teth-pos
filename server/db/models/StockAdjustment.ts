@@ -62,7 +62,7 @@ const StockAdjustmentSchema = new Schema<IStockAdjustment>(
 );
 
 // Indexes for performance
-StockAdjustmentSchema.index({ adjustment_number: 1 });
+// Note: adjustment_number already has unique index from schema definition
 StockAdjustmentSchema.index({ warehouse_id: 1 });
 StockAdjustmentSchema.index({ status: 1 });
 StockAdjustmentSchema.index({ adjustment_date: 1 });

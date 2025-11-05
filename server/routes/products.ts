@@ -1,18 +1,57 @@
 import { RequestHandler } from 'express';
 import { Product } from '../db/models/Product';
 import { SerialNumber } from '../db/models/SerialNumber';
+import { BarcodeMapping } from '../db/models/BarcodeMapping';
 
 // Get all products
 export const getAllProducts: RequestHandler = async (req, res) => {
   try {
-    const products = await Product.find();
+    // Use aggregation to join with BarcodeMapping for SKU
+    const products = await Product.aggregate([
+      {
+        $lookup: {
+          from: 'barcodemappings',
+          let: { productId: { $toString: '$_id' } },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$product_id', '$$productId'] },
+                    { $eq: ['$barcode_type', 'sku'] },
+                    { $eq: ['$is_active', true] }
+                  ]
+                }
+              }
+            },
+            { $limit: 1 }
+          ],
+          as: 'skuBarcode'
+        }
+      },
+      {
+        $addFields: {
+          sku: {
+            $ifNull: [
+              { $arrayElemAt: ['$skuBarcode.barcode', 0] },
+              'N/A'
+            ]
+          }
+        }
+      },
+      {
+        $project: {
+          skuBarcode: 0
+        }
+      }
+    ]);
     
     // Add hasSerialNumbers flag to each product
     const productsWithSerialFlag = await Promise.all(
       products.map(async (product) => {
         const serialCount = await SerialNumber.countDocuments({ product_id: product._id });
         return {
-          ...product.toObject(),
+          ...product,
           hasSerialNumbers: serialCount > 0,
         };
       })

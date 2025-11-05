@@ -279,3 +279,98 @@ export async function recordDamagedGoods(
     console.error("Error recording damaged goods:", error);
   }
 }
+
+/**
+ * Create accounting entries for stock adjustments
+ *
+ * For INCREASE (e.g., found inventory, count correction):
+ * DEBIT: Inventory (1510) - Increase inventory value
+ * CREDIT: Inventory Adjustment Gain (4200) - Record the gain
+ *
+ * For DECREASE (e.g., damage, loss, theft, expiry):
+ * DEBIT: Inventory Adjustment Loss/COGS (5010) - Record the loss
+ * CREDIT: Inventory (1510) - Reduce inventory value
+ *
+ * @param adjustmentValue - Absolute value of the adjustment
+ * @param isIncrease - True for increase, false for decrease
+ * @param adjustmentId - Stock Adjustment ID
+ * @param adjustmentNumber - Stock Adjustment number
+ * @param reason - Reason for adjustment
+ */
+export async function createStockAdjustmentAccountingEntries(
+  adjustmentValue: number,
+  isIncrease: boolean,
+  adjustmentId: string,
+  adjustmentNumber: string,
+  reason: string,
+) {
+  try {
+    if (adjustmentValue <= 0) {
+      return;
+    }
+
+    const inventoryAccount = await ChartOfAccount.findOne({ code: "1510" }); // Inventory
+    const cogsAccount = await ChartOfAccount.findOne({ code: "5010" }); // COGS/Loss
+    const inventoryGainAccount = await ChartOfAccount.findOne({ code: "4200" }); // Other Revenue/Gain
+
+    if (!inventoryAccount || !cogsAccount) {
+      console.error(
+        "Required accounting accounts not found for stock adjustment.",
+      );
+      return;
+    }
+
+    const description = `Stock adjustment (${reason}) - ${adjustmentNumber}`;
+
+    if (isIncrease) {
+      // INVENTORY INCREASE
+      // DEBIT: Inventory (Asset increases)
+      await addTransactionLine({
+        account_id: inventoryAccount._id,
+        reference: "Adjustment",
+        reference_id: adjustmentId,
+        date: new Date(),
+        debit: adjustmentValue,
+        credit: 0,
+        description,
+      });
+
+      // CREDIT: Inventory Adjustment Gain (if account exists, otherwise use COGS contra)
+      const creditAccount = inventoryGainAccount || cogsAccount;
+      await addTransactionLine({
+        account_id: creditAccount._id,
+        reference: "Adjustment",
+        reference_id: adjustmentId,
+        date: new Date(),
+        debit: 0,
+        credit: adjustmentValue,
+        description,
+      });
+    } else {
+      // INVENTORY DECREASE
+      // DEBIT: COGS/Loss (Expense increases)
+      await addTransactionLine({
+        account_id: cogsAccount._id,
+        reference: "Adjustment",
+        reference_id: adjustmentId,
+        date: new Date(),
+        debit: adjustmentValue,
+        credit: 0,
+        description,
+      });
+
+      // CREDIT: Inventory (Asset decreases)
+      await addTransactionLine({
+        account_id: inventoryAccount._id,
+        reference: "Adjustment",
+        reference_id: adjustmentId,
+        date: new Date(),
+        debit: 0,
+        credit: adjustmentValue,
+        description,
+      });
+    }
+  } catch (error) {
+    console.error("Error creating stock adjustment accounting entries:", error);
+  }
+}

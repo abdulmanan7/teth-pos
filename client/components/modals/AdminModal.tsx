@@ -327,12 +327,12 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "analytics") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
@@ -362,12 +362,12 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "transactions") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
@@ -397,12 +397,12 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "barcode-scanner") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>
@@ -432,12 +432,12 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
   if (activeTab === "reporting") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div className={`rounded-lg border shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <X className="w-6 h-6" />
             </button>

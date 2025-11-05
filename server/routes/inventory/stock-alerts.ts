@@ -127,14 +127,15 @@ export const checkAndCreateAlerts: RequestHandler = async (req, res) => {
 
     for (const product of products) {
       for (const rule of reorderRules) {
-        if (rule.product_id === product._id) {
+        // Convert ObjectId to string for comparison
+        if (rule.product_id === product._id.toString()) {
           const stock = product.stock || 0;
 
           // Check for out of stock
           if (stock === 0) {
             const existingAlert = await withRetry(async () =>
               (StockAlert.findOne({
-                product_id: product._id,
+                product_id: product._id.toString(),
                 alert_type: "out_of_stock",
                 status: "active",
               }) as any).exec()
@@ -142,7 +143,7 @@ export const checkAndCreateAlerts: RequestHandler = async (req, res) => {
 
             if (!existingAlert) {
               const newAlert = new StockAlert({
-                product_id: product._id,
+                product_id: product._id.toString(),
                 alert_type: "out_of_stock",
                 current_stock: stock,
                 threshold: 0,
@@ -157,7 +158,7 @@ export const checkAndCreateAlerts: RequestHandler = async (req, res) => {
           else if (stock <= rule.reorder_point) {
             const existingAlert = await withRetry(async () =>
               (StockAlert.findOne({
-                product_id: product._id,
+                product_id: product._id.toString(),
                 alert_type: "low_stock",
                 status: "active",
               }) as any).exec()
@@ -165,7 +166,7 @@ export const checkAndCreateAlerts: RequestHandler = async (req, res) => {
 
             if (!existingAlert) {
               const newAlert = new StockAlert({
-                product_id: product._id,
+                product_id: product._id.toString(),
                 alert_type: "low_stock",
                 current_stock: stock,
                 threshold: rule.reorder_point,
@@ -180,7 +181,7 @@ export const checkAndCreateAlerts: RequestHandler = async (req, res) => {
           else if (rule.safety_stock && stock > rule.safety_stock * 2) {
             const existingAlert = await withRetry(async () =>
               (StockAlert.findOne({
-                product_id: product._id,
+                product_id: product._id.toString(),
                 alert_type: "overstock",
                 status: "active",
               }) as any).exec()
@@ -188,7 +189,7 @@ export const checkAndCreateAlerts: RequestHandler = async (req, res) => {
 
             if (!existingAlert) {
               const newAlert = new StockAlert({
-                product_id: product._id,
+                product_id: product._id.toString(),
                 alert_type: "overstock",
                 current_stock: stock,
                 threshold: rule.safety_stock * 2,

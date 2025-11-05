@@ -38,6 +38,7 @@ export interface Product {
   warehouse_id?: string;
   status?: "active" | "inactive" | "discontinued";
   hasSerialNumbers?: boolean; // Flag to indicate product has serial numbers
+  sku?: string; // SKU from BarcodeMapping (joined via aggregation)
   createdAt: string;
   updatedAt: string;
 }

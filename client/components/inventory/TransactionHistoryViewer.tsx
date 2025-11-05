@@ -127,7 +127,11 @@ export default function TransactionHistoryViewer({
 
   const getProductName = (productId: string) => {
     const product = products.find((p) => p._id === productId);
-    return product ? `${product.name} (${product.sku})` : productId;
+    if (!product) return productId;
+    
+    // SKU is now included in product via aggregation lookup
+    const sku = product.sku || "N/A";
+    return `${product.name} (${sku})`;
   };
 
   const getTransactionIcon = (type: string) => {
@@ -149,20 +153,36 @@ export default function TransactionHistoryViewer({
   };
 
   const getTransactionColor = (type: string) => {
-    switch (type) {
-      case "stock_in":
-      case "return":
-        return "bg-green-900/20 border-green-600";
-      case "stock_out":
-      case "damage":
-      case "expiry_disposal":
-        return "bg-red-900/20 border-red-600";
-      case "transfer":
-        return "bg-blue-900/20 border-blue-600";
-      case "adjustment":
-        return "bg-yellow-900/20 border-yellow-600";
-      default:
-        return "bg-slate-700/30 border-slate-600";
+    if (isDarkTheme) {
+      switch (type) {
+        case "stock_in":
+          return "bg-green-900/20 border-green-600";
+        case "stock_out":
+          return "bg-red-900/20 border-red-600";
+        case "transfer":
+          return "bg-blue-900/20 border-blue-600";
+        case "damage":
+          return "bg-orange-900/20 border-orange-600";
+        case "adjustment":
+          return "bg-yellow-900/20 border-yellow-600";
+        default:
+          return "bg-slate-700/30 border-slate-600";
+      }
+    } else {
+      switch (type) {
+        case "stock_in":
+          return "bg-green-50 border-green-300";
+        case "stock_out":
+          return "bg-red-50 border-red-300";
+        case "transfer":
+          return "bg-blue-50 border-blue-300";
+        case "damage":
+          return "bg-orange-50 border-orange-300";
+        case "adjustment":
+          return "bg-yellow-50 border-yellow-300";
+        default:
+          return "bg-white border-slate-300";
+      }
     }
   };
 
@@ -417,7 +437,7 @@ export default function TransactionHistoryViewer({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-white truncate">
+                    <h4 className={`font-semibold truncate ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                       {getProductName(transaction.product_id)}
                     </h4>
                     <span
@@ -428,12 +448,12 @@ export default function TransactionHistoryViewer({
                       {transaction.status.toUpperCase()}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-400">
+                  <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-700'}`}>
                     {getTypeLabel(transaction.transaction_type)} • Qty:{" "}
                     {transaction.quantity} • Value: $
                     {transaction.total_value?.toLocaleString() || "N/A"}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-700'}`}>
                     {new Date(transaction.createdAt).toLocaleString()} •{" "}
                     {transaction.transaction_id}
                   </p>
@@ -445,7 +465,7 @@ export default function TransactionHistoryViewer({
                     setSelectedTransaction(transaction);
                     setShowDetail(true);
                   }}
-                  className="p-2 bg-slate-600 hover:bg-slate-700 text-white rounded transition-colors"
+                  className={`p-2 rounded transition-colors text-white ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700' : 'bg-blue-500 hover:bg-blue-600'}`}
                   title="View details"
                 >
                   <Eye className="w-4 h-4" />

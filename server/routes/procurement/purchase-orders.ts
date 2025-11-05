@@ -1,8 +1,12 @@
-import { Router, RequestHandler } from 'express';
-import { PurchaseOrder } from '../../db/models/PurchaseOrder';
-import { Vendor } from '../../db/models/Vendor';
-import { Product } from '../../db/models/Product';
-import { TransactionHistory } from '../../db/models/TransactionHistory';
+import { Router, RequestHandler } from "express";
+import { PurchaseOrder } from "../../db/models/PurchaseOrder";
+import { Vendor } from "../../db/models/Vendor";
+import { Product } from "../../db/models/Product";
+import { TransactionHistory } from "../../db/models/TransactionHistory";
+import {
+  createPurchaseOrderAccountingEntries,
+  createPaymentAccountingEntries,
+} from "../../utils/orderAccountingIntegration";
 
 const router = Router();
 
@@ -10,7 +14,7 @@ const router = Router();
 const generatePONumber = async (): Promise<string> => {
   const count = await PurchaseOrder.countDocuments();
   const year = new Date().getFullYear();
-  return `PO-${year}-${String(count + 1).padStart(5, '0')}`;
+  return `PO-${year}-${String(count + 1).padStart(5, "0")}`;
 };
 
 // GET all purchase orders
@@ -19,8 +23,8 @@ const getAllPOs: RequestHandler = async (req, res) => {
     const pos = await PurchaseOrder.find().sort({ order_date: -1 });
     res.json(pos);
   } catch (error) {
-    console.error('Error fetching POs:', error);
-    res.status(500).json({ error: 'Failed to fetch purchase orders' });
+    console.error("Error fetching POs:", error);
+    res.status(500).json({ error: "Failed to fetch purchase orders" });
   }
 };
 
@@ -29,24 +33,26 @@ const getPOById: RequestHandler = async (req, res) => {
   try {
     const po = await PurchaseOrder.findById(req.params.id);
     if (!po) {
-      res.status(404).json({ error: 'Purchase order not found' });
+      res.status(404).json({ error: "Purchase order not found" });
       return;
     }
     res.json(po);
   } catch (error) {
-    console.error('Error fetching PO:', error);
-    res.status(500).json({ error: 'Failed to fetch purchase order' });
+    console.error("Error fetching PO:", error);
+    res.status(500).json({ error: "Failed to fetch purchase order" });
   }
 };
 
 // GET POs by vendor
 const getPOsByVendor: RequestHandler = async (req, res) => {
   try {
-    const pos = await PurchaseOrder.find({ vendor_id: req.params.vendorId }).sort({ order_date: -1 });
+    const pos = await PurchaseOrder.find({
+      vendor_id: req.params.vendorId,
+    }).sort({ order_date: -1 });
     res.json(pos);
   } catch (error) {
-    console.error('Error fetching vendor POs:', error);
-    res.status(500).json({ error: 'Failed to fetch vendor purchase orders' });
+    console.error("Error fetching vendor POs:", error);
+    res.status(500).json({ error: "Failed to fetch vendor purchase orders" });
   }
 };
 
@@ -56,14 +62,14 @@ const createPO: RequestHandler = async (req, res) => {
     const { vendor_id, items, expected_delivery, notes } = req.body;
 
     if (!vendor_id || !items || items.length === 0) {
-      res.status(400).json({ error: 'Vendor ID and items are required' });
+      res.status(400).json({ error: "Vendor ID and items are required" });
       return;
     }
 
     // Verify vendor exists
     const vendor = await Vendor.findById(vendor_id);
     if (!vendor) {
-      res.status(404).json({ error: 'Vendor not found' });
+      res.status(404).json({ error: "Vendor not found" });
       return;
     }
 
@@ -96,10 +102,12 @@ const createPO: RequestHandler = async (req, res) => {
       vendor_id,
       items: validatedItems,
       total_amount,
-      status: 'draft',
-      payment_status: 'pending',
+      status: "draft",
+      payment_status: "pending",
       order_date: new Date(),
-      expected_delivery: expected_delivery ? new Date(expected_delivery) : undefined,
+      expected_delivery: expected_delivery
+        ? new Date(expected_delivery)
+        : undefined,
       notes,
     });
 
@@ -112,8 +120,8 @@ const createPO: RequestHandler = async (req, res) => {
 
     res.status(201).json(po);
   } catch (error) {
-    console.error('Error creating PO:', error);
-    res.status(500).json({ error: 'Failed to create purchase order' });
+    console.error("Error creating PO:", error);
+    res.status(500).json({ error: "Failed to create purchase order" });
   }
 };
 
@@ -124,7 +132,7 @@ const updatePO: RequestHandler = async (req, res) => {
 
     const po = await PurchaseOrder.findById(req.params.id);
     if (!po) {
-      res.status(404).json({ error: 'Purchase order not found' });
+      res.status(404).json({ error: "Purchase order not found" });
       return;
     }
 
@@ -135,7 +143,9 @@ const updatePO: RequestHandler = async (req, res) => {
       for (const item of items) {
         const product = await Product.findById(item.product_id);
         if (!product) {
-          res.status(404).json({ error: `Product ${item.product_id} not found` });
+          res
+            .status(404)
+            .json({ error: `Product ${item.product_id} not found` });
           return;
         }
 
@@ -161,8 +171,8 @@ const updatePO: RequestHandler = async (req, res) => {
     await po.save();
     res.json(po);
   } catch (error) {
-    console.error('Error updating PO:', error);
-    res.status(500).json({ error: 'Failed to update purchase order' });
+    console.error("Error updating PO:", error);
+    res.status(500).json({ error: "Failed to update purchase order" });
   }
 };
 
@@ -173,12 +183,21 @@ const updatePOStatus: RequestHandler = async (req, res) => {
 
     const po = await PurchaseOrder.findById(req.params.id);
     if (!po) {
-      res.status(404).json({ error: 'Purchase order not found' });
+      res.status(404).json({ error: "Purchase order not found" });
       return;
     }
 
-    const validStatuses = ['draft', 'sent', 'confirmed', 'received', 'invoiced', 'paid'];
-    const validPaymentStatuses = ['pending', 'partial', 'paid'];
+    const validStatuses = [
+      "draft",
+      "sent",
+      "confirmed",
+      "received",
+      "invoiced",
+      "paid",
+    ];
+    const validPaymentStatuses = ["pending", "partial", "paid"];
+
+    const previousStatus = po.status;
 
     if (status && validStatuses.includes(status)) {
       po.status = status as any;
@@ -192,10 +211,40 @@ const updatePOStatus: RequestHandler = async (req, res) => {
     }
 
     await po.save();
+
+    // Create accounting entries based on status change
+    // Only create entries once when transitioning to these statuses
+    if (status && status !== previousStatus) {
+      switch (status) {
+        case "confirmed":
+          // When PO is confirmed, create a commitment entry (optional)
+          break;
+
+        case "received":
+          // When goods are received, record the liability
+          // DEBIT: Inventory, CREDIT: Accounts Payable
+          await createPurchaseOrderAccountingEntries(po);
+          break;
+
+        case "invoiced":
+          // When invoice is received, if not already recorded at 'received' stage
+          // This is a backup in case goods were received but not recorded
+          if (previousStatus !== "received") {
+            await createPurchaseOrderAccountingEntries(po);
+          }
+          break;
+
+        case "paid":
+          // When marked as paid, ensure payment entries exist
+          // Note: Individual payments should be recorded via /payment endpoint
+          break;
+      }
+    }
+
     res.json(po);
   } catch (error) {
-    console.error('Error updating PO status:', error);
-    res.status(500).json({ error: 'Failed to update purchase order status' });
+    console.error("Error updating PO status:", error);
+    res.status(500).json({ error: "Failed to update purchase order status" });
   }
 };
 
@@ -205,13 +254,13 @@ const recordPayment: RequestHandler = async (req, res) => {
     const { amount, payment_method, reference, notes } = req.body;
 
     if (!amount || amount <= 0) {
-      res.status(400).json({ error: 'Payment amount must be greater than 0' });
+      res.status(400).json({ error: "Payment amount must be greater than 0" });
       return;
     }
 
     const po = await PurchaseOrder.findById(req.params.id);
     if (!po) {
-      res.status(404).json({ error: 'Purchase order not found' });
+      res.status(404).json({ error: "Purchase order not found" });
       return;
     }
 
@@ -219,9 +268,9 @@ const recordPayment: RequestHandler = async (req, res) => {
     const paymentRecord = {
       amount,
       payment_date: new Date(),
-      payment_method: payment_method || 'other',
-      reference: reference || '',
-      notes: notes || '',
+      payment_method: payment_method || "other",
+      reference: reference || "",
+      notes: notes || "",
     };
 
     po.payment_history.push(paymentRecord as any);
@@ -229,17 +278,26 @@ const recordPayment: RequestHandler = async (req, res) => {
 
     // Auto-update payment status based on amount paid
     if (po.amount_paid >= po.total_amount) {
-      po.payment_status = 'paid';
+      po.payment_status = "paid";
       po.amount_paid = po.total_amount; // Cap at total
     } else if (po.amount_paid > 0) {
-      po.payment_status = 'partial';
+      po.payment_status = "partial";
     }
 
     await po.save();
+
+    // Create accounting entries for payment
+    await createPaymentAccountingEntries({
+      _id: po._id,
+      amount,
+      payment_date: new Date(),
+      reference: `Payment for PO ${po.po_number}`,
+    });
+
     res.json(po);
   } catch (error) {
-    console.error('Error recording payment:', error);
-    res.status(500).json({ error: 'Failed to record payment' });
+    console.error("Error recording payment:", error);
+    res.status(500).json({ error: "Failed to record payment" });
   }
 };
 
@@ -248,7 +306,7 @@ const deletePO: RequestHandler = async (req, res) => {
   try {
     const po = await PurchaseOrder.findByIdAndDelete(req.params.id);
     if (!po) {
-      res.status(404).json({ error: 'Purchase order not found' });
+      res.status(404).json({ error: "Purchase order not found" });
       return;
     }
 
@@ -260,20 +318,20 @@ const deletePO: RequestHandler = async (req, res) => {
       await vendor.save();
     }
 
-    res.json({ message: 'Purchase order deleted successfully' });
+    res.json({ message: "Purchase order deleted successfully" });
   } catch (error) {
-    console.error('Error deleting PO:', error);
-    res.status(500).json({ error: 'Failed to delete purchase order' });
+    console.error("Error deleting PO:", error);
+    res.status(500).json({ error: "Failed to delete purchase order" });
   }
 };
 
-router.get('/', getAllPOs);
-router.get('/:id', getPOById);
-router.get('/vendor/:vendorId', getPOsByVendor);
-router.post('/', createPO);
-router.put('/:id', updatePO);
-router.put('/:id/status', updatePOStatus);
-router.post('/:id/payment', recordPayment);
-router.delete('/:id', deletePO);
+router.get("/", getAllPOs);
+router.get("/:id", getPOById);
+router.get("/vendor/:vendorId", getPOsByVendor);
+router.post("/", createPO);
+router.put("/:id", updatePO);
+router.put("/:id/status", updatePOStatus);
+router.post("/:id/payment", recordPayment);
+router.delete("/:id", deletePO);
 
 export default router;

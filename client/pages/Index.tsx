@@ -1,7 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import logoSvg from "@/assets/logo.svg";
-import logoDark from "@/assets/logo-dark.svg";
 import {
   ShoppingCart,
   Users,
@@ -22,6 +20,7 @@ import {
   Printer,
   Percent,
   Tag,
+  Calculator,
 } from "lucide-react";
 import ProductsModal from "@/components/modals/ProductsModal";
 import CustomersModal from "@/components/modals/CustomersModal";
@@ -35,6 +34,7 @@ import ResumeOrderModal from "@/components/modals/ResumeOrderModal";
 import PaymentModalComponent from "@/components/modals/PaymentModalComponent";
 import ReturnsModal from "@/components/modals/ReturnsModal";
 import DiscountModalComponent from "@/components/modals/DiscountModalComponent";
+import AccountingModal from "@/components/modals/AccountingModal";
 import ThermalReceipt from "@/components/receipts/ThermalReceipt";
 import InventoryWidgets from "@/components/dashboard/InventoryWidgets";
 import { useElectronApi } from "@/hooks/useElectronApi";
@@ -62,6 +62,7 @@ type ModalType =
   | "admin"
   | "dashboard"
   | "returns"
+  | "accounting"
   | null;
 
 interface Product {
@@ -374,7 +375,6 @@ export default function Index() {
           price: p.price,
           stock: p.stock,
           category: p.category,
-          sku: p.sku,
           status: p.status,
         }));
         
@@ -501,12 +501,15 @@ export default function Index() {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
+    // Round to 2 decimal places to avoid floating point precision issues
+    const roundedQuantity = Math.round(quantity * 100) / 100;
+    
+    if (roundedQuantity <= 0) {
       removeFromCart(productId);
     } else {
       setCartItems(
         cartItems.map((item) =>
-          item.productId === productId ? { ...item, quantity } : item
+          item.productId === productId ? { ...item, quantity: roundedQuantity } : item
         )
       );
     }
@@ -642,16 +645,8 @@ export default function Index() {
           <div className="flex items-center justify-between gap-4">
             {/* Logo & Title */}
             <div className="flex items-center gap-3 min-w-0">
-              <img src={isDarkTheme ? logoDark : logoSvg} alt="Teth POS Logo" className="h-12 flex-shrink-0" />
+              <img src={logoSvg} alt="Teth POS Logo" className="h-12 flex-shrink-0" />
               {/* Logo: use logo-dark when dark theme, else use logo */}
-            </div>
-
-            {/* Center - Date/Time */}
-            <div className={`hidden sm:flex items-center gap-4 text-xs ${isDarkTheme ? 'text-blue-100' : 'text-slate-600'}`}>
-              <div className="text-center">
-                <div>{new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
-                <div className={isDarkTheme ? 'text-blue-200' : 'text-slate-500'}>{new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</div>
-              </div>
             </div>
 
             {/* Right - Staff & Actions */}
@@ -663,6 +658,16 @@ export default function Index() {
                     {currentStaff.name}
                   </span>
                 </div>
+              )}
+              {/* Accounts Button */}
+              {currentStaff && currentStaff.role === "Admin" && (
+                <button
+                  onClick={() => setActiveModal("accounting")}
+                  className={`p-2 rounded-lg transition-colors ${isDarkTheme ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'}`}
+                  title="Accounting"
+                >
+                  <Calculator className="w-4 h-4" />
+                </button>
               )}
               {/* Theme Switcher */}
               <button
@@ -1113,7 +1118,7 @@ export default function Index() {
                             <button
                               type="button"
                               onClick={() =>
-                                updateQuantity(item.productId, item.quantity - 1)
+                                updateQuantity(item.productId, Math.max(0.1, item.quantity - 0.1))
                               }
                               className={`px-1.5 py-0.5 rounded font-bold text-xs ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'}`}
                             >
@@ -1121,20 +1126,29 @@ export default function Index() {
                             </button>
                             <input
                               type="number"
-                              value={item.quantity}
-                              onChange={(e) =>
-                                updateQuantity(
-                                  item.productId,
-                                  parseInt(e.target.value) || 0
-                                )
-                              }
-                              className={`w-8 text-center rounded px-0.5 py-0.5 text-xs ${isDarkTheme ? 'bg-slate-600 text-white' : 'bg-slate-200 text-slate-700'}`}
-                              min="1"
+                              key={`qty-${item.productId}-${item.quantity}`}
+                              defaultValue={item.quantity}
+                              onBlur={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (!isNaN(value) && value > 0) {
+                                  updateQuantity(item.productId, value);
+                                } else {
+                                  updateQuantity(item.productId, 0.1);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              step="0.1"
+                              className={`w-12 text-center rounded px-0.5 py-0.5 text-xs ${isDarkTheme ? 'bg-slate-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+                              min="0.1"
                             />
                             <button
                               type="button"
                               onClick={() =>
-                                updateQuantity(item.productId, item.quantity + 1)
+                                updateQuantity(item.productId, item.quantity + 0.1)
                               }
                               className={`px-1.5 py-0.5 rounded font-bold text-xs ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'}`}
                             >
@@ -1433,6 +1447,7 @@ export default function Index() {
       )}
       {activeModal === "admin" && <AdminModal isDarkTheme={isDarkTheme} onClose={closeModal} userRole={currentStaff?.role} />}
       {activeModal === "returns" && <ReturnsModal isDarkTheme={isDarkTheme} onClose={closeModal} />}
+      {activeModal === "accounting" && <AccountingModal isDarkTheme={isDarkTheme} onClose={closeModal} />}
     </>
   );
 }

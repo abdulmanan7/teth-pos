@@ -3,6 +3,7 @@ import { GoodsReceipt } from '../../db/models/GoodsReceipt';
 import { PurchaseOrder } from '../../db/models/PurchaseOrder';
 import { Product } from '../../db/models/Product';
 import { TransactionHistory } from '../../db/models/TransactionHistory';
+import { recordDamagedGoods } from '../../utils/orderAccountingIntegration';
 
 const router = Router();
 
@@ -171,6 +172,9 @@ const confirmGR: RequestHandler = async (req, res) => {
       return;
     }
 
+    // Calculate total damaged goods value for accounting
+    let totalDamagedValue = 0;
+
     // Update inventory for each item
     for (const grItem of gr.items) {
       const product = await Product.findById(grItem.product_id);
@@ -179,17 +183,10 @@ const confirmGR: RequestHandler = async (req, res) => {
         const goodQuantity = grItem.received_quantity - (grItem.damaged_quantity || 0);
         product.stock += goodQuantity;
 
-        // Update purchase price info
+        // Calculate damaged goods value
         const poItem = po.items[grItem.po_item_index];
-        product.last_purchase_price = poItem.purchase_price;
-        product.last_purchase_date = new Date();
-
-        // Calculate average purchase price
-        if (!product.average_purchase_price) {
-          product.average_purchase_price = poItem.purchase_price;
-        } else {
-          product.average_purchase_price = 
-            (product.average_purchase_price + poItem.purchase_price) / 2;
+        if (grItem.damaged_quantity && grItem.damaged_quantity > 0) {
+          totalDamagedValue += grItem.damaged_quantity * poItem.purchase_price;
         }
 
         await product.save();
@@ -235,6 +232,12 @@ const confirmGR: RequestHandler = async (req, res) => {
     // Mark GR as complete
     gr.status = 'complete';
     await gr.save();
+
+    // Create accounting entry for damaged goods if any
+    if (totalDamagedValue > 0) {
+      console.log(`Creating accounting entry for damaged goods: Rs.${totalDamagedValue}`);
+      await recordDamagedGoods(totalDamagedValue, gr._id, gr.receipt_number);
+    }
 
     res.json(gr);
   } catch (error) {

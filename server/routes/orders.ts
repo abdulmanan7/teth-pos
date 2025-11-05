@@ -154,6 +154,16 @@ export const createOrder: RequestHandler = async (req, res) => {
     });
     
     await order.save();
+
+    // Create accounting entries for the order
+    try {
+      const { createOrderAccountingEntries } = await import('../utils/orderAccountingIntegration');
+      await createOrderAccountingEntries(order);
+    } catch (accountingError) {
+      console.error('Error creating accounting entries:', accountingError);
+      // Don't fail the order if accounting fails
+    }
+
     res.status(201).json({
       success: true,
       order,

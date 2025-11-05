@@ -975,5 +975,91 @@ export async function createServer() {
     return saveBrandingConfig(req, res, next);
   });
 
+  // Accounting routes
+  app.post("/api/accounting/initialize", async (req, res, next) => {
+    const { initializeAccounts } = await import("./routes/accounting");
+    return initializeAccounts(req, res, next);
+  });
+
+  app.get("/api/accounting/types", async (req, res, next) => {
+    const { getAccountTypes } = await import("./routes/accounting");
+    return getAccountTypes(req, res, next);
+  });
+
+  app.get("/api/accounting/subtypes", async (req, res, next) => {
+    const { getAccountSubTypes } = await import("./routes/accounting");
+    return getAccountSubTypes(req, res, next);
+  });
+
+  app.get("/api/accounting/accounts", async (req, res, next) => {
+    const { getChartOfAccounts } = await import("./routes/accounting");
+    return getChartOfAccounts(req, res, next);
+  });
+
+  app.get("/api/accounting/accounts/:id", async (req, res, next) => {
+    const { getAccount } = await import("./routes/accounting");
+    return getAccount(req, res, next);
+  });
+
+  app.post("/api/accounting/accounts", async (req, res, next) => {
+    const { createAccount } = await import("./routes/accounting");
+    return createAccount(req, res, next);
+  });
+
+  app.put("/api/accounting/accounts/:id", async (req, res, next) => {
+    const { updateAccount } = await import("./routes/accounting");
+    return updateAccount(req, res, next);
+  });
+
+  app.delete("/api/accounting/accounts/:id", async (req, res, next) => {
+    const { deleteAccount } = await import("./routes/accounting");
+    return deleteAccount(req, res, next);
+  });
+
+  app.get("/api/accounting/accounts/:account_id/balance", async (req, res, next) => {
+    const { getBalance } = await import("./routes/accounting");
+    return getBalance(req, res, next);
+  });
+
+  app.get("/api/accounting/journal-entries", async (req, res, next) => {
+    const { getJournalEntries } = await import("./routes/accounting");
+    return getJournalEntries(req, res, next);
+  });
+
+  app.get("/api/accounting/journal-entries/:id", async (req, res, next) => {
+    const { getJournalEntry } = await import("./routes/accounting");
+    return getJournalEntry(req, res, next);
+  });
+
+  app.post("/api/accounting/journal-entries", async (req, res, next) => {
+    const { createJournalEntry } = await import("./routes/accounting");
+    return createJournalEntry(req, res, next);
+  });
+
+  app.delete("/api/accounting/journal-entries/:id", async (req, res, next) => {
+    const { deleteJournalEntry } = await import("./routes/accounting");
+    return deleteJournalEntry(req, res, next);
+  });
+
+  app.get("/api/accounting/transactions", async (req, res, next) => {
+    const { getTransactionLines } = await import("./routes/accounting");
+    return getTransactionLines(req, res, next);
+  });
+
+  app.get("/api/accounting/reports/trial-balance", async (req, res, next) => {
+    const { getTrialBalance } = await import("./routes/accounting");
+    return getTrialBalance(req, res, next);
+  });
+
+  app.get("/api/accounting/reports/income-statement", async (req, res, next) => {
+    const { getIncomeStatement } = await import("./routes/accounting");
+    return getIncomeStatement(req, res, next);
+  });
+
+  app.get("/api/accounting/reports/balance-sheet", async (req, res, next) => {
+    const { getBalanceSheet } = await import("./routes/accounting");
+    return getBalanceSheet(req, res, next);
+  });
+
   return app;
 }

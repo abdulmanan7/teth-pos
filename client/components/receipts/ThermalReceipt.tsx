@@ -42,7 +42,19 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
             <title>Receipt ${order.orderNumber}</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { font-family: monospace; width: ${RECEIPT_WIDTH}px; padding: 16px; background: white; color: black; }
+              body { 
+                font-family: 'Courier New', Courier, monospace; 
+                width: ${RECEIPT_WIDTH}px; 
+                padding: 16px; 
+                background: white; 
+                color: black;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              @media print {
+                body { width: 80mm; padding: 8px; }
+                @page { size: 80mm auto; margin: 0; }
+              }
             </style>
           </head>
           <body>
@@ -59,10 +71,8 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-PK", {
-      style: "currency",
-      currency: "PKR",
-    }).format(amount);
+    // Format as Rs.100.00 instead of Rs 100.00
+    return `Rs.${amount.toFixed(2)}`;
   };
 
   const formatDate = (date: string | Date | undefined) => {
@@ -164,8 +174,8 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
             }}
           >
             {/* Logo - Inline SVG for reliable printing */}
-            <div style={{ marginBottom: "12px", textAlign: "center" }}>
-              <svg width="120" height="30" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ margin: "0 auto", display: "block" }}>
+            <div style={{ marginBottom: "12px", textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <svg width="120" height="30" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* Icon */}
                 <g clipPath="url(#clip0_101_2)">
                   <path d="M12 0H24V12H36V24H24V36H12V24H0V12H12V0Z" fill="black"/>
@@ -184,7 +194,7 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
 
             {/* Store Information */}
             {brandingConfig && (
-              <div style={{ marginBottom: "12px", borderBottom: "1px dashed black", paddingBottom: "8px" }}>
+              <div style={{ marginBottom: "12px", borderBottom: "1px dashed black", paddingBottom: "8px", textAlign: "center" }}>
                 <div style={{ fontWeight: "bold", fontSize: "12px", marginBottom: "4px" }}>
                   {brandingConfig.storeName}
                 </div>
@@ -242,12 +252,12 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
             {/* Items */}
             <div style={{ marginBottom: "12px" }}>
               {order.items && order.items.length > 0 ? order.items.map((item, index) => {
-                const quantity = Math.max(deriveNumber(item.quantity, 1), 1);
+                const quantity = deriveNumber(item.quantity, 1);
                 const unitPrice = deriveNumber(item.price);
                 const rawSubtotal = deriveNumber(item.subtotal, unitPrice * quantity);
                 const lineDiscount = deriveNumber(item.discountAmount);
                 const lineTotal = deriveNumber(item.totalAfterDiscount, rawSubtotal - lineDiscount);
-                const effectiveUnitPrice = lineTotal / quantity;
+                const effectiveUnitPrice = quantity > 0 ? lineTotal / quantity : unitPrice;
 
                 return (
                   <div key={index} style={{ marginBottom: "6px", fontSize: "10px" }}>
@@ -260,7 +270,7 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
                       }}
                     >
                       <span style={{ flex: 1, textAlign: "left", fontWeight: "bold" }}>{item.name}</span>
-                      <span style={{ width: "40px", textAlign: "center" }}>{quantity}</span>
+                      <span style={{ width: "40px", textAlign: "center" }}>{quantity % 1 === 0 ? quantity : quantity.toFixed(2)}</span>
                       <span style={{ width: "50px", textAlign: "right" }}>{formatCurrency(effectiveUnitPrice)}</span>
                       <span style={{ width: "50px", textAlign: "right" }}>{formatCurrency(lineTotal)}</span>
                     </div>
@@ -295,30 +305,32 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               {hasItemDiscounts && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "10px",
-                    marginBottom: "3px",
-                    color: "#b91c1c",
-                  }}
-                >
-                  <span>Item Discounts</span>
-                  <span>-{formatCurrency(itemDiscountTotal)}</span>
-                </div>
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "10px",
+                      marginBottom: "3px",
+                      color: "#b91c1c",
+                    }}
+                  >
+                    <span>Item Discounts</span>
+                    <span>-{formatCurrency(itemDiscountTotal)}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "10px",
+                      marginBottom: "3px",
+                    }}
+                  >
+                    <span>After Item Discounts</span>
+                    <span>{formatCurrency(subtotalAfterDiscount)}</span>
+                  </div>
+                </>
               )}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "10px",
-                  marginBottom: "3px",
-                }}
-              >
-                <span>After Item Discounts</span>
-                <span>{formatCurrency(subtotalAfterDiscount)}</span>
-              </div>
               {hasCheckoutDiscount && (
                 <div
                   style={{
@@ -338,17 +350,19 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
                   <span>-{formatCurrency(checkoutDiscountAmount)}</span>
                 </div>
               )}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "10px",
-                  marginBottom: "3px",
-                }}
-              >
-                <span>Taxable Amount</span>
-                <span>{formatCurrency(preTaxTotal)}</span>
-              </div>
+              {(hasItemDiscounts || hasCheckoutDiscount) && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "10px",
+                    marginBottom: "3px",
+                  }}
+                >
+                  <span>Taxable Amount</span>
+                  <span>{formatCurrency(preTaxTotal)}</span>
+                </div>
+              )}
               {hasTax && (
                 <div
                   style={{

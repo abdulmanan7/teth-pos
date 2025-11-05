@@ -62,7 +62,7 @@ const OrderItemSchema = new Schema<IOrderItem>(
     quantity: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0.01, // Allow fractional quantities (e.g., 0.5 kg, 0.25 liter)
     },
     discount: {
       type: {

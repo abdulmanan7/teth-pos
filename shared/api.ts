@@ -15,18 +15,28 @@ export interface DemoResponse {
 export interface Product {
   _id: string;
   name: string;
-  sku: string;
   price: number;
   quantity: number; // Quantity per unit (e.g., 1L milk, 0.5kg butter)
   stock: number;
   category: string;
   description?: string;
   // Unit of Measurement
-  unit?: 'piece' | 'kg' | 'liter' | 'meter' | 'box' | 'pack' | 'dozen' | 'gram' | 'ml' | 'cm' | 'custom';
+  unit?:
+    | "piece"
+    | "kg"
+    | "liter"
+    | "meter"
+    | "box"
+    | "pack"
+    | "dozen"
+    | "gram"
+    | "ml"
+    | "cm"
+    | "custom";
   unit_custom?: string; // For custom units like "bottle", "jar", etc.
   // Inventory system fields
   warehouse_id?: string;
-  status?: 'active' | 'inactive' | 'discontinued';
+  status?: "active" | "inactive" | "discontinued";
   hasSerialNumbers?: boolean; // Flag to indicate product has serial numbers
   createdAt: string;
   updatedAt: string;
@@ -85,7 +95,7 @@ export interface PaymentRecord {
   _id?: string;
   amount: number;
   payment_date: string;
-  payment_method?: 'cash' | 'check' | 'bank_transfer' | 'credit_card' | 'other';
+  payment_method?: "cash" | "check" | "bank_transfer" | "credit_card" | "other";
   reference?: string;
   notes?: string;
 }
@@ -96,8 +106,8 @@ export interface PurchaseOrder {
   vendor_id: string;
   items: PurchaseOrderItem[];
   total_amount: number;
-  status: 'draft' | 'sent' | 'confirmed' | 'received' | 'invoiced' | 'paid';
-  payment_status: 'pending' | 'partial' | 'paid';
+  status: "draft" | "sent" | "confirmed" | "received" | "invoiced" | "paid";
+  payment_status: "pending" | "partial" | "paid";
   amount_paid: number;
   payment_history: PaymentRecord[];
   order_date: string;
@@ -124,7 +134,7 @@ export interface Customer {
 
 // Order Types
 export interface DiscountConfig {
-  type: 'percentage' | 'fixed';
+  type: "percentage" | "fixed";
   value: number;
   reason?: string;
 }
@@ -145,7 +155,7 @@ export interface Order {
   orderNumber: string;
   customer: string;
   items: OrderItem[];
-  status: 'pending' | 'processing' | 'completed' | 'cancelled';
+  status: "pending" | "processing" | "completed" | "cancelled";
   subtotal?: number;
   itemDiscountTotal?: number;
   checkoutDiscount?: DiscountConfig;
@@ -159,7 +169,7 @@ export interface Order {
   total: number;
   staffId?: string;
   staffName?: string;
-  paymentMethod?: 'cash' | 'card' | 'check' | 'transfer' | 'other';
+  paymentMethod?: "cash" | "card" | "check" | "transfer" | "other";
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -199,7 +209,7 @@ export interface LotNumber {
   manufacture_date?: string;
   expiry_date?: string;
   warehouse_id: string;
-  status: 'active' | 'expired' | 'quarantined';
+  status: "active" | "expired" | "quarantined";
   notes?: string;
   created_by?: string;
   createdAt: string;
@@ -212,7 +222,7 @@ export interface SerialNumber {
   product_id: string;
   lot_id?: string;
   warehouse_id: string;
-  status: 'available' | 'sold' | 'returned' | 'defective';
+  status: "available" | "sold" | "returned" | "defective";
   assigned_to?: string;
   assigned_date?: string;
   purchase_date?: string;
@@ -297,7 +307,7 @@ export interface StockAdjustment {
   warehouse_id: string;
   adjustment_date: string;
   reason: string;
-  status: 'draft' | 'pending_approval' | 'approved' | 'rejected';
+  status: "draft" | "pending_approval" | "approved" | "rejected";
   approved_by?: string;
   approved_date?: string;
   total_adjustment_value?: number;
@@ -312,11 +322,11 @@ export interface StockAlert {
   _id: string;
   product_id: string;
   warehouse_id?: string;
-  alert_type: 'low_stock' | 'out_of_stock' | 'overstock';
+  alert_type: "low_stock" | "out_of_stock" | "overstock";
   current_stock: number;
   threshold: number;
   reorder_point?: number;
-  status: 'active' | 'acknowledged' | 'resolved';
+  status: "active" | "acknowledged" | "resolved";
   acknowledged_by?: string;
   acknowledged_date?: string;
   resolved_date?: string;
@@ -330,15 +340,15 @@ export interface ExpiryNotification {
   lot_id: string;
   product_id: string;
   warehouse_id?: string;
-  notification_type: 'expired' | 'expiring_soon' | 'upcoming';
+  notification_type: "expired" | "expiring_soon" | "upcoming";
   expiry_date: string;
   days_until_expiry: number;
   quantity: number;
-  status: 'active' | 'acknowledged' | 'resolved';
+  status: "active" | "acknowledged" | "resolved";
   acknowledged_by?: string;
   acknowledged_date?: string;
   resolved_date?: string;
-  resolution_type?: 'used' | 'disposed' | 'transferred' | 'other';
+  resolution_type?: "used" | "disposed" | "transferred" | "other";
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -402,7 +412,14 @@ export interface InventoryOverview {
 export interface TransactionHistory {
   _id: string;
   transaction_id: string;
-  transaction_type: 'stock_in' | 'stock_out' | 'adjustment' | 'transfer' | 'return' | 'damage' | 'expiry_disposal';
+  transaction_type:
+    | "stock_in"
+    | "stock_out"
+    | "adjustment"
+    | "transfer"
+    | "return"
+    | "damage"
+    | "expiry_disposal";
   product_id: string;
   warehouse_id?: string;
   from_warehouse?: string;
@@ -410,7 +427,13 @@ export interface TransactionHistory {
   quantity: number;
   unit_price?: number;
   total_value?: number;
-  reference_type?: 'purchase_order' | 'sales_order' | 'adjustment' | 'transfer' | 'return' | 'other';
+  reference_type?:
+    | "purchase_order"
+    | "sales_order"
+    | "adjustment"
+    | "transfer"
+    | "return"
+    | "other";
   reference_id?: string;
   lot_id?: string;
   serial_numbers?: string[];
@@ -418,7 +441,7 @@ export interface TransactionHistory {
   user_name?: string;
   reason?: string;
   notes?: string;
-  status: 'completed' | 'pending' | 'cancelled';
+  status: "completed" | "pending" | "cancelled";
   approval_required: boolean;
   approved_by?: string;
   approved_date?: string;
@@ -429,7 +452,7 @@ export interface TransactionHistory {
 export interface BarcodeMapping {
   _id: string;
   barcode: string;
-  barcode_type: 'sku' | 'lot' | 'serial' | 'custom';
+  barcode_type: "sku" | "lot" | "serial" | "custom";
   product_id: string;
   lot_id?: string;
   serial_number?: string;
@@ -454,11 +477,11 @@ export interface BarcodeResult {
 export interface Staff {
   _id: string;
   name: string;
-  role: 'Cashier' | 'Manager' | 'Supervisor' | 'Admin';
+  role: "Cashier" | "Manager" | "Supervisor" | "Admin";
   pin: string;
   email?: string;
   phone?: string;
-  status: 'active' | 'inactive' | 'suspended';
+  status: "active" | "inactive" | "suspended";
   is_logged_in: boolean;
   last_login?: string;
   last_logout?: string;
@@ -476,4 +499,82 @@ export interface StaffLoginResponse {
   role: string;
   sessionId: string;
   loginTime: string;
+}
+
+// Accounting Types
+export interface ChartOfAccountType {
+  _id: string;
+  name: 'Assets' | 'Liabilities' | 'Equity' | 'Income' | 'Cost of Goods Sold' | 'Expenses';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChartOfAccountSubType {
+  _id: string;
+  name: string;
+  type_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChartOfAccount {
+  _id: string;
+  name: string;
+  code: string;
+  type_id: string;
+  sub_type_id: string;
+  parent_id?: string;
+  is_enabled: boolean;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JournalEntry {
+  _id: string;
+  journal_number: string;
+  date: string;
+  reference?: string;
+  description: string;
+  total_debit: number;
+  total_credit: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JournalItem {
+  _id: string;
+  journal_entry_id: string;
+  account_id: string;
+  description: string;
+  debit: number;
+  credit: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TransactionLine {
+  _id: string;
+  account_id: string;
+  reference: 'Order' | 'PurchaseOrder' | 'JournalEntry' | 'Payment' | 'Adjustment';
+  reference_id: string;
+  reference_sub_id?: string;
+  date: string;
+  debit: number;
+  credit: number;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateJournalEntryPayload {
+  date: string;
+  reference?: string;
+  description: string;
+  items: Array<{
+    account_id: string;
+    description: string;
+    debit: number;
+    credit: number;
+  }>;
 }

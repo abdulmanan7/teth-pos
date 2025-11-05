@@ -1,4 +1,4 @@
-import { X, Search, Plus, Loader, Edit2, Trash2, Barcode, Copy, CheckCircle, Settings } from "lucide-react";
+import { X, Search, Plus, Loader, Edit2, Trash2, Barcode, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -17,7 +17,6 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [reorderRule, setReorderRule] = useState<any>(null);
-  const [copiedBarcode, setCopiedBarcode] = useState<string | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
@@ -195,12 +194,6 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
     }
   };
 
-  const handleCopyBarcode = (sku: string) => {
-    navigator.clipboard.writeText(sku);
-    setCopiedBarcode(sku);
-    setTimeout(() => setCopiedBarcode(null), 2000);
-  };
-
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
       <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
@@ -289,7 +282,12 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                           </span>
                         </div>
                         <div className={`grid grid-cols-2 gap-2 text-xs mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                          <div>SKU: <span className={`font-mono ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{product.sku}</span></div>
+                          <div>
+                            Serial Tracking
+                            <span className={`block text-xs font-semibold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                              {product.hasSerialNumbers ? 'Managed in Serial Numbers module' : 'Not enabled'}
+                            </span>
+                          </div>
                           <div>Unit: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{product.unit_custom || product.unit || 'piece'}</span></div>
                           <div>Qty/Unit: <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{product.quantity} {product.unit_custom || product.unit || 'piece'}</span></div>
                           <div>Category: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{product.category}</span></div>
@@ -304,21 +302,6 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                           <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Price</p>
                         </div>
                         <div className="flex gap-1">
-                          <button
-                            onClick={() => handleCopyBarcode(product.sku)}
-                            className={`p-2 rounded transition-colors ${
-                              copiedBarcode === product.sku
-                                ? 'bg-green-600 text-white'
-                                : isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-slate-300' : 'bg-slate-300 hover:bg-slate-400 text-slate-700'
-                            }`}
-                            title="Copy SKU"
-                          >
-                            {copiedBarcode === product.sku ? (
-                              <CheckCircle className="w-4 h-4" />
-                            ) : (
-                              <Copy className="w-4 h-4" />
-                            )}
-                          </button>
                           <button
                             onClick={async () => {
                               setSelectedProduct(product);
@@ -399,10 +382,6 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
               <div>
                 <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Name</p>
                 <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{selectedProduct.name}</p>
-              </div>
-              <div>
-                <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>SKU</p>
-                <p className={`font-mono ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{selectedProduct.sku}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

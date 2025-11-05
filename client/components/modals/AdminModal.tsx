@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Package, Warehouse, Settings, BarChart3, Truck, Barcode, AlertCircle, Bell, Calendar, History, QrCode, FileText, ShoppingCart, Users, Store, Percent } from "lucide-react";
+import { X, Package, Warehouse, Settings, BarChart3, Truck, Barcode, AlertCircle, Bell, Calendar, History, QrCode, FileText, ShoppingCart, Users, Store, Percent, Search, ChevronDown, ChevronRight, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WarehousesManager from "@/components/inventory/WarehousesManager";
 import LotNumbersManager from "@/components/inventory/LotNumbersManager";
@@ -29,6 +29,20 @@ type AdminTab = "overview" | "warehouses" | "lot-numbers" | "reorder-rules" | "s
 
 export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModalProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["inventory", "procurement", "settings"]));
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
+  };
 
   if (activeTab === "warehouses") {
     return (
@@ -625,12 +639,70 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
     );
   }
 
+  // Define menu items with categories
+  const menuItems = [
+    // Inventory Management
+    { id: "warehouses", category: "inventory", icon: Warehouse, title: "Warehouses", description: "Configure warehouse locations and storage zones", color: "purple" },
+    { id: "lot-numbers", category: "inventory", icon: Package, title: "Lot Numbers", description: "Track products by lot/batch numbers", color: "blue" },
+    { id: "serial-numbers", category: "inventory", icon: Barcode, title: "Serial Numbers", description: "Track individual items with serial numbers", color: "green" },
+    { id: "stock-adjustments", category: "inventory", icon: Settings, title: "Stock Adjustments", description: "Adjust inventory levels and record reasons", color: "yellow" },
+    { id: "stock-alerts", category: "inventory", icon: AlertCircle, title: "Stock Alerts", description: "Configure low stock and out-of-stock alerts", color: "red" },
+    { id: "reorder-rules", category: "inventory", icon: TrendingDown, title: "Reorder Rules", description: "Set automatic reorder points and quantities", color: "orange" },
+    { id: "expiry-notifications", category: "inventory", icon: Bell, title: "Expiry Notifications", description: "Track and manage product expiration dates", color: "pink" },
+    { id: "transactions", category: "inventory", icon: History, title: "Transaction History", description: "View detailed log of all inventory movements", color: "indigo" },
+    { id: "barcode-scanner", category: "inventory", icon: QrCode, title: "Barcode Scanner", description: "Scan and manage product barcodes", color: "red" },
+    { id: "reporting", category: "inventory", icon: FileText, title: "Advanced Reporting", description: "Generate comprehensive inventory reports", color: "indigo" },
+    { id: "analytics", category: "inventory", icon: BarChart3, title: "Analytics Dashboard", description: "View inventory analytics and insights", color: "cyan" },
+    
+    // Procurement
+    { id: "vendors", category: "procurement", icon: Truck, title: "Vendor Management", description: "Manage vendors and track ratings", color: "blue" },
+    { id: "purchase-orders", category: "procurement", icon: ShoppingCart, title: "Purchase Orders", description: "Create and manage purchase orders", color: "green" },
+    { id: "goods-receipts", category: "procurement", icon: Package, title: "Goods Receipts", description: "Receive goods with quality checks", color: "purple" },
+    
+    // Settings
+    { id: "staff", category: "settings", icon: Users, title: "Staff Management", description: "Add and manage staff members", color: "cyan" },
+    { id: "tax-rates", category: "settings", icon: Percent, title: "Tax Rates", description: "Configure tax presets for checkout", color: "emerald" },
+    { id: "branding", category: "settings", icon: Store, title: "Store Branding", description: "Configure store name and business details", color: "orange" },
+  ];
+
+  // Filter menu items based on search
+  const filteredItems = menuItems.filter(item =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Group by category
+  const categories = {
+    inventory: { title: "Inventory Management", icon: Package },
+    procurement: { title: "Procurement", icon: ShoppingCart },
+    settings: { title: "Settings & Configuration", icon: Settings },
+  };
+
+  const getColorClasses = (color: string) => {
+    const colors: Record<string, string> = {
+      purple: "bg-purple-500/20 group-hover:bg-purple-500/30 text-purple-400",
+      blue: "bg-blue-500/20 group-hover:bg-blue-500/30 text-blue-400",
+      green: "bg-green-500/20 group-hover:bg-green-500/30 text-green-400",
+      yellow: "bg-yellow-500/20 group-hover:bg-yellow-500/30 text-yellow-400",
+      red: "bg-red-500/20 group-hover:bg-red-500/30 text-red-400",
+      orange: "bg-orange-500/20 group-hover:bg-orange-500/30 text-orange-400",
+      pink: "bg-pink-500/20 group-hover:bg-pink-500/30 text-pink-400",
+      indigo: "bg-indigo-500/20 group-hover:bg-indigo-500/30 text-indigo-400",
+      cyan: "bg-cyan-500/20 group-hover:bg-cyan-500/30 text-cyan-400",
+      emerald: "bg-emerald-500/20 group-hover:bg-emerald-500/30 text-emerald-400",
+    };
+    return colors[color] || colors.blue;
+  };
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className={`rounded-lg border shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+      <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         {/* Header */}
         <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
-          <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
+          <div>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
+            <p className={`text-sm mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Manage your store, inventory, and settings</p>
+          </div>
           <button
             onClick={onClose}
             className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
@@ -639,320 +711,131 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="p-6 pb-0">
+          <div className="relative">
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}`} />
+            <input
+              type="text"
+              placeholder="Search features..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`w-full pl-10 pr-4 py-2 rounded-lg border transition-colors ${
+                isDarkTheme 
+                  ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500' 
+                  : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-blue-500'
+              } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+            />
+          </div>
+        </div>
+
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-2 gap-4">
-            {/* Warehouse Management */}
-            <button
-              onClick={() => setActiveTab("warehouses")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
-                  <Warehouse className="w-6 h-6 text-purple-400" />
+          {searchTerm ? (
+            // Show filtered results
+            <div className="grid grid-cols-2 gap-3">
+              {filteredItems.length === 0 ? (
+                <div className={`col-span-2 text-center py-8 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                  No features found matching "{searchTerm}"
                 </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Warehouses</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Configure warehouse locations and storage zones
-              </p>
-            </button>
-
-            {/* Tax Rates */}
-            <button
-              onClick={() => setActiveTab("tax-rates")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
-                  <Percent className="w-6 h-6 text-emerald-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Tax Rates</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Configure tax presets used during checkout
-              </p>
-            </button>
-
-            {/* Lot Numbers */}
-            <button
-              onClick={() => setActiveTab("lot-numbers")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
-                  <Package className="w-6 h-6 text-blue-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Lot Numbers</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Manage batch/lot tracking with expiry dates
-              </p>
-            </button>
-
-            {/* Reorder Rules */}
-            <button
-              onClick={() => setActiveTab("reorder-rules")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
-                  <Truck className="w-6 h-6 text-green-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Reorder Rules</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Set minimum stock levels and reorder points
-              </p>
-            </button>
-
-            {/* Serial Numbers */}
-            <button
-              onClick={() => setActiveTab("serial-numbers")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-orange-500/20 rounded-lg group-hover:bg-orange-500/30 transition-colors">
-                  <Barcode className="w-6 h-6 text-orange-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Serial Numbers</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Track individual unit serial numbers and status
-              </p>
-            </button>
-
-            {/* Stock Adjustments */}
-            <button
-              onClick={() => setActiveTab("stock-adjustments")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
-                  <AlertCircle className="w-6 h-6 text-red-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Stock Adjustments</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Manage inventory discrepancies and adjustments with approval workflow
-              </p>
-            </button>
-
-            {/* Stock Alerts */}
-            <button
-              onClick={() => setActiveTab("stock-alerts")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-orange-500/20 rounded-lg group-hover:bg-orange-500/30 transition-colors">
-                  <Bell className="w-6 h-6 text-orange-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Stock Alerts</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Monitor low stock, out of stock, and overstock alerts
-              </p>
-            </button>
-
-            {/* Expiry Notifications */}
-            <button
-              onClick={() => setActiveTab("expiry-notifications")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-pink-500/20 rounded-lg group-hover:bg-pink-500/30 transition-colors">
-                  <Calendar className="w-6 h-6 text-pink-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Expiry Notifications</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Track expired, expiring soon, and upcoming product expiries
-              </p>
-            </button>
-
-            {/* Analytics Dashboard */}
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
-                  <BarChart3 className="w-6 h-6 text-purple-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Analytics Dashboard</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                View inventory metrics, trends, and performance analytics
-              </p>
-            </button>
-
-            {/* Transaction History */}
-            <button
-              onClick={() => setActiveTab("transactions")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-cyan-500/20 rounded-lg group-hover:bg-cyan-500/30 transition-colors">
-                  <History className="w-6 h-6 text-cyan-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Transaction History</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                View detailed log of all inventory movements and transactions
-              </p>
-            </button>
-
-            {/* Barcode Scanner */}
-            <button
-              onClick={() => setActiveTab("barcode-scanner")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
-                  <QrCode className="w-6 h-6 text-red-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Barcode Scanner</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Scan and manage product barcodes, QR codes, and serial numbers
-              </p>
-            </button>
-
-            {/* Advanced Reporting */}
-            <button
-              onClick={() => setActiveTab("reporting")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-indigo-500/20 rounded-lg group-hover:bg-indigo-500/30 transition-colors">
-                  <FileText className="w-6 h-6 text-indigo-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Advanced Reporting</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Generate and export comprehensive inventory reports in JSON or CSV
-              </p>
-            </button>
-
-            {/* Vendor Management */}
-            <button
-              onClick={() => setActiveTab("vendors")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
-                  <Truck className="w-6 h-6 text-blue-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Vendor Management</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Manage vendors, track ratings, and monitor purchase history
-              </p>
-            </button>
-
-            {/* Purchase Orders */}
-            <button
-              onClick={() => setActiveTab("purchase-orders")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
-                  <ShoppingCart className="w-6 h-6 text-green-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Purchase Orders</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Create and manage purchase orders with multi-vendor support
-              </p>
-            </button>
-
-            {/* Goods Receipts */}
-            <button
-              onClick={() => setActiveTab("goods-receipts")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
-                  <Package className="w-6 h-6 text-purple-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Goods Receipts</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Receive goods with quality checks, barcode scanning, and damage tracking
-              </p>
-            </button>
-
-            {/* Staff Management */}
-            <button
-              onClick={() => setActiveTab("staff")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-cyan-500/20 rounded-lg group-hover:bg-cyan-500/30 transition-colors">
-                  <Users className="w-6 h-6 text-cyan-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Staff Management</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Add, edit, and manage staff members and their roles
-              </p>
-            </button>
-
-            {/* Tax Rates */}
-            <button
-              onClick={() => setActiveTab("tax-rates")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-yellow-500/20 rounded-lg group-hover:bg-yellow-500/30 transition-colors">
-                  <Percent className="w-6 h-6 text-yellow-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Tax Rates</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Manage tax rates for different regions and products
-              </p>
-            </button>
-
-            {/* Branding */}
-            <button
-              onClick={() => setActiveTab("branding")}
-              className={`border rounded-lg p-6 transition-colors cursor-pointer group text-left ${isDarkTheme ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-orange-500/20 rounded-lg group-hover:bg-orange-500/30 transition-colors">
-                  <Store className="w-6 h-6 text-orange-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Store Branding</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Configure store name, contact info, address, and business details
-              </p>
-            </button>
-
-            {/* Coming Soon */}
-            <div className={`border rounded-lg p-6 opacity-50 cursor-not-allowed ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-slate-500/20 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-slate-400" />
-                </div>
-                <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Analytics</h3>
-              </div>
-              <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                Coming soon: Inventory reports and valuations
-              </p>
+              ) : (
+                filteredItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id as AdminTab)}
+                      className={`border rounded-lg p-4 transition-all cursor-pointer group text-left hover:scale-[1.02] ${
+                        isDarkTheme 
+                          ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' 
+                          : 'bg-slate-100 border-slate-300 hover:border-slate-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`p-2 rounded-lg transition-colors ${getColorClasses(item.color)}`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <h3 className={`text-base font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{item.title}</h3>
+                      </div>
+                      <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {item.description}
+                      </p>
+                    </button>
+                  );
+                })
+              )}
             </div>
-          </div>
+          ) : (
+            // Show categorized view
+            <div className="space-y-4">
+              {Object.entries(categories).map(([categoryKey, category]) => {
+                const categoryItems = menuItems.filter(item => item.category === categoryKey);
+                const isExpanded = expandedCategories.has(categoryKey);
+                const CategoryIcon = category.icon;
+                
+                return (
+                  <div key={categoryKey} className={`border rounded-lg overflow-hidden ${isDarkTheme ? 'border-slate-700' : 'border-slate-300'}`}>
+                    {/* Category Header */}
+                    <button
+                      onClick={() => toggleCategory(categoryKey)}
+                      className={`w-full flex items-center justify-between p-4 transition-colors ${
+                        isDarkTheme 
+                          ? 'bg-slate-700/50 hover:bg-slate-700/70' 
+                          : 'bg-slate-100 hover:bg-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <CategoryIcon className={`w-5 h-5 ${isDarkTheme ? 'text-blue-400' : 'text-blue-600'}`} />
+                        <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                          {category.title}
+                        </h3>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          isDarkTheme ? 'bg-slate-600 text-slate-300' : 'bg-slate-200 text-slate-700'
+                        }`}>
+                          {categoryItems.length}
+                        </span>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronDown className={`w-5 h-5 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`} />
+                      ) : (
+                        <ChevronRight className={`w-5 h-5 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`} />
+                      )}
+                    </button>
 
-          {/* Info Section */}
-          <div className={`mt-6 p-4 border rounded-lg ${isDarkTheme ? 'bg-slate-700/20 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
-            <h4 className={`text-sm font-semibold mb-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Inventory System</h4>
-            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-              Full inventory management system with support for lot numbers, serial tracking, 
-              warehouse management, stock adjustments, and reorder rules. All features are 
-              designed for multi-location operations.
-            </p>
-          </div>
+                    {/* Category Items */}
+                    {isExpanded && (
+                      <div className={`grid grid-cols-2 gap-3 p-4 ${isDarkTheme ? 'bg-slate-800/50' : 'bg-white'}`}>
+                        {categoryItems.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => setActiveTab(item.id as AdminTab)}
+                              className={`border rounded-lg p-4 transition-all cursor-pointer group text-left hover:scale-[1.02] ${
+                                isDarkTheme 
+                                  ? 'bg-slate-700/30 border-slate-600 hover:border-slate-500' 
+                                  : 'bg-slate-50 border-slate-200 hover:border-slate-400'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className={`p-2 rounded-lg transition-colors ${getColorClasses(item.color)}`}>
+                                  <Icon className="w-5 h-5" />
+                                </div>
+                                <h3 className={`text-base font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{item.title}</h3>
+                              </div>
+                              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                                {item.description}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Footer */}

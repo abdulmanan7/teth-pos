@@ -1,4 +1,4 @@
-import { X, Plus, Edit2, Trash2, TrendingDown, Eye } from "lucide-react";
+import { X, Plus, Edit2, Trash2, TrendingDown, Eye, ChevronDown, ChevronUp, Package, DollarSign, Calendar, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -73,6 +73,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
   const [submitting, setSubmitting] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [expandedPOs, setExpandedPOs] = useState<Set<string>>(new Set());
   const [paymentForm, setPaymentForm] = useState({
     amount: 0,
     payment_method: 'bank_transfer',
@@ -191,15 +192,19 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
     }
   };
 
-  const handleUpdateStatus = async (newStatus: string) => {
+  const handleUpdateStatus = async (status: string) => {
     if (!selectedPO) return;
+
     try {
       setUpdatingStatus(true);
-      await put(`/api/purchase-orders/${selectedPO._id}/status`, { status: newStatus });
-      addToast("Purchase order status updated successfully!", "success");
+      const updatedPO = await put(`/api/purchase-orders/${selectedPO._id}/status`, { status });
+      addToast(`Purchase order status updated to ${status}`, "success");
+      
+      // Update the selected PO with the response
+      setSelectedPO(updatedPO);
+      
+      // Refresh the list
       await fetchData();
-      setShowDetailsModal(false);
-      setSelectedPO(null);
     } catch (error) {
       console.error("Error updating status:", error);
       addToast("Failed to update purchase order status", "error");
@@ -225,9 +230,15 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
       });
 
       addToast(`Payment of Rs ${paymentForm.amount.toFixed(2)} recorded successfully!`, "success");
+      
+      // Update the selected PO with the response
       setSelectedPO(updatedPO);
+      
+      // Reset form and close
       setPaymentForm({ amount: 0, payment_method: 'bank_transfer', reference: '', notes: '' });
       setShowPaymentForm(false);
+      
+      // Refresh the list
       await fetchData();
     } catch (error) {
       console.error("Error recording payment:", error);
@@ -255,6 +266,18 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
 
   const getProductName = (productId: string) => {
     return products.find(p => p._id === productId)?.name || "Unknown";
+  };
+
+  const togglePOExpansion = (poId: string) => {
+    setExpandedPOs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(poId)) {
+        newSet.delete(poId);
+      } else {
+        newSet.add(poId);
+      }
+      return newSet;
+    });
   };
 
   // Filter POs based on search term
@@ -320,71 +343,146 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
             <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>No purchase orders match your search.</p>
           </div>
         ) : (
-          filteredPOs.map((po) => (
-            <div
-              key={po._id}
-              className={`border rounded-lg p-4 hover:transition-colors ${isDarkTheme ? 'bg-slate-800 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-300 hover:border-slate-400'}`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{po.po_number}</h3>
-                    <span className={`text-xs px-2 py-1 rounded text-white ${getStatusColor(po.status)}`}>
-                      {po.status}
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      po.payment_status === 'paid' ? 'bg-green-900 text-green-300' :
-                      po.payment_status === 'partial' ? 'bg-yellow-900 text-yellow-300' :
-                      'bg-red-900 text-red-300'
-                    }`}>
-                      {po.payment_status}
-                    </span>
-                  </div>
+          filteredPOs.map((po) => {
+            const isExpanded = expandedPOs.has(po._id);
+            const remainingAmount = po.total_amount - po.amount_paid;
+            
+            return (
+              <div
+                key={po._id}
+                className={`border rounded-lg overflow-hidden transition-all ${isDarkTheme ? 'bg-slate-800 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-300 hover:border-slate-400'}`}
+              >
+                {/* Header Section */}
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{po.po_number}</h3>
+                        <span className={`text-xs px-2 py-1 rounded text-white font-medium ${getStatusColor(po.status)}`}>
+                          {po.status.toUpperCase()}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded font-medium ${
+                          po.payment_status === 'paid' ? 'bg-green-900 text-green-300' :
+                          po.payment_status === 'partial' ? 'bg-yellow-900 text-yellow-300' :
+                          'bg-red-900 text-red-300'
+                        }`}>
+                          {po.payment_status.toUpperCase()}
+                        </span>
+                      </div>
 
-                  <div className={`grid grid-cols-2 gap-2 text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                    <div>Vendor: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{getVendorName(po.vendor_id)}</span></div>
-                    <div>Total: <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {po.total_amount.toFixed(2)}</span></div>
-                    <div>Order Date: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{new Date(po.order_date).toLocaleDateString()}</span></div>
-                    {po.expected_delivery && (
-                      <div>Expected: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{new Date(po.expected_delivery).toLocaleDateString()}</span></div>
-                    )}
-                  </div>
-
-                  {/* Items Summary */}
-                  <div className={`rounded p-2 mb-2 ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
-                    <p className={`text-xs mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Items ({po.items.length}):</p>
-                    <div className="space-y-1">
-                      {po.items.map((item, idx) => (
-                        <div key={idx} className={`text-xs ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
-                          {getProductName(item.product_id)} - {item.quantity} × Rs {item.purchase_price.toFixed(2)} = Rs {item.line_total.toFixed(2)}
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                        <div className={`flex items-center gap-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                          <User className="w-4 h-4 text-blue-400" />
+                          <div>
+                            <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Vendor</p>
+                            <p className={`text-sm font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{getVendorName(po.vendor_id)}</p>
+                          </div>
                         </div>
-                      ))}
+                        
+                        <div className={`flex items-center gap-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                          <DollarSign className="w-4 h-4 text-green-400" />
+                          <div>
+                            <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Total</p>
+                            <p className={`text-sm font-bold ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>Rs {po.total_amount.toFixed(2)}</p>
+                          </div>
+                        </div>
+                        
+                        <div className={`flex items-center gap-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                          <Calendar className="w-4 h-4 text-purple-400" />
+                          <div>
+                            <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Order Date</p>
+                            <p className={`text-sm ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{new Date(po.order_date).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        
+                        <div className={`flex items-center gap-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                          <Package className="w-4 h-4 text-orange-400" />
+                          <div>
+                            <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Items</p>
+                            <p className={`text-sm font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{po.items.length} item(s)</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Payment Progress Bar */}
+                      {po.amount_paid > 0 && (
+                        <div className="mb-2">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Payment Progress</span>
+                            <span className={isDarkTheme ? 'text-slate-300' : 'text-slate-700'}>
+                              Rs {po.amount_paid.toFixed(2)} / Rs {po.total_amount.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className={`w-full h-2 rounded-full overflow-hidden ${isDarkTheme ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                            <div 
+                              className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all"
+                              style={{ width: `${(po.amount_paid / po.total_amount) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Expandable Items Section */}
+                      <button
+                        onClick={() => togglePOExpansion(po._id)}
+                        className={`flex items-center gap-2 text-sm font-medium transition-colors ${isDarkTheme ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
+                      >
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        {isExpanded ? 'Hide' : 'Show'} Items ({po.items.length})
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => {
+                          setSelectedPO(po);
+                          setShowDetailsModal(true);
+                        }}
+                        className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-100 hover:bg-blue-200 text-blue-900'}`}
+                        title="View & Update Status"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePO(po._id)}
+                        className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-100 hover:bg-red-200 text-red-900'}`}
+                        title="Delete PO"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={() => {
-                      setSelectedPO(po);
-                      setShowDetailsModal(true);
-                    }}
-                    className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-100 hover:bg-blue-200 text-blue-900'}`}
-                    title="View & Update Status"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeletePO(po._id)}
-                    className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-100 hover:bg-red-200 text-red-900'}`}
-                    title="Delete PO"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {/* Expandable Items List */}
+                {isExpanded && (
+                  <div className={`border-t px-4 py-3 ${isDarkTheme ? 'bg-slate-700/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="space-y-2">
+                      {po.items.map((item, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`flex items-center justify-between p-2 rounded ${isDarkTheme ? 'bg-slate-800/50' : 'bg-white'}`}
+                        >
+                          <div className="flex-1">
+                            <p className={`text-sm font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                              {getProductName(item.product_id)}
+                            </p>
+                            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                              Qty: {item.quantity} × Rs {item.purchase_price.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className={`text-sm font-semibold ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
+                            Rs {item.line_total.toFixed(2)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

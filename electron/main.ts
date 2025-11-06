@@ -26,12 +26,18 @@ async function createWindow() {
       },
     });
 
-    const startUrl = isDev
-      ? "http://localhost:5173"
-      : `file://${path.resolve(__dirname, "spa/index.html")}`;
+    let startUrl: string;
 
-    console.log("__dirname:", __dirname);
-    console.log("Loading URL:", startUrl);
+    if (isDev) {
+      startUrl = "http://localhost:5173";
+    } else if (app.isPackaged) {
+      // Production: spa is in resources folder
+      startUrl = `file://${path.join(process.resourcesPath, "spa", "index.html")}`;
+    } else {
+      // Built but not packaged
+      startUrl = `file://${path.resolve(__dirname, "spa/index.html")}`;
+    }
+
     await mainWindow.loadURL(startUrl);
 
     if (isDev) {
@@ -50,15 +56,25 @@ async function createWindow() {
 async function startExpressServer() {
   try {
     // Dynamically import the built server to avoid bundling mongoose
-    // The server is built to dist/server/node-build.mjs
-    const distPath = path.join(__dirname, "../dist/server");
-    const module = await import(path.join(distPath, "node-build.mjs"));
+    // In development: dist/server/node-build.mjs
+    // In production (packaged): resources/server/node-build.mjs
+    let serverPath: string;
+
+    if (app.isPackaged) {
+      // Production: server is in resources folder
+      serverPath = path.join(process.resourcesPath, "server", "node-build.mjs");
+    } else {
+      // Development: server is in dist folder
+      serverPath = path.join(__dirname, "../dist/server/node-build.mjs");
+    }
+
+    const module = await import(serverPath);
     const createServer = module.createServer;
-    
+
     if (!createServer) {
       throw new Error("createServer not found in server module");
     }
-    
+
     const expressApp = await createServer();
     expressServer = expressApp.listen(0, "127.0.0.1", () => {
       const address = expressServer?.address();
@@ -70,6 +86,11 @@ async function startExpressServer() {
     });
   } catch (error) {
     console.error("Failed to start Express server:", error);
+    const { dialog } = require("electron");
+    dialog.showErrorBox(
+      "Server Error",
+      `Failed to start the server: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 

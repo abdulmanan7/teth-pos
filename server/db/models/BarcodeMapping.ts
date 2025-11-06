@@ -36,6 +36,5 @@ const BarcodeMappingSchema = new Schema<IBarcodeMapping>(
 BarcodeMappingSchema.index({ barcode: 1, is_active: 1 });
 BarcodeMappingSchema.index({ product_id: 1, barcode_type: 1 });
 
-export const BarcodeMapping =
-  mongoose.models.BarcodeMapping ||
-  mongoose.model<IBarcodeMapping>("BarcodeMapping", BarcodeMappingSchema);
+export const BarcodeMapping = (mongoose.models.BarcodeMapping ||
+  mongoose.model<IBarcodeMapping>("BarcodeMapping", BarcodeMappingSchema)) as mongoose.Model<IBarcodeMapping>;

@@ -39,6 +39,5 @@ const ReorderRuleSchema = new Schema<IReorderRule>(
 ReorderRuleSchema.index({ product_id: 1, warehouse_id: 1 });
 ReorderRuleSchema.index({ is_active: 1 });
 
-export const ReorderRule =
-  mongoose.models.ReorderRule ||
-  mongoose.model<IReorderRule>("ReorderRule", ReorderRuleSchema);
+export const ReorderRule = (mongoose.models.ReorderRule ||
+  mongoose.model<IReorderRule>("ReorderRule", ReorderRuleSchema)) as mongoose.Model<IReorderRule>;

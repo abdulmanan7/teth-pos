@@ -48,6 +48,5 @@ StockAlertSchema.index({ status: 1 });
 StockAlertSchema.index({ alert_type: 1 });
 StockAlertSchema.index({ created_at: -1 });
 
-export const StockAlert =
-  mongoose.models.StockAlert ||
-  mongoose.model<IStockAlert>("StockAlert", StockAlertSchema);
+export const StockAlert = (mongoose.models.StockAlert ||
+  mongoose.model<IStockAlert>("StockAlert", StockAlertSchema)) as mongoose.Model<IStockAlert>;

@@ -67,6 +67,5 @@ StockAdjustmentSchema.index({ warehouse_id: 1 });
 StockAdjustmentSchema.index({ status: 1 });
 StockAdjustmentSchema.index({ adjustment_date: 1 });
 
-export const StockAdjustment =
-  mongoose.models.StockAdjustment ||
-  mongoose.model<IStockAdjustment>("StockAdjustment", StockAdjustmentSchema);
+export const StockAdjustment = (mongoose.models.StockAdjustment ||
+  mongoose.model<IStockAdjustment>("StockAdjustment", StockAdjustmentSchema)) as mongoose.Model<IStockAdjustment>;

@@ -74,9 +74,8 @@ TransactionHistorySchema.index({ transaction_type: 1, created_at: -1 });
 TransactionHistorySchema.index({ status: 1, created_at: -1 });
 TransactionHistorySchema.index({ user_id: 1, created_at: -1 });
 
-export const TransactionHistory =
-  mongoose.models.TransactionHistory ||
+export const TransactionHistory = (mongoose.models.TransactionHistory ||
   mongoose.model<ITransactionHistory>(
     "TransactionHistory",
     TransactionHistorySchema
-  );
+  )) as mongoose.Model<ITransactionHistory>;

@@ -43,6 +43,5 @@ SerialNumberSchema.index({ product_id: 1, warehouse_id: 1 });
 SerialNumberSchema.index({ status: 1 });
 SerialNumberSchema.index({ lot_id: 1 });
 
-export const SerialNumber =
-  mongoose.models.SerialNumber ||
-  mongoose.model<ISerialNumber>("SerialNumber", SerialNumberSchema);
+export const SerialNumber = (mongoose.models.SerialNumber ||
+  mongoose.model<ISerialNumber>("SerialNumber", SerialNumberSchema)) as mongoose.Model<ISerialNumber>;

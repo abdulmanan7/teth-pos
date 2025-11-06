@@ -57,9 +57,8 @@ ExpiryNotificationSchema.index({ notification_type: 1 });
 ExpiryNotificationSchema.index({ expiry_date: 1 });
 ExpiryNotificationSchema.index({ created_at: -1 });
 
-export const ExpiryNotification =
-  mongoose.models.ExpiryNotification ||
+export const ExpiryNotification = (mongoose.models.ExpiryNotification ||
   mongoose.model<IExpiryNotification>(
     "ExpiryNotification",
     ExpiryNotificationSchema
-  );
+  )) as mongoose.Model<IExpiryNotification>;

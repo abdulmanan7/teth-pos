@@ -95,9 +95,8 @@ const InventoryMetricsSchema = new Schema<IInventoryMetrics>(
 InventoryMetricsSchema.index({ date: -1 });
 InventoryMetricsSchema.index({ created_at: -1 });
 
-export const InventoryMetrics =
-  mongoose.models.InventoryMetrics ||
+export const InventoryMetrics = (mongoose.models.InventoryMetrics ||
   mongoose.model<IInventoryMetrics>(
     "InventoryMetrics",
     InventoryMetricsSchema
-  );
+  )) as mongoose.Model<IInventoryMetrics>;

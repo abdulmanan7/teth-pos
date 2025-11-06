@@ -39,6 +39,5 @@ const WarehouseSchema = new Schema<IWarehouse>(
 // Note: code has unique: true which creates an index automatically
 WarehouseSchema.index({ is_active: 1 });
 
-export const Warehouse =
-  mongoose.models.Warehouse ||
-  mongoose.model<IWarehouse>("Warehouse", WarehouseSchema);
+export const Warehouse = (mongoose.models.Warehouse ||
+  mongoose.model<IWarehouse>("Warehouse", WarehouseSchema)) as mongoose.Model<IWarehouse>;

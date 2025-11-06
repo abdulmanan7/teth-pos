@@ -41,6 +41,5 @@ LotNumberSchema.index({ product_id: 1, warehouse_id: 1 });
 LotNumberSchema.index({ expiry_date: 1 });
 LotNumberSchema.index({ status: 1 });
 
-export const LotNumber =
-  mongoose.models.LotNumber ||
-  mongoose.model<ILotNumber>("LotNumber", LotNumberSchema);
+export const LotNumber = (mongoose.models.LotNumber ||
+  mongoose.model<ILotNumber>("LotNumber", LotNumberSchema)) as mongoose.Model<ILotNumber>;

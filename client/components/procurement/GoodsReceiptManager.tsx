@@ -1,4 +1,4 @@
-import { X, Plus, Eye, Trash2, Check, AlertCircle, Package, Calendar, User, FileText, TrendingUp, TrendingDown, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { X, Plus, Eye, Trash2, Check, AlertCircle, Package, Calendar, User, FileText, TrendingUp, TrendingDown, CheckCircle2, XCircle, Clock, Hash, Barcode, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -25,6 +25,9 @@ interface GRItem {
   product_id: string;
   po_item_index: number;
   po_quantity: number;
+  ordered_quantity?: number; // Original PO quantity
+  already_received?: number; // Already received in previous GRs
+  already_damaged?: number; // Already damaged in previous GRs
   received_quantity: number;
   damaged_quantity: number;
   quality_check: 'pass' | 'fail' | 'pending';
@@ -95,31 +98,78 @@ export default function GoodsReceiptManager({ isDarkTheme = true }: GoodsReceipt
     }
   };
 
-  const handlePOSelect = (poId: string) => {
-    const po = purchaseOrders.find(p => p._id === poId);
-    if (po) {
-      setSelectedPO(po);
+  const handlePOSelect = async (poId: string) => {
+    try {
+      // Fetch PO with remaining quantities
+      const poWithRemaining = await get(`/api/goods-receipts/po/${poId}/remaining`);
+      
+      setSelectedPO(purchaseOrders.find(p => p._id === poId) || null);
       setFormData({
         ...formData,
         po_id: poId,
-        items: po.items.map((item, idx) => ({
-          product_id: item.product_id,
-          po_item_index: idx,
-          po_quantity: item.quantity,
-          received_quantity: 0,
-          damaged_quantity: 0,
-          quality_check: 'pending',
-          barcodes: [],
-          lot_numbers: [],
-          serial_numbers: [],
-        })),
+        items: poWithRemaining.items
+          .filter((item: any) => item.remaining_quantity > 0) // Only show items with remaining qty
+          .map((item: any) => ({
+            product_id: item.product_id,
+            po_item_index: item.po_item_index,
+            po_quantity: item.remaining_quantity, // Use remaining instead of original
+            ordered_quantity: item.ordered_quantity, // Keep original for reference
+            already_received: item.already_received,
+            already_damaged: item.already_damaged,
+            received_quantity: 0,
+            damaged_quantity: 0,
+            quality_check: 'pending',
+            barcodes: [],
+            lot_numbers: [],
+            serial_numbers: [],
+          })),
       });
+    } catch (error) {
+      console.error("Error fetching PO details:", error);
+      addToast("Failed to load PO details", "error");
     }
   };
 
   const handleItemChange = (index: number, field: string, value: any) => {
     const newItems = [...formData.items];
     newItems[index] = { ...newItems[index], [field]: value };
+    setFormData({ ...formData, items: newItems });
+  };
+
+  // Validate quantity constraints
+  const validateQuantities = (item: GRItem): { isValid: boolean; error?: string } => {
+    const totalReceived = (item.received_quantity || 0) + (item.damaged_quantity || 0);
+    if (totalReceived > item.po_quantity) {
+      return {
+        isValid: false,
+        error: `Total (${totalReceived}) exceeds ordered quantity (${item.po_quantity})`
+      };
+    }
+    if (item.received_quantity < 0 || item.damaged_quantity < 0) {
+      return { isValid: false, error: 'Quantities cannot be negative' };
+    }
+    return { isValid: true };
+  };
+
+  // Generate lot numbers in range
+  const generateLotNumbers = (itemIndex: number, prefix: string, start: number, count: number) => {
+    const newItems = [...formData.items];
+    const lots: string[] = [];
+    for (let i = 0; i < count; i++) {
+      lots.push(`${prefix}${String(start + i).padStart(4, '0')}`);
+    }
+    newItems[itemIndex].lot_numbers = lots;
+    setFormData({ ...formData, items: newItems });
+  };
+
+  // Generate serial numbers in range
+  const generateSerialNumbers = (itemIndex: number, prefix: string, start: number, count: number) => {
+    const newItems = [...formData.items];
+    const serials: string[] = [];
+    for (let i = 0; i < count; i++) {
+      serials.push(`${prefix}${String(start + i).padStart(6, '0')}`);
+    }
+    newItems[itemIndex].serial_numbers = serials;
     setFormData({ ...formData, items: newItems });
   };
 
@@ -149,9 +199,13 @@ export default function GoodsReceiptManager({ isDarkTheme = true }: GoodsReceipt
       return;
     }
 
-    if (formData.items.some(item => item.received_quantity < 0)) {
-      addToast("Received quantity cannot be negative", "warning");
-      return;
+    // Validate all items
+    for (const item of formData.items) {
+      const validation = validateQuantities(item);
+      if (!validation.isValid) {
+        addToast(validation.error || "Invalid quantities", "warning");
+        return;
+      }
     }
 
     try {
@@ -530,116 +584,297 @@ export default function GoodsReceiptManager({ isDarkTheme = true }: GoodsReceipt
               </div>
 
               {/* Items Section */}
-              {formData.items.length > 0 && (
+              {formData.items.length > 0 ? (
                 <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
-                  <h4 className={`text-sm font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Items</h4>
+                  <h4 className={`text-sm font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                    Items to Receive ({formData.items.length})
+                  </h4>
                   <div className="space-y-4">
-                    {formData.items.map((item, index) => (
-                      <div key={index} className={`p-4 rounded space-y-3 ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
-                        <div className="flex items-center justify-between">
-                          <h5 className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
-                            {getProductName(item.product_id)}
-                          </h5>
-                          <span className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                            Ordered: {item.po_quantity}
-                          </span>
-                        </div>
+                    {formData.items.map((item, index) => {
+                      const validation = validateQuantities(item);
+                      const totalQty = (item.received_quantity || 0) + (item.damaged_quantity || 0);
+                      const goodQty = (item.received_quantity || 0) - (item.damaged_quantity || 0);
+                      
+                      return (
+                        <div key={index} className={`p-4 rounded-lg space-y-3 border-2 ${!validation.isValid ? 'border-red-500' : (isDarkTheme ? 'border-slate-600' : 'border-slate-300')} ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                          {/* Header */}
+                          <div className="flex items-center justify-between pb-2 border-b ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}">
+                            <div className="flex-1">
+                              <h5 className={`font-semibold text-base ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+                                {getProductName(item.product_id)}
+                              </h5>
+                              <div className="flex items-center gap-3 mt-1 text-xs">
+                                {item.ordered_quantity && item.ordered_quantity !== item.po_quantity && (
+                                  <>
+                                    <span className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>
+                                      Original PO: <span className="font-bold">{item.ordered_quantity}</span>
+                                    </span>
+                                    <span className={isDarkTheme ? 'text-blue-400' : 'text-blue-600'}>
+                                      Already Received: <span className="font-bold">{item.already_received || 0}</span>
+                                    </span>
+                                    {(item.already_damaged || 0) > 0 && (
+                                      <span className={isDarkTheme ? 'text-red-400' : 'text-red-600'}>
+                                        Already Damaged: <span className="font-bold">{item.already_damaged}</span>
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                                <span className={`font-semibold ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
+                                  Remaining: <span className="font-bold">{item.po_quantity}</span> units
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Receiving Now</p>
+                              <p className={`text-2xl font-bold ${totalQty > item.po_quantity ? 'text-red-400' : totalQty === item.po_quantity ? 'text-green-400' : (isDarkTheme ? 'text-white' : 'text-slate-900')}`}>
+                                {totalQty}
+                              </p>
+                            </div>
+                          </div>
 
-                        <div className="grid grid-cols-3 gap-2">
+                          {/* Validation Error */}
+                          {!validation.isValid && (
+                            <div className="bg-red-500/10 border border-red-500 rounded-lg p-3 flex items-start gap-2">
+                              <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-red-400 font-medium">{validation.error}</p>
+                            </div>
+                          )}
+
+                          {/* Quantity Inputs */}
+                          <div className="grid grid-cols-3 gap-3">
+                            <div>
+                              <label className={`text-xs font-medium flex items-center gap-1 mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                                <CheckCircle2 className="w-3 h-3" />
+                                Received Qty *
+                              </label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max={item.po_quantity}
+                                value={item.received_quantity || 0}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value) || 0;
+                                  handleItemChange(index, "received_quantity", val);
+                                }}
+                                className={`${isDarkTheme ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-slate-300 text-slate-900'} text-sm font-semibold`}
+                              />
+                            </div>
+                            <div>
+                              <label className={`text-xs font-medium flex items-center gap-1 mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                                <XCircle className="w-3 h-3" />
+                                Damaged Qty
+                              </label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max={item.po_quantity}
+                                value={item.damaged_quantity || 0}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value) || 0;
+                                  handleItemChange(index, "damaged_quantity", val);
+                                }}
+                                className={`${isDarkTheme ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-slate-300 text-slate-900'} text-sm font-semibold`}
+                              />
+                            </div>
+                            <div>
+                              <label className={`text-xs font-medium flex items-center gap-1 mb-1 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                                <Check className="w-3 h-3" />
+                                Quality Check
+                              </label>
+                              <select
+                                value={item.quality_check}
+                                onChange={(e) =>
+                                  handleItemChange(index, "quality_check", e.target.value)
+                                }
+                                className={`w-full rounded px-2 py-2 text-sm font-medium ${isDarkTheme ? 'bg-slate-600 border border-slate-500 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
+                              >
+                                <option value="pending">⏳ Pending</option>
+                                <option value="pass">✓ Pass</option>
+                                <option value="fail">✗ Fail</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Summary Bar */}
+                          <div className={`rounded-lg p-2 text-xs ${isDarkTheme ? 'bg-slate-600/50' : 'bg-slate-200'}`}>
+                            <div className="flex items-center justify-between">
+                              <span className={isDarkTheme ? 'text-slate-300' : 'text-slate-700'}>
+                                Good Units: <span className="font-bold text-green-400">{goodQty}</span>
+                              </span>
+                              <span className={isDarkTheme ? 'text-slate-300' : 'text-slate-700'}>
+                                Damaged: <span className="font-bold text-red-400">{item.damaged_quantity || 0}</span>
+                              </span>
+                              <span className={isDarkTheme ? 'text-slate-300' : 'text-slate-700'}>
+                                Remaining: <span className="font-bold">{item.po_quantity - totalQty}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Quality Notes */}
                           <div>
-                            <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Received Qty</label>
+                            <label className={`text-xs font-medium mb-1 block ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                              Quality Notes
+                            </label>
                             <Input
-                              type="number"
-                              min="0"
-                              value={item.received_quantity}
+                              type="text"
+                              placeholder="e.g., 2 units broken in transit, packaging damaged"
+                              value={item.quality_notes || ""}
                               onChange={(e) =>
-                                handleItemChange(index, "received_quantity", parseInt(e.target.value))
+                                handleItemChange(index, "quality_notes", e.target.value)
                               }
                               className={isDarkTheme ? 'bg-slate-600 border-slate-500 text-white text-sm' : 'bg-white border-slate-300 text-slate-900 text-sm'}
                             />
                           </div>
-                          <div>
-                            <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Damaged Qty</label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={item.damaged_quantity}
+
+                          {/* Lot Numbers Section */}
+                          <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-slate-600/30 border border-slate-600' : 'bg-white border border-slate-300'}`}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Hash className={`w-4 h-4 ${isDarkTheme ? 'text-blue-400' : 'text-blue-600'}`} />
+                              <label className={`text-xs font-semibold ${isDarkTheme ? 'text-blue-300' : 'text-blue-700'}`}>
+                                Lot Numbers
+                              </label>
+                            </div>
+                            
+                            {/* Quick Generate */}
+                            <div className="grid grid-cols-4 gap-2 mb-2">
+                              <Input
+                                type="text"
+                                placeholder="Prefix (LOT-)"
+                                id={`lot-prefix-${index}`}
+                                className={`${isDarkTheme ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white border-slate-300 text-slate-900'} text-xs`}
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Start (1)"
+                                id={`lot-start-${index}`}
+                                defaultValue="1"
+                                className={`${isDarkTheme ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white border-slate-300 text-slate-900'} text-xs`}
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Count"
+                                id={`lot-count-${index}`}
+                                defaultValue={goodQty}
+                                className={`${isDarkTheme ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white border-slate-300 text-slate-900'} text-xs`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const prefix = (document.getElementById(`lot-prefix-${index}`) as HTMLInputElement)?.value || 'LOT-';
+                                  const start = parseInt((document.getElementById(`lot-start-${index}`) as HTMLInputElement)?.value) || 1;
+                                  const count = parseInt((document.getElementById(`lot-count-${index}`) as HTMLInputElement)?.value) || goodQty;
+                                  generateLotNumbers(index, prefix, start, count);
+                                }}
+                                className={`text-xs px-2 py-1 rounded font-medium ${isDarkTheme ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                              >
+                                Generate
+                              </button>
+                            </div>
+
+                            {/* Manual Entry */}
+                            <textarea
+                              placeholder="Manual entry: LOT-001, LOT-002 (comma-separated)"
+                              value={item.lot_numbers?.join(", ") || ""}
                               onChange={(e) =>
-                                handleItemChange(index, "damaged_quantity", parseInt(e.target.value))
+                                handleItemChange(
+                                  index,
+                                  "lot_numbers",
+                                  e.target.value.split(",").map(s => s.trim()).filter(s => s)
+                                )
                               }
-                              className={isDarkTheme ? 'bg-slate-600 border-slate-500 text-white text-sm' : 'bg-white border-slate-300 text-slate-900 text-sm'}
+                              rows={2}
+                              className={`w-full rounded px-2 py-2 text-xs ${isDarkTheme ? 'bg-slate-700 border border-slate-500 text-white placeholder-slate-400' : 'bg-white border border-slate-300 text-slate-900 placeholder-slate-500'}`}
                             />
+                            {item.lot_numbers && item.lot_numbers.length > 0 && (
+                              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-blue-300' : 'text-blue-600'}`}>
+                                ✓ {item.lot_numbers.length} lot number(s) added
+                              </p>
+                            )}
                           </div>
-                          <div>
-                            <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Quality</label>
-                            <select
-                              value={item.quality_check}
+
+                          {/* Serial Numbers Section */}
+                          <div className={`rounded-lg p-3 ${isDarkTheme ? 'bg-slate-600/30 border border-slate-600' : 'bg-white border border-slate-300'}`}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Barcode className={`w-4 h-4 ${isDarkTheme ? 'text-purple-400' : 'text-purple-600'}`} />
+                              <label className={`text-xs font-semibold ${isDarkTheme ? 'text-purple-300' : 'text-purple-700'}`}>
+                                Serial Numbers
+                              </label>
+                            </div>
+                            
+                            {/* Quick Generate */}
+                            <div className="grid grid-cols-4 gap-2 mb-2">
+                              <Input
+                                type="text"
+                                placeholder="Prefix (SN-)"
+                                id={`serial-prefix-${index}`}
+                                className={`${isDarkTheme ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white border-slate-300 text-slate-900'} text-xs`}
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Start (1)"
+                                id={`serial-start-${index}`}
+                                defaultValue="1"
+                                className={`${isDarkTheme ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white border-slate-300 text-slate-900'} text-xs`}
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Count"
+                                id={`serial-count-${index}`}
+                                defaultValue={goodQty}
+                                className={`${isDarkTheme ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white border-slate-300 text-slate-900'} text-xs`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const prefix = (document.getElementById(`serial-prefix-${index}`) as HTMLInputElement)?.value || 'SN-';
+                                  const start = parseInt((document.getElementById(`serial-start-${index}`) as HTMLInputElement)?.value) || 1;
+                                  const count = parseInt((document.getElementById(`serial-count-${index}`) as HTMLInputElement)?.value) || goodQty;
+                                  generateSerialNumbers(index, prefix, start, count);
+                                }}
+                                className={`text-xs px-2 py-1 rounded font-medium ${isDarkTheme ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-purple-500 hover:bg-purple-600 text-white'}`}
+                              >
+                                Generate
+                              </button>
+                            </div>
+
+                            {/* Manual Entry */}
+                            <textarea
+                              placeholder="Manual entry: SN-000001, SN-000002 (comma-separated)"
+                              value={item.serial_numbers?.join(", ") || ""}
                               onChange={(e) =>
-                                handleItemChange(index, "quality_check", e.target.value)
+                                handleItemChange(
+                                  index,
+                                  "serial_numbers",
+                                  e.target.value.split(",").map(s => s.trim()).filter(s => s)
+                                )
                               }
-                              className={`w-full rounded px-2 py-1 text-sm ${isDarkTheme ? 'bg-slate-600 border border-slate-500 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
-                            >
-                              <option value="pending">Pending</option>
-                              <option value="pass">Pass</option>
-                              <option value="fail">Fail</option>
-                            </select>
+                              rows={2}
+                              className={`w-full rounded px-2 py-2 text-xs ${isDarkTheme ? 'bg-slate-700 border border-slate-500 text-white placeholder-slate-400' : 'bg-white border border-slate-300 text-slate-900 placeholder-slate-500'}`}
+                            />
+                            {item.serial_numbers && item.serial_numbers.length > 0 && (
+                              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-purple-300' : 'text-purple-600'}`}>
+                                ✓ {item.serial_numbers.length} serial number(s) added
+                              </p>
+                            )}
                           </div>
                         </div>
-
-                        {/* Quality Notes */}
-                        <div>
-                          <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Quality Notes</label>
-                          <Input
-                            type="text"
-                            placeholder="e.g., 2 units broken in transit"
-                            value={item.quality_notes || ""}
-                            onChange={(e) =>
-                              handleItemChange(index, "quality_notes", e.target.value)
-                            }
-                            className={isDarkTheme ? 'bg-slate-600 border-slate-500 text-white text-sm' : 'bg-white border-slate-300 text-slate-900 text-sm'}
-                          />
-                        </div>
-
-                        {/* Lot Numbers */}
-                        <div>
-                          <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Lot Numbers (comma-separated)</label>
-                          <Input
-                            type="text"
-                            placeholder="e.g., LOT-2025-001, LOT-2025-002"
-                            value={item.lot_numbers?.join(", ") || ""}
-                            onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "lot_numbers",
-                                e.target.value.split(",").map(s => s.trim()).filter(s => s)
-                              )
-                            }
-                            className={isDarkTheme ? 'bg-slate-600 border-slate-500 text-white text-sm' : 'bg-white border-slate-300 text-slate-900 text-sm'}
-                          />
-                        </div>
-
-                        {/* Serial Numbers */}
-                        <div>
-                          <label className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Serial Numbers (comma-separated)</label>
-                          <Input
-                            type="text"
-                            placeholder="e.g., SN-001, SN-002, SN-003"
-                            value={item.serial_numbers?.join(", ") || ""}
-                            onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "serial_numbers",
-                                e.target.value.split(",").map(s => s.trim()).filter(s => s)
-                              )
-                            }
-                            className={isDarkTheme ? 'bg-slate-600 border-slate-500 text-white text-sm' : 'bg-white border-slate-300 text-slate-900 text-sm'}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
-              )}
+              ) : formData.po_id ? (
+                <div className={`border-t pt-4 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
+                  <div className={`rounded-lg p-6 text-center ${isDarkTheme ? 'bg-green-500/10 border border-green-500/30' : 'bg-green-50 border border-green-200'}`}>
+                    <CheckCircle2 className={`w-12 h-12 mx-auto mb-3 ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`} />
+                    <p className={`text-lg font-semibold mb-2 ${isDarkTheme ? 'text-green-300' : 'text-green-700'}`}>
+                      All Items Fully Received
+                    </p>
+                    <p className={`text-sm ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
+                      This PO has been completely received. No items remaining.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
 
               {/* Notes */}
               <div>

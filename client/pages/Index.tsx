@@ -73,6 +73,9 @@ interface Product {
   category?: string;
   sku?: string;
   hasSerialNumbers?: boolean;
+  status?: string;
+  matchedLot?: string | null;
+  matchedSerial?: string | null;
 }
 
 interface CartItem {
@@ -176,6 +179,8 @@ export default function Index() {
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<ApiCustomer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [currentStaff, setCurrentStaff] = useState<StaffLoginResponse | null>(null);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [taxRate, setTaxRate] = useState(0);
@@ -419,20 +424,78 @@ export default function Index() {
     }
   };
 
-  const filteredProducts = products.filter((product: any) => {
-    const searchLower = searchTerm.toLowerCase();
-    // Search by product name, SKU, or barcode
-    const matchesSearch = 
-      product.name.toLowerCase().includes(searchLower) ||
-      (product.sku && product.sku.toLowerCase().includes(searchLower));
-    const matchesCategory =
-      selectedCategory === "All" || product.category === selectedCategory;
-    // Show products with stock > 0 OR products with serial numbers (even if stock is 0)
-    const hasStock = product.stock > 0 || (product.hasSerialNumbers === true);
-    // Only show active products (exclude inactive and discontinued)
-    const isActive = !product.status || product.status === "active";
-    return matchesSearch && matchesCategory && hasStock && isActive;
-  });
+  // Search products by name, SKU, lot number, or serial number
+  const searchProductsAPI = async (query: string) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    try {
+      setIsSearching(true);
+      const response = await get(`/api/products/search?q=${encodeURIComponent(query)}`);
+      
+      // Convert API products to local format
+      const formattedResults = response.results.map((p: any) => ({
+        id: p._id,
+        name: p.name,
+        price: p.price,
+        stock: p.stock,
+        category: p.category,
+        status: p.status,
+        sku: p.sku,
+        hasSerialNumbers: p.hasSerialNumbers,
+        matchedLot: p.matchedLot,
+        matchedSerial: p.matchedSerial,
+      }));
+      
+      setSearchResults(formattedResults);
+    } catch (error) {
+      console.error("Error searching products:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Debounce search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim().length >= 2) {
+        searchProductsAPI(searchTerm);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Use search results if searching, otherwise filter local products
+  const filteredProducts = (searchTerm.trim().length >= 2 && searchResults.length > 0) 
+    ? searchResults.filter((product: any) => {
+        const matchesCategory =
+          selectedCategory === "All" || product.category === selectedCategory;
+        const hasStock = product.stock > 0 || (product.hasSerialNumbers === true);
+        const isActive = !product.status || product.status === "active";
+        
+        return matchesCategory && hasStock && isActive;
+      })
+    : products.filter((product: any) => {
+        const searchLower = searchTerm.toLowerCase();
+        // Search by product name, SKU, or barcode (local fallback)
+        const matchesSearch = 
+          product.name.toLowerCase().includes(searchLower) ||
+          (product.sku && product.sku.toLowerCase().includes(searchLower));
+        const matchesCategory =
+          selectedCategory === "All" || product.category === selectedCategory;
+        // Show products with stock > 0 OR products with serial numbers (even if stock is 0)
+        const hasStock = product.stock > 0 || (product.hasSerialNumbers === true);
+        // Only show active products (exclude inactive and discontinued)
+        const isActive = !product.status || product.status === "active";
+        return matchesSearch && matchesCategory && hasStock && isActive;
+      });
 
   const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(customerSearch.toLowerCase())
@@ -892,7 +955,7 @@ export default function Index() {
                   <div className="relative flex-1">
                     <input
                       type="text"
-                      placeholder="🔍 Scan barcode or type product name (↓ to select, Enter to add)"
+                      placeholder="🔍 Search by name, SKU, lot number, or serial number (↓ to select, Enter to add)"
                       value={searchTerm}
                       onChange={(e) => {
                         setSearchTerm(e.target.value);
@@ -961,15 +1024,37 @@ export default function Index() {
                             tabIndex={-1}
                           >
                             <div className="flex-1">
-                              <span className="font-medium">{product.name}</span>
-                              <span className={`text-xs ml-2 ${
-                                selectedProductIndex === index ? "text-blue-100" : "text-slate-500"
-                              }`}>({index + 1})</span>
-                              <span className={`text-xs ml-2 ${
-                                selectedProductIndex === index ? "text-blue-100" : "text-slate-500"
-                              }`}>
-                                Stock: {product.stock}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{product.name}</span>
+                                <span className={`text-xs ${
+                                  selectedProductIndex === index ? "text-blue-100" : "text-slate-500"
+                                }`}>({index + 1})</span>
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`text-xs ${
+                                  selectedProductIndex === index ? "text-blue-100" : "text-slate-500"
+                                }`}>
+                                  Stock: {product.stock}
+                                </span>
+                                {product.matchedLot && (
+                                  <span className={`text-xs px-2 py-0.5 rounded ${
+                                    selectedProductIndex === index 
+                                      ? "bg-blue-400 text-white" 
+                                      : "bg-purple-100 text-purple-700"
+                                  }`}>
+                                    📦 Lot: {product.matchedLot}
+                                  </span>
+                                )}
+                                {product.matchedSerial && (
+                                  <span className={`text-xs px-2 py-0.5 rounded ${
+                                    selectedProductIndex === index 
+                                      ? "bg-blue-400 text-white" 
+                                      : "bg-green-100 text-green-700"
+                                  }`}>
+                                    🔢 Serial: {product.matchedSerial}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <span className={`font-bold text-sm ${
                               selectedProductIndex === index ? "text-blue-100" : "text-blue-600"

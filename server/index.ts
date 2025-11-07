@@ -31,6 +31,11 @@ export async function createServer() {
 
   // Lazy load route handlers to avoid mongoose import during build
   // Specific routes first (category before :id)
+  app.get("/api/products/search", async (req, res, next) => {
+    const { searchProducts } = await import("./routes/products");
+    return searchProducts(req, res, next);
+  });
+
   app.get("/api/products/category/:category", async (req, res, next) => {
     const { getProductsByCategory } = await import("./routes/products");
     return getProductsByCategory(req, res, next);

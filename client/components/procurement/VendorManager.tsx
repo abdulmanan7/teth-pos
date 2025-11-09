@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { formatCurrencyNew } from "@/utils";
 
 interface Vendor {
   _id: string;
@@ -209,7 +210,7 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
                     </div>
                     <div>
                       <p className={isDarkTheme ? 'text-slate-500' : 'text-slate-600'}>Total Spent</p>
-                      <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {vendor.total_spent.toFixed(2)}</p>
+                      <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{formatCurrencyNew(vendor.total_spent)}</p>
                     </div>
                     <div>
                       <p className="text-slate-500">Status</p>

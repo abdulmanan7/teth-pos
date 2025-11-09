@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, Percent, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatCurrencyNew } from "@/utils";
 
 interface DiscountModalProps {
   isDarkTheme: boolean;
@@ -128,7 +129,7 @@ export default function DiscountModalComponent({
                   isDarkTheme ? "text-slate-400" : "text-slate-600"
                 }`}
               >
-                Subtotal: Rs {subtotal.toFixed(2)}
+                Subtotal: {formatCurrencyNew(subtotal)}
               </p>
             </div>
           )}
@@ -250,7 +251,7 @@ export default function DiscountModalComponent({
                     isDarkTheme ? "text-white" : "text-slate-900"
                   }`}
                 >
-                  Rs {subtotal.toFixed(2)}
+                  {formatCurrencyNew(subtotal)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -260,7 +261,7 @@ export default function DiscountModalComponent({
                   Discount:
                 </span>
                 <span className="font-semibold text-red-500">
-                  -Rs {discountAmount.toFixed(2)}
+                  -{formatCurrencyNew(discountAmount)}
                 </span>
               </div>
               <div
@@ -280,7 +281,7 @@ export default function DiscountModalComponent({
                     isDarkTheme ? "text-emerald-400" : "text-emerald-600"
                   }`}
                 >
-                  Rs {calculatePreview().toFixed(2)}
+                  {formatCurrencyNew(calculatePreview())}
                 </span>
               </div>
             </div>

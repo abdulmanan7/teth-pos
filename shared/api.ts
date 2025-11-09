@@ -11,6 +11,13 @@ export interface DemoResponse {
   message: string;
 }
 
+// Currency Configuration
+export interface CurrencyConfig {
+  symbol: string;
+  code: string;
+  format: (amount: number) => string;
+}
+
 // Product Types
 export interface Product {
   _id: string;
@@ -155,6 +162,11 @@ export interface OrderItem {
   discountAmount?: number;
   subtotal?: number;
   totalAfterDiscount?: number;
+  taxRateId?: string | null;
+  taxRateLabel?: string | null;
+  taxRate?: number | null;
+  taxAmount?: number;
+  taxableBase?: number;
 }
 
 export interface Order {

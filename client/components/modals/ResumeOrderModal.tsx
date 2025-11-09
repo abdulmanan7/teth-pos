@@ -1,3 +1,4 @@
+import { formatCurrencyNew } from "@/utils";
 import { RotateCcw, Trash2 } from "lucide-react";
 
 interface CartItem {
@@ -82,7 +83,7 @@ export default function ResumeOrderModal({
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-green-400">
-                        Rs {draft.total.toFixed(2)}
+                        {formatCurrencyNew(draft.total)}
                       </p>
                     </div>
                   </div>
@@ -97,7 +98,7 @@ export default function ResumeOrderModal({
                           {item.name} x{item.quantity}
                         </span>
                         <span className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>
-                          Rs {(item.price * item.quantity).toFixed(2)}
+                          {formatCurrencyNew(item.price * item.quantity)}
                         </span>
                       </div>
                     ))}

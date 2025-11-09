@@ -4,10 +4,23 @@ import { Product } from '../db/models/Product';
 import { Customer } from '../db/models/Customer';
 import { calculateOrderTotal, validateDiscount } from '../utils/discountCalculator';
 
-// Get all orders
+// Get all orders with optional limit and sort
 export const getAllOrders: RequestHandler = async (req, res) => {
   try {
-    const orders = await Order.find();
+    const limit = parseInt(req.query.limit as string) || 0; // 0 = no limit
+    const sort = req.query.sort === 'asc' ? 1 : -1; // -1 = descending (default, most recent first)
+    
+    let query = Order.find();
+    
+    // Apply sort by createdAt
+    query = query.sort({ createdAt: sort });
+    
+    // Apply limit if specified
+    if (limit > 0) {
+      query = query.limit(limit);
+    }
+    
+    const orders = await query.exec();
     res.json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -97,20 +110,19 @@ export const createOrder: RequestHandler = async (req, res) => {
       await product.save();
     }
 
-    // Calculate order total with all discounts
-    const orderCalculation = calculateOrderTotal(items, checkoutDiscount);
-    const subtotalAfterDiscount = orderCalculation.subtotalAfterItemDiscounts;
-    const taxableAmount = Math.max(0, subtotalAfterDiscount - orderCalculation.checkoutDiscountAmount);
-    const normalizedTaxRate = typeof taxRate === 'number' && taxRate > 0 ? taxRate : 0;
-    const taxAmount = Math.round(taxableAmount * normalizedTaxRate * 100) / 100;
-    const grandTotal = Math.round((taxableAmount + taxAmount) * 100) / 100;
+    // Use frontend-calculated totals (already include mixed tax logic)
+    const subtotalAfterDiscount = req.body.subtotalAfterDiscount || 0;
+    const checkoutDiscountAmount = req.body.checkoutDiscountAmount || 0;
+    const totalBeforeTax = req.body.totalBeforeTax || 0;
+    const taxAmount = req.body.taxAmount || 0;
+    const grandTotal = req.body.total || 0;
 
     // Update customer stats if not walk-in
     if (customer && customer !== 'Walk-in') {
       const customerDoc = await Customer.findOne({ name: customer });
       if (customerDoc) {
         customerDoc.totalOrders += 1;
-        customerDoc.totalSpent += orderCalculation.finalTotal;
+        customerDoc.totalSpent += grandTotal;
         await customerDoc.save();
       }
     }
@@ -120,35 +132,58 @@ export const createOrder: RequestHandler = async (req, res) => {
       orderNumber,
       customer,
       items: items.map((item: any) => {
+        const {
+          taxRateId: incomingTaxRateId,
+          taxRateLabel: incomingTaxRateLabel,
+          taxRateValue,
+          taxAmount: incomingTaxAmount,
+          taxableBase: incomingTaxableBase,
+          ...rest
+        } = item;
         const baseSubtotal = item.price * item.quantity;
         const discountValue = item.discount
           ? item.discount.type === 'percentage'
             ? (baseSubtotal * item.discount.value) / 100
-            : item.discount.value
+          : item.discount.value
           : 0;
         const normalizedDiscount = Math.min(Math.max(discountValue, 0), baseSubtotal);
         const totalAfterDiscount = baseSubtotal - normalizedDiscount;
 
+        const taxableBase =
+          typeof incomingTaxableBase === 'number'
+            ? Math.round(incomingTaxableBase * 100) / 100
+            : undefined;
+        const itemTaxAmount =
+          typeof incomingTaxAmount === 'number'
+            ? Math.round(incomingTaxAmount * 100) / 100
+            : undefined;
+
         return {
-          ...item,
+          ...rest,
           subtotal: Math.round(baseSubtotal * 100) / 100,
           discountAmount: Math.round(normalizedDiscount * 100) / 100,
           totalAfterDiscount: Math.round(totalAfterDiscount * 100) / 100,
+          taxRateId: incomingTaxRateId,
+          taxRateLabel: incomingTaxRateLabel,
+          taxRate: typeof taxRateValue === 'number' ? taxRateValue : undefined,
+          taxAmount: itemTaxAmount ?? 0,
+          taxableBase: taxableBase ?? undefined,
         };
       }),
-      subtotal: orderCalculation.orderSubtotal,
-      itemDiscountTotal: orderCalculation.totalItemDiscounts,
+      subtotal: req.body.subtotal || 0,
+      itemDiscountTotal: req.body.itemDiscountTotal || 0,
       subtotalAfterDiscount,
       checkoutDiscount,
-      checkoutDiscountAmount: orderCalculation.checkoutDiscountAmount,
-      totalBeforeTax: taxableAmount,
-      taxRate: normalizedTaxRate,
+      checkoutDiscountAmount,
+      totalBeforeTax,
+      taxRate: req.body.taxRate || 0,
       taxAmount,
-      taxRateId,
-      taxRateLabel,
+      taxRateId: req.body.taxRateId,
+      taxRateLabel: req.body.taxRateLabel,
       total: grandTotal,
       status: 'completed',
       staffId,
+      staffName: req.body.staffName,
       paymentMethod,
       completedAt: new Date(),
     });

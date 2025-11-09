@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import type { Order } from "@shared/api";
+import { formatCurrencyNew } from "@/utils";
 
 export default function OrderHistoryModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
   const { get } = useElectronApi();
@@ -58,7 +59,7 @@ export default function OrderHistoryModal({ isDarkTheme, onClose }: { isDarkThem
             <div>
               <p className={`text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Revenue</p>
               <p className="text-3xl font-bold text-green-400">
-                Rs {totalRevenue.toFixed(2)}
+                {formatCurrencyNew(totalRevenue)}
               </p>
             </div>
             <div>
@@ -122,7 +123,7 @@ export default function OrderHistoryModal({ isDarkTheme, onClose }: { isDarkThem
                         {order.orderNumber}
                       </h3>
                       <p className="text-2xl font-bold text-green-400">
-                        Rs {order.total.toFixed(2)}
+                        {formatCurrencyNew(order.total)}
                       </p>
                     </div>
 

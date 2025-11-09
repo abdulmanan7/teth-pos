@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import { useToast } from "@/components/ToastManager";
 import type { Customer } from "@shared/api";
+import { formatCurrencyNew } from "@/utils";
 
 export default function CustomersModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
   const { addToast } = useToast();
@@ -202,7 +203,7 @@ export default function CustomersModal({ isDarkTheme, onClose }: { isDarkTheme: 
                       <div>
                         <p className={`text-xs mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Spent</p>
                         <p className="text-lg font-bold text-green-400">
-                          Rs {customer.totalSpent.toFixed(2)}
+                          {formatCurrencyNew(customer.totalSpent)}
                         </p>
                       </div>
                     </div>

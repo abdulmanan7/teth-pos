@@ -1,5 +1,6 @@
 import { X, TrendingUp, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatCurrencyNew } from "@/utils";
 
 interface SalesMetric {
   date: string;
@@ -99,7 +100,7 @@ export default function SalesReportModal({ isDarkTheme, onClose }: { isDarkTheme
                     <TrendingUp className="w-4 h-4 text-green-400" />
                   </div>
                   <p className="text-2xl font-bold text-green-400">
-                    ${day.revenue.toLocaleString()}
+                    {formatCurrencyNew(day.revenue)}
                   </p>
                 </div>
 
@@ -111,7 +112,7 @@ export default function SalesReportModal({ isDarkTheme, onClose }: { isDarkTheme
                   <div>
                     <p className={`mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Order Value</p>
                     <p className="font-semibold">
-                      Rs {day.avgOrderValue.toFixed(2)}
+                      {formatCurrencyNew(day.avgOrderValue)}
                     </p>
                   </div>
                   <div>

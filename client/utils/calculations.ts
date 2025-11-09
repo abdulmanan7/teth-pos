@@ -40,6 +40,7 @@ export const calculateTotals = (
 
 /**
  * Format number as currency
+ * @deprecated Use formatCurrency from currencyUtils instead
  */
 export const formatCurrency = (amount: number): string => {
   return `Rs ${amount.toFixed(2)}`;

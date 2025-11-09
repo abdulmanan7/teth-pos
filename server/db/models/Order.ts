@@ -13,6 +13,11 @@ export interface IOrderItem {
   discountAmount?: number; // calculated discount amount
   subtotal?: number; // price * quantity
   totalAfterDiscount?: number; // subtotal - discountAmount
+  taxRateId?: string | null;
+  taxRateLabel?: string | null;
+  taxRate?: number | null;
+  taxAmount?: number;
+  taxableBase?: number;
 }
 
 export interface IOrder extends Document {
@@ -83,6 +88,27 @@ const OrderItemSchema = new Schema<IOrderItem>(
       min: 0,
     },
     totalAfterDiscount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    taxRateId: {
+      type: String,
+    },
+    taxRateLabel: {
+      type: String,
+      trim: true,
+    },
+    taxRate: {
+      type: Number,
+      min: 0,
+    },
+    taxAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    taxableBase: {
       type: Number,
       default: 0,
       min: 0,

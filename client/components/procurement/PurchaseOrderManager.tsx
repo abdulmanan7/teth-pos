@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import { useToast } from "@/components/ToastManager";
+import { formatCurrencyNew } from "@/utils";
 
 interface Vendor {
   _id: string;
@@ -229,7 +230,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
         notes: paymentForm.notes,
       });
 
-      addToast(`Payment of Rs ${paymentForm.amount.toFixed(2)} recorded successfully!`, "success");
+      addToast(`Payment of ${formatCurrencyNew(paymentForm.amount)} recorded successfully!`, "success");
       
       // Update the selected PO with the response
       setSelectedPO(updatedPO);
@@ -384,7 +385,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                           <DollarSign className="w-4 h-4 text-green-400" />
                           <div>
                             <p className={`text-xs ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Total</p>
-                            <p className={`text-sm font-bold ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>Rs {po.total_amount.toFixed(2)}</p>
+                            <p className={`text-sm font-bold ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>{formatCurrencyNew(po.total_amount)}</p>
                           </div>
                         </div>
                         
@@ -411,7 +412,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                           <div className="flex justify-between text-xs mb-1">
                             <span className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Payment Progress</span>
                             <span className={isDarkTheme ? 'text-slate-300' : 'text-slate-700'}>
-                              Rs {po.amount_paid.toFixed(2)} / Rs {po.total_amount.toFixed(2)}
+                              {formatCurrencyNew(po.amount_paid)} / {formatCurrencyNew(po.total_amount)}
                             </span>
                           </div>
                           <div className={`w-full h-2 rounded-full overflow-hidden ${isDarkTheme ? 'bg-slate-700' : 'bg-slate-200'}`}>
@@ -469,11 +470,11 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                               {getProductName(item.product_id)}
                             </p>
                             <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                              Qty: {item.quantity} × Rs {item.purchase_price.toFixed(2)}
+                              Qty: {item.quantity} × {formatCurrencyNew(item.purchase_price)}
                             </p>
                           </div>
                           <div className={`text-sm font-semibold ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
-                            Rs {item.line_total.toFixed(2)}
+                            {formatCurrencyNew(item.line_total)}
                           </div>
                         </div>
                       ))}
@@ -592,7 +593,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                       </div>
                       <div className="flex items-center justify-between">
                         <span className={`text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
-                          Line Total: Rs {(item.quantity * item.purchase_price).toFixed(2)}
+                          Line Total: {formatCurrencyNew((item.quantity * item.purchase_price))}
                         </span>
                         {formData.items.length > 1 && (
                           <button
@@ -612,7 +613,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                 <div className={`mt-3 p-3 rounded ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
                   <div className="flex items-center justify-between">
                     <span className={`text-sm font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Total Amount:</span>
-                    <span className="text-lg font-bold text-green-400">Rs {calculateTotal().toFixed(2)}</span>
+                    <span className="text-lg font-bold text-green-400">{formatCurrencyNew(calculateTotal())}</span>
                   </div>
                 </div>
               </div>
@@ -622,7 +623,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Subtotal:</p>
-                    <p className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {calculateTotal().toFixed(2)}</p>
+                    <p className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{formatCurrencyNew(calculateTotal())}</p>
                   </div>
                   <div>
                     <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Total Items:</p>
@@ -703,7 +704,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 mb-1">Total Amount</p>
-                    <p className="text-lg font-bold text-green-400">Rs {selectedPO.total_amount.toFixed(2)}</p>
+                    <p className="text-lg font-bold text-green-400">{formatCurrencyNew(selectedPO.total_amount)}</p>
                   </div>
                 </div>
               </div>
@@ -745,15 +746,15 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   <div className="bg-slate-700/50 p-2 rounded">
                     <p className="text-xs text-slate-400">Total Amount</p>
-                    <p className="text-sm font-semibold text-white">Rs {selectedPO.total_amount.toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-white">{formatCurrencyNew(selectedPO.total_amount)}</p>
                   </div>
                   <div className="bg-slate-700/50 p-2 rounded">
                     <p className="text-xs text-slate-400">Amount Paid</p>
-                    <p className="text-sm font-semibold text-green-400">Rs {selectedPO.amount_paid.toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-green-400">{formatCurrencyNew(selectedPO.amount_paid)}</p>
                   </div>
                   <div className="bg-slate-700/50 p-2 rounded">
                     <p className="text-xs text-slate-400">Remaining</p>
-                    <p className="text-sm font-semibold text-yellow-400">Rs {(selectedPO.total_amount - selectedPO.amount_paid).toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-yellow-400">{formatCurrencyNew((selectedPO.total_amount - selectedPO.amount_paid))}</p>
                   </div>
                 </div>
 
@@ -835,7 +836,7 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                       {selectedPO.payment_history.map((payment, idx) => (
                         <div key={idx} className="bg-slate-700/30 p-2 rounded border border-slate-600">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-semibold text-green-400">Rs {payment.amount.toFixed(2)}</span>
+                            <span className="text-sm font-semibold text-green-400">{formatCurrencyNew(payment.amount)}</span>
                             <span className="text-xs text-slate-400">{new Date(payment.payment_date).toLocaleDateString()}</span>
                           </div>
                           <div className="text-xs text-slate-400">
@@ -859,9 +860,9 @@ export default function PurchaseOrderManager({ isDarkTheme = true }: PurchaseOrd
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm font-medium text-white">{getProductName(item.product_id)}</p>
-                          <p className="text-xs text-slate-400">{item.quantity} × Rs {item.purchase_price.toFixed(2)}</p>
+                          <p className="text-xs text-slate-400">{item.quantity} × {formatCurrencyNew(item.purchase_price)}</p>
                         </div>
-                        <p className="text-sm font-semibold text-green-400">Rs {item.line_total.toFixed(2)}</p>
+                        <p className="text-sm font-semibold text-green-400">{formatCurrencyNew(item.line_total)}</p>
                       </div>
                     </div>
                   ))}

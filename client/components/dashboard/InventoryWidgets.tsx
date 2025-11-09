@@ -241,7 +241,7 @@ export default function InventoryWidgets({ isDarkTheme = true }: InventoryWidget
             </div>
             <p className="text-4xl font-bold">{stats.total_products}</p>
             <p className="text-xs opacity-75 mt-2">
-              Avg: Rs {(stats.total_stock_value / stats.total_products).toFixed(0)}
+              Avg: {formatCurrency(stats.total_stock_value / stats.total_products)}
             </p>
           </div>
 
@@ -399,7 +399,7 @@ export default function InventoryWidgets({ isDarkTheme = true }: InventoryWidget
           <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
             <p className={`text-xs mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Product Value</p>
             <p className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
-              Rs {(stats.total_stock_value / stats.total_products).toFixed(0)}
+              {formatCurrency(stats.total_stock_value / stats.total_products)}
             </p>
             <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-600'}`}>per product</p>
           </div>

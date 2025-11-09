@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import type { Order } from "@shared/api";
+import { formatCurrencyNew } from "@/utils";
 
 const statusConfig = {
   pending: { color: "text-yellow-400", bg: "bg-yellow-500/10" },
@@ -134,7 +135,7 @@ export default function OrdersModal({ isDarkTheme, onClose }: { isDarkTheme: boo
                           </span>
                         </div>
                         <p className="text-2xl font-bold text-blue-400">
-                          Rs {order.total.toFixed(2)}
+                          {formatCurrencyNew(order.total)}
                         </p>
                       </div>
 

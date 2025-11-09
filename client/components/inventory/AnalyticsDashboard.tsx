@@ -9,10 +9,14 @@ import {
   Loader,
   PieChart,
   Activity,
+  Trophy,
+  Layers,
+  Warehouse,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import type { InventoryOverview, InventoryMetrics } from "@shared/api";
+import { formatCurrencyNew } from "@/utils";
 
 interface AnalyticsDashboardProps {
   isDarkTheme?: boolean;
@@ -203,76 +207,101 @@ export default function AnalyticsDashboard({ isDarkTheme = true, onClose }: Anal
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className={`text-2xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
-          <BarChart3 className="w-7 h-7" />
-          Inventory Analytics
-        </h3>
-        <Button
-          onClick={handleCalculateMetrics}
-          className="bg-blue-500 hover:bg-blue-600 text-white gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Calculate Metrics
-        </Button>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className={`text-2xl font-bold flex items-center gap-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
+            <BarChart3 className="w-7 h-7" />
+            Inventory Analytics
+          </h3>
+          <Button
+            onClick={handleCalculateMetrics}
+            className="bg-blue-500 hover:bg-blue-600 text-white gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Calculate Metrics
+          </Button>
+        </div>
+        <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+          Monitor your inventory health, track stock distribution across categories and warehouses, and analyze product performance.
+        </p>
       </div>
 
       {/* Overview Cards */}
       {overview && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
-            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Products</p>
-            <p className={`text-3xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{overview.total_products}</p>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            <h4 className={`text-sm font-semibold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>Quick Overview</h4>
           </div>
-          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
-            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Stock Value</p>
-            <p className="text-3xl font-bold text-green-400">
-              ${overview.total_stock_value.toLocaleString()}
-            </p>
-          </div>
-          <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
-            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Units</p>
-            <p className="text-3xl font-bold text-blue-400">{overview.total_units}</p>
-          </div>
-          <div
-            className={`border rounded-lg p-4 ${getHealthBgColor(
-              overview.health_score
-            )}`}
-          >
-            <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Health Score</p>
-            <p className={`text-3xl font-bold ${getHealthColor(overview.health_score)}`}>
-              {overview.health_score}%
-            </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Products</p>
+              <p className={`text-3xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{overview.total_products}</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Unique SKUs in inventory</p>
+            </div>
+            <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Stock Value</p>
+              <p className="text-3xl font-bold text-green-400">
+                ${overview.total_stock_value.toLocaleString()}
+              </p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Total monetary value of all stock</p>
+            </div>
+            <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Total Units</p>
+              <p className="text-3xl font-bold text-blue-400">{overview.total_units}</p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Total quantity of all items</p>
+            </div>
+            <div
+              className={`border rounded-lg p-4 ${getHealthBgColor(
+                overview.health_score
+              )}`}
+            >
+              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Health Score</p>
+              <p className={`text-3xl font-bold ${getHealthColor(overview.health_score)}`}>
+                {overview.health_score}%
+              </p>
+              <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Overall inventory condition</p>
+            </div>
           </div>
         </div>
       )}
 
       {/* Alert Summary */}
       {overview && (
-        <div className="grid grid-cols-4 gap-2">
-          <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Low Stock</p>
-            <p className="text-2xl font-bold text-yellow-400">
-              {overview.low_stock_alerts}
-            </p>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" />
+            <h4 className={`text-sm font-semibold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>Stock Alerts</h4>
           </div>
-          <div className="bg-red-900/20 border border-red-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Out of Stock</p>
-            <p className="text-2xl font-bold text-red-400">
-              {overview.out_of_stock_alerts}
-            </p>
-          </div>
-          <div className="bg-orange-900/20 border border-orange-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Expired</p>
-            <p className="text-2xl font-bold text-orange-400">
-              {overview.expired_products}
-            </p>
-          </div>
-          <div className="bg-pink-900/20 border border-pink-600 rounded-lg p-3">
-            <p className="text-xs text-slate-400">Expiring Soon</p>
-            <p className="text-2xl font-bold text-pink-400">
-              {overview.expiring_soon_products}
-            </p>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-3">
+              <p className="text-xs text-slate-400">Low Stock</p>
+              <p className="text-2xl font-bold text-yellow-400">
+                {overview.low_stock_alerts}
+              </p>
+              <p className="text-xs mt-1 text-slate-500">Need reorder soon</p>
+            </div>
+            <div className="bg-red-900/20 border border-red-600 rounded-lg p-3">
+              <p className="text-xs text-slate-400">Out of Stock</p>
+              <p className="text-2xl font-bold text-red-400">
+                {overview.out_of_stock_alerts}
+              </p>
+              <p className="text-xs mt-1 text-slate-500">Urgent action needed</p>
+            </div>
+            <div className="bg-orange-900/20 border border-orange-600 rounded-lg p-3">
+              <p className="text-xs text-slate-400">Expired</p>
+              <p className="text-2xl font-bold text-orange-400">
+                {overview.expired_products}
+              </p>
+              <p className="text-xs mt-1 text-slate-500">Remove from stock</p>
+            </div>
+            <div className="bg-pink-900/20 border border-pink-600 rounded-lg p-3">
+              <p className="text-xs text-slate-400">Expiring Soon</p>
+              <p className="text-2xl font-bold text-pink-400">
+                {overview.expiring_soon_products}
+              </p>
+              <p className="text-xs mt-1 text-slate-500">Prioritize sales</p>
+            </div>
           </div>
         </div>
       )}
@@ -333,20 +362,28 @@ export default function AnalyticsDashboard({ isDarkTheme = true, onClose }: Anal
               <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
                 <p className={`text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Value per Product</p>
                 <p className="text-2xl font-bold text-green-400">
-                  Rs {overview.average_value_per_product.toFixed(2)}
+                  {formatCurrencyNew(overview.average_value_per_product)}
                 </p>
+                <p className={`text-xs mt-2 ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Average monetary value of each product type</p>
               </div>
               <div className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
                 <p className={`text-sm mb-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Avg Units per Product</p>
                 <p className="text-2xl font-bold text-blue-400">
                   {overview.average_units_per_product.toFixed(1)}
                 </p>
+                <p className={`text-xs mt-2 ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>Average quantity stocked per product</p>
               </div>
             </div>
 
             {metrics && (
               <div className="space-y-3">
-                <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top Products by Value</h4>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Trophy className="w-4 h-4" />
+                    <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top Products by Value</h4>
+                  </div>
+                  <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Products with highest monetary value in stock</p>
+                </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {metrics.top_products.map((product, idx) => (
                     <div
@@ -373,54 +410,76 @@ export default function AnalyticsDashboard({ isDarkTheme = true, onClose }: Anal
 
         {activeTab === "categories" && categories.length > 0 && (
           <div className="space-y-3">
-            <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Category Distribution</h4>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Layers className="w-4 h-4" />
+                <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Category Distribution</h4>
+              </div>
+              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>See how your inventory is distributed across product categories</p>
+            </div>
             <div className="space-y-2">
-              {categories.map((cat, idx) => (
-                <div key={idx} className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{cat.category}</p>
-                    <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{cat.percentage.toFixed(1)}%</p>
+              {categories.map((cat, idx) => {
+                const percentage = cat.percentage ?? 0;
+                const units = cat.units ?? 0;
+                const value = cat.value ?? 0;
+                return (
+                  <div key={idx} className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+                    <div className="flex justify-between items-center mb-2">
+                      <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{cat.category}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{percentage.toFixed(1)}%</p>
+                    </div>
+                    <div className={`w-full rounded-full h-2 ${isDarkTheme ? 'bg-slate-600' : 'bg-slate-300'}`}>
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                    <div className={`flex justify-between mt-2 text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                      <span>{units} units</span>
+                      <span>${value.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <div className={`w-full rounded-full h-2 ${isDarkTheme ? 'bg-slate-600' : 'bg-slate-300'}`}>
-                    <div
-                      className="bg-blue-500 h-2 rounded-full"
-                      style={{ width: `${cat.percentage}%` }}
-                    />
-                  </div>
-                  <div className={`flex justify-between mt-2 text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                    <span>{cat.units} units</span>
-                    <span>${cat.value.toLocaleString()}</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
         {activeTab === "warehouses" && warehouses.length > 0 && (
           <div className="space-y-3">
-            <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Warehouse Distribution</h4>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Warehouse className="w-4 h-4" />
+                <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Warehouse Distribution</h4>
+              </div>
+              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Monitor storage capacity and inventory levels across warehouses</p>
+            </div>
             <div className="space-y-2">
-              {warehouses.map((wh, idx) => (
-                <div key={idx} className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{wh.warehouse_name}</p>
-                    <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                      {wh.capacity_utilization.toFixed(1)}% utilized
-                    </p>
+              {warehouses.map((wh, idx) => {
+                const utilization = wh.capacity_utilization ?? 0;
+                const totalUnits = wh.total_units ?? 0;
+                const totalValue = wh.total_value ?? 0;
+                return (
+                  <div key={idx} className={`border rounded-lg p-4 ${isDarkTheme ? 'bg-slate-700/30 border-slate-600' : 'bg-slate-100 border-slate-300'}`}>
+                    <div className="flex justify-between items-center mb-2">
+                      <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{wh.warehouse_name}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {utilization.toFixed(1)}% utilized
+                      </p>
+                    </div>
+                    <div className={`w-full rounded-full h-2 ${isDarkTheme ? 'bg-slate-600' : 'bg-slate-300'}`}>
+                      <div
+                        className="bg-green-500 h-2 rounded-full"
+                        style={{ width: `${Math.min(utilization, 100)}%` }}
+                      />
+                    </div>
+                    <div className={`flex justify-between mt-2 text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
+                      <span>{totalUnits} units</span>
+                      <span>${totalValue.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <div className={`w-full rounded-full h-2 ${isDarkTheme ? 'bg-slate-600' : 'bg-slate-300'}`}>
-                    <div
-                      className="bg-green-500 h-2 rounded-full"
-                      style={{ width: `${Math.min(wh.capacity_utilization, 100)}%` }}
-                    />
-                  </div>
-                  <div className={`flex justify-between mt-2 text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
-                    <span>{wh.total_units} units</span>
-                    <span>${wh.total_value.toLocaleString()}</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -428,7 +487,11 @@ export default function AnalyticsDashboard({ isDarkTheme = true, onClose }: Anal
         {activeTab === "performance" && performance && (
           <div className="space-y-4">
             <div>
-              <h4 className={`font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top 10 by Value</h4>
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-4 h-4" />
+                <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top 10 by Value</h4>
+              </div>
+              <p className={`text-xs mb-3 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Products with the highest total stock value</p>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {performance.top_by_value.map((product: any, idx: number) => (
                   <div
@@ -448,7 +511,11 @@ export default function AnalyticsDashboard({ isDarkTheme = true, onClose }: Anal
             </div>
 
             <div>
-              <h4 className={`font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top 10 by Quantity</h4>
+              <div className="flex items-center gap-2 mb-3">
+                <Package className="w-4 h-4" />
+                <h4 className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Top 10 by Quantity</h4>
+              </div>
+              <p className={`text-xs mb-3 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>Products with the highest unit quantities in stock</p>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {performance.top_by_quantity.map((product: any, idx: number) => (
                   <div

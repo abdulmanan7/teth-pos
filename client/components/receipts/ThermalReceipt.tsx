@@ -134,7 +134,7 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
     subtotalAfterDiscount - checkoutDiscountAmount
   );
   const taxAmount = deriveNumber(order.taxAmount, deriveNumber((order as any).tax));
-  const grandTotal = deriveNumber(order.total, preTaxTotal + taxAmount);
+  const grandTotal = deriveNumber(order.total);
 
   const hasItemDiscounts = itemDiscountTotal > 0.009;
   const hasCheckoutDiscount = checkoutDiscountAmount > 0.009;

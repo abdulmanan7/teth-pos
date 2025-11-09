@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useElectronApi } from "@/hooks/useElectronApi";
-import { showNotification } from "@/utils";
+import { formatCurrencyNew, showNotification } from "@/utils";
 
 interface AdvancedReportingProps {
   isDarkTheme?: boolean;
@@ -290,11 +290,11 @@ export default function AdvancedReporting({ isDarkTheme = true, onClose }: Advan
                         <td className={`py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{p.name}</td>
                         <td className={`py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{p.sku}</td>
                         <td className={`text-right py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
-                          Rs {p.price?.toFixed(2)}
+                          {formatCurrencyNew(p.price)}
                         </td>
                         <td className={`text-right py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{p.stock}</td>
                         <td className={`text-right py-2 ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
-                          Rs {p.value?.toFixed(2)}
+                          {formatCurrencyNew(p.value)}
                         </td>
                       </tr>
                     ))}
@@ -329,7 +329,7 @@ export default function AdvancedReporting({ isDarkTheme = true, onClose }: Advan
                         <td className={`py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{t.type}</td>
                         <td className={`text-right py-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{t.quantity}</td>
                         <td className={`text-right py-2 ${isDarkTheme ? 'text-green-400' : 'text-green-600'}`}>
-                          Rs {t.value?.toFixed(2)}
+                          {formatCurrencyNew(t.value)}
                         </td>
                         <td className={`py-2 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                           {new Date(t.date).toLocaleDateString()}

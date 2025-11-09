@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import type { TransactionHistory, Product } from "@shared/api";
+import { formatCurrencyNew } from "@/utils";
 
 interface TransactionHistoryViewerProps {
   isDarkTheme?: boolean;
@@ -327,13 +328,13 @@ export default function TransactionHistoryViewer({
             <div>
               <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Unit Price</p>
               <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
-                Rs {selectedTransaction.unit_price?.toFixed(2) || "N/A"}
+                {formatCurrencyNew(selectedTransaction.unit_price) || "N/A"}
               </p>
             </div>
             <div>
               <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Total Value</p>
               <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
-                Rs {selectedTransaction.total_value?.toLocaleString() || "N/A"}
+                {formatCurrencyNew(selectedTransaction.total_value) || "N/A"}
               </p>
             </div>
             {selectedTransaction.from_warehouse && (

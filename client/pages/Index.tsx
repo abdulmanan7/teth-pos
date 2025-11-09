@@ -37,10 +37,11 @@ import DiscountModalComponent from "@/components/modals/DiscountModalComponent";
 import AccountingModal from "@/components/modals/AccountingModal";
 import ThermalReceipt from "@/components/receipts/ThermalReceipt";
 import InventoryWidgets from "@/components/dashboard/InventoryWidgets";
+import InventoryAlertsWidget from "@/components/dashboard/InventoryAlertsWidget";
+import RecentOrdersWidget from "@/components/dashboard/RecentOrdersWidget";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import { useBrandingConfig } from "@/hooks/useBrandingConfig";
-import { useAuthCheck, useFilter } from "@/hooks";
-import { showNotification, storage } from "@/utils";
+import { showNotification, storage, formatCurrencyNew } from "@/utils";
 import type {
   Product as ApiProduct,
   Customer as ApiCustomer,
@@ -76,6 +77,12 @@ interface Product {
   status?: string;
   matchedLot?: string | null;
   matchedSerial?: string | null;
+  tax_rate_id?: string | null;
+  taxRate?: {
+    _id: string;
+    name: string;
+    rate: number;
+  } | null;
 }
 
 interface CartItem {
@@ -88,6 +95,9 @@ interface CartItem {
     value: number;
     reason?: string;
   };
+  taxRateId?: string | null;
+  taxRateName?: string | null;
+  taxRateValue?: number | null;
 }
 
 interface DraftOrder {
@@ -148,6 +158,23 @@ const calculateCheckoutDiscountAmount = (
   return roundToTwo(discountAmount);
 };
 
+const convertApiProduct = (
+  product: ApiProduct & { matchedLot?: string | null; matchedSerial?: string | null }
+): Product => ({
+  id: product._id,
+  name: product.name,
+  price: product.price,
+  stock: product.stock,
+  category: product.category,
+  sku: product.sku,
+  hasSerialNumbers: product.hasSerialNumbers,
+  status: product.status,
+  matchedLot: product.matchedLot ?? null,
+  matchedSerial: product.matchedSerial ?? null,
+  tax_rate_id: product.tax_rate_id ?? null,
+  taxRate: product.taxRate ?? null,
+});
+
 interface StaffMember {
   id: number;
   name: string;
@@ -185,7 +212,10 @@ export default function Index() {
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [taxRate, setTaxRate] = useState(0);
   const [taxRates, setTaxRates] = useState<TaxRateConfig[]>([]);
-  const [selectedTaxRateId, setSelectedTaxRateId] = useState<string>(CUSTOM_TAX_OPTION);
+  const [selectedTaxRateId, setSelectedTaxRateId] = useState<string>(() => {
+    const stored = storage.get<string>(TAX_SELECTION_KEY);
+    return stored ?? CUSTOM_TAX_OPTION;
+  });
   const [taxRateLabel, setTaxRateLabel] = useState<string | null>(null);
   const [taxRatesLoading, setTaxRatesLoading] = useState(false);
   const [taxRatesError, setTaxRatesError] = useState<string | null>(null);
@@ -205,8 +235,10 @@ export default function Index() {
     taxableAmount,
     tax,
     total,
+    taxSummaryLabel,
+    taxBreakdown,
   } = useMemo(() => {
-    const itemsWithTotals = cartItems.map((item) => {
+    const itemsWithBaseTotals = cartItems.map((item) => {
       const { subtotal, discountAmount, totalAfterDiscount } = calculateItemTotals(item);
       return {
         ...item,
@@ -216,34 +248,132 @@ export default function Index() {
       };
     });
 
-    const subtotalBeforeDiscount = roundToTwo(
-      itemsWithTotals.reduce((sum, item) => sum + item.subtotal, 0)
+    const subtotalBeforeDiscountCalc = roundToTwo(
+      itemsWithBaseTotals.reduce((sum, item) => sum + item.subtotal, 0)
     );
-    const itemDiscountTotal = roundToTwo(
-      itemsWithTotals.reduce((sum, item) => sum + item.discountAmount, 0)
+    const itemDiscountTotalCalc = roundToTwo(
+      itemsWithBaseTotals.reduce((sum, item) => sum + item.discountAmount, 0)
     );
-    const subtotalAfterItemDiscount = roundToTwo(subtotalBeforeDiscount - itemDiscountTotal);
-    const checkoutDiscountAmount = calculateCheckoutDiscountAmount(
-      subtotalAfterItemDiscount,
+    const subtotalAfterItemDiscountCalc = roundToTwo(
+      subtotalBeforeDiscountCalc - itemDiscountTotalCalc
+    );
+    const checkoutDiscountAmountCalc = calculateCheckoutDiscountAmount(
+      subtotalAfterItemDiscountCalc,
       checkoutDiscount
     );
-    const taxableAmount = roundToTwo(
-      Math.max(0, subtotalAfterItemDiscount - checkoutDiscountAmount)
+    const taxableAmountCalc = roundToTwo(
+      Math.max(0, subtotalAfterItemDiscountCalc - checkoutDiscountAmountCalc)
     );
-    const tax = roundToTwo(taxableAmount * taxRate);
-    const total = roundToTwo(taxableAmount + tax);
+
+    let totalTax = 0;
+    const taxStats = new Map<
+      string,
+      { rate: number; label: string | null; amount: number; base: number }
+    >();
+
+    const itemsWithTax = itemsWithBaseTotals.map((item) => {
+      const productRate =
+        typeof item.taxRateValue === "number" && !Number.isNaN(item.taxRateValue)
+          ? item.taxRateValue
+          : null;
+      const productLabel = item.taxRateName ?? null;
+
+      const useProductForItem = productRate !== null;
+
+      const effectiveRate = useProductForItem
+        ? productRate
+        : taxRate;
+
+      const appliedLabel = useProductForItem
+        ? productLabel
+        : selectedTaxRateId === CUSTOM_TAX_OPTION
+        ? "Custom Tax"
+        : taxRateLabel ?? null;
+
+      const proportion =
+        subtotalAfterItemDiscountCalc > 0
+          ? item.totalAfterDiscount / subtotalAfterItemDiscountCalc
+          : 0;
+
+      // For items with product-specific tax: calculate tax on original price
+      // For items with cart-level tax: calculate tax on discounted price  
+      let taxableBase: number;
+      
+      if (useProductForItem) {
+        // Product-level tax: tax on original price (VAT/GST standard)
+        taxableBase = roundToTwo(item.subtotal);
+      } else {
+        // Cart-level tax: tax on discounted price (Sales tax standard)
+        taxableBase = roundToTwo(item.totalAfterDiscount - proportion * checkoutDiscountAmountCalc);
+      }
+      
+      const taxAmount = roundToTwo(taxableBase * effectiveRate);
+
+      totalTax += taxAmount;
+
+      const statKey = `${effectiveRate}-${appliedLabel ?? ""}`;
+      const existingStat = taxStats.get(statKey);
+      if (existingStat) {
+        existingStat.amount += taxAmount;
+        existingStat.base += taxableBase;
+      } else {
+        taxStats.set(statKey, {
+          rate: effectiveRate,
+          label: appliedLabel,
+          amount: taxAmount,
+          base: taxableBase,
+        });
+      }
+
+      return {
+        ...item,
+        appliedTaxRate: effectiveRate,
+        appliedTaxLabel: appliedLabel,
+        taxableBase,
+        taxAmount,
+      };
+    });
+
+    const taxBreakdown = Array.from(taxStats.values()).map((entry) => ({
+      rate: entry.rate,
+      label: entry.label,
+      amount: roundToTwo(entry.amount),
+      base: roundToTwo(entry.base),
+    }));
+
+    let taxSummaryLabel: string | null = null;
+    if (taxBreakdown.length === 1) {
+      const entry = taxBreakdown[0];
+      taxSummaryLabel = `${(entry.rate * 100).toFixed(1)}${
+        entry.label ? ` • ${entry.label}` : ""
+      }`;
+    } else if (taxBreakdown.length > 1) {
+      taxSummaryLabel = "Mixed Rates";
+    } else if (cartItems.length > 0) {
+      taxSummaryLabel = "No Tax";
+    }
+
+    const total = roundToTwo(subtotalAfterItemDiscountCalc - checkoutDiscountAmountCalc + totalTax);
 
     return {
-      itemsWithTotals,
-      subtotalBeforeDiscount,
-      itemDiscountTotal,
-      subtotalAfterItemDiscount,
-      checkoutDiscountAmount,
-      taxableAmount,
-      tax,
+      itemsWithTotals: itemsWithTax,
+      subtotalBeforeDiscount: subtotalBeforeDiscountCalc,
+      itemDiscountTotal: itemDiscountTotalCalc,
+      subtotalAfterItemDiscount: subtotalAfterItemDiscountCalc,
+      checkoutDiscountAmount: checkoutDiscountAmountCalc,
+      taxableAmount: taxableAmountCalc,
+      tax: roundToTwo(totalTax),
       total,
+      taxSummaryLabel,
+      taxBreakdown,
     };
-  }, [cartItems, checkoutDiscount, taxRate]);
+  }, [
+    cartItems,
+    checkoutDiscount,
+    taxRate,
+    taxRateLabel,
+    selectedTaxRateId,
+  ]);
 
   const applyPresetTaxRate = useCallback((rate: TaxRateConfig) => {
     setSelectedTaxRateId(rate._id);
@@ -288,6 +418,11 @@ export default function Index() {
       const defaultRate = list.find((rate) => rate.isDefault) ?? list[0];
       if (defaultRate) {
         applyPresetTaxRate(defaultRate);
+      } else {
+        setSelectedTaxRateId(CUSTOM_TAX_OPTION);
+        setTaxRate(0);
+        setTaxRateLabel(null);
+        storage.set(TAX_SELECTION_KEY, CUSTOM_TAX_OPTION);
       }
     } catch (error) {
       console.error("Failed to load tax rates", error);
@@ -370,27 +505,16 @@ export default function Index() {
         const [productsData, customersData, ordersData] = await Promise.all([
           get("/api/products"),
           get("/api/customers"),
-          get("/api/orders"),
+          get("/api/orders?limit=3&sort=desc"),
         ]);
-        
+
         // Convert API products to local format
-        const formattedProducts = productsData.map((p: ApiProduct) => ({
-          id: p._id,
-          name: p.name,
-          price: p.price,
-          stock: p.stock,
-          category: p.category,
-          status: p.status,
-        }));
-        
-        // Get 5 most recent orders (sorted by createdAt descending)
-        const recent = ordersData
-          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 5);
-        
+        const formattedProducts = productsData.map((p: ApiProduct) => convertApiProduct(p));
+
+        // Orders are already sorted and limited by API
         setProducts(formattedProducts);
         setCustomers(customersData);
-        setRecentOrders(recent);
+        setRecentOrders(ordersData);
       } catch (error) {
         // No fallback - data must come from MongoDB
         setProducts([]);
@@ -414,11 +538,8 @@ export default function Index() {
   // Soft refresh - refetch recent orders without page reload
   const fetchRecentOrders = async () => {
     try {
-      const ordersData = await get("/api/orders");
-      const recent = ordersData
-        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5);
-      setRecentOrders(recent);
+      const ordersData = await get("/api/orders?limit=3&sort=desc");
+      setRecentOrders(ordersData);
     } catch (error) {
       console.error("Error refetching recent orders:", error);
     }
@@ -435,21 +556,13 @@ export default function Index() {
     try {
       setIsSearching(true);
       const response = await get(`/api/products/search?q=${encodeURIComponent(query)}`);
-      
+
       // Convert API products to local format
-      const formattedResults = response.results.map((p: any) => ({
-        id: p._id,
-        name: p.name,
-        price: p.price,
-        stock: p.stock,
-        category: p.category,
-        status: p.status,
-        sku: p.sku,
-        hasSerialNumbers: p.hasSerialNumbers,
-        matchedLot: p.matchedLot,
-        matchedSerial: p.matchedSerial,
-      }));
-      
+      const formattedResults = response.results.map(
+        (p: ApiProduct & { matchedLot?: string | null; matchedSerial?: string | null }) =>
+          convertApiProduct(p)
+      );
+
       setSearchResults(formattedResults);
     } catch (error) {
       console.error("Error searching products:", error);
@@ -524,6 +637,13 @@ export default function Index() {
       setClickingProductId(null);
     }, 200);
 
+    const productTaxRateId = product.taxRate?._id ?? product.tax_rate_id ?? null;
+    const productTaxConfig = productTaxRateId
+      ? product.taxRate ?? taxRates.find((rate) => rate._id === productTaxRateId) ?? null
+      : null;
+    const productTaxRateValue = productTaxConfig ? productTaxConfig.rate : null;
+    const productTaxRateName = productTaxConfig ? productTaxConfig.name : null;
+
     const existing = cartItems.find((item) => item.productId === product.id);
     if (existing) {
       setCartItems(
@@ -535,16 +655,33 @@ export default function Index() {
       );
     } else {
       setCartItems([
-        ...cartItems,
         {
           productId: product.id,
           name: product.name,
           price: product.price,
           quantity: 1,
+          taxRateId: productTaxRateId,
+          taxRateName: productTaxRateName,
+          taxRateValue: productTaxRateValue,
         },
+        ...cartItems,
       ]);
     }
   };
+
+  const handleResetCart = useCallback(() => {
+    if (cartItems.length === 0 && !checkoutDiscount) {
+      return;
+    }
+
+    const shouldReset = window.confirm("Reset cart? This will clear all items and discounts.");
+    if (!shouldReset) {
+      return;
+    }
+
+    setCartItems([]);
+    setCheckoutDiscount(null);
+  }, [cartItems.length, checkoutDiscount]);
 
   const removeFromCart = (productId: string) => {
     setCartItems(cartItems.filter((item) => item.productId !== productId));
@@ -654,6 +791,33 @@ export default function Index() {
           if (item.discount) {
             payload.discount = item.discount;
           }
+
+          const effectiveTaxRateId =
+            item.taxRateId ??
+            (selectedTaxRateId !== CUSTOM_TAX_OPTION ? selectedTaxRateId : undefined);
+          const effectiveTaxLabel =
+            item.appliedTaxLabel ??
+            (selectedTaxRateId !== CUSTOM_TAX_OPTION ? taxRateLabel ?? null : null);
+
+          if (effectiveTaxRateId) {
+            payload.taxRateId = effectiveTaxRateId;
+          }
+          if (effectiveTaxLabel) {
+            payload.taxRateLabel = effectiveTaxLabel;
+          }
+
+          if (typeof item.appliedTaxRate === "number") {
+            payload.taxRateValue = item.appliedTaxRate;
+          }
+
+          if (typeof item.taxAmount === "number") {
+            payload.taxAmount = item.taxAmount;
+          }
+
+          if (typeof item.taxableBase === "number") {
+            payload.taxableBase = item.taxableBase;
+          }
+
           return payload;
         }),
         subtotal: subtotalBeforeDiscount,
@@ -664,7 +828,7 @@ export default function Index() {
         totalBeforeTax: taxableAmount,
         taxRate,
         taxRateId: selectedTaxRateId !== CUSTOM_TAX_OPTION ? selectedTaxRateId : undefined,
-        taxRateLabel: taxRateLabel ?? undefined,
+        taxRateLabel: taxSummaryLabel ?? taxRateLabel ?? undefined,
         taxAmount: tax,
         total: total,
         staffId: currentStaff?._id,
@@ -895,56 +1059,14 @@ export default function Index() {
                   </button>
                 </div>
 
-                {/* Recent Orders Section */}
-                <div className={`rounded-lg border p-4 ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                  <h3 className={`text-sm font-semibold mb-3 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>📋 Recent Orders ({recentOrders.length})</h3>
-                  <div className="space-y-2">
-                    {recentOrders.length === 0 ? (
-                      <p className={`text-xs text-center py-4 ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}`}>No orders yet</p>
-                    ) : (
-                      recentOrders.map((order: any, index: number) => {
-                        const timeAgo = (() => {
-                          const now = new Date();
-                          const orderTime = new Date(order.createdAt);
-                          const diffMs = now.getTime() - orderTime.getTime();
-                          const diffMins = Math.floor(diffMs / 60000);
-                          const diffHours = Math.floor(diffMs / 3600000);
-                          const diffDays = Math.floor(diffMs / 86400000);
-                          
-                          if (diffMins < 1) return "just now";
-                          if (diffMins < 60) return `${diffMins}m ago`;
-                          if (diffHours < 24) return `${diffHours}h ago`;
-                          return `${diffDays}d ago`;
-                        })();
+                {/* Recent Orders Widget */}
+                <RecentOrdersWidget isDarkTheme={isDarkTheme} orders={recentOrders} />
 
-                        return (
-                          <div key={order._id} className={`p-2 rounded border transition-colors ${isDarkTheme ? 'bg-slate-700/50 border-slate-600 hover:border-slate-500' : 'bg-slate-100 border-slate-300 hover:border-slate-400'}`}>
-                            <div className="flex justify-between items-start gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className={`text-xs font-semibold truncate ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{order.orderNumber}</p>
-                                <p className={`text-xs truncate ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{order.customer}</p>
-                              </div>
-                              <div className="flex items-center gap-1 flex-shrink-0">
-                                <p className={`text-xs font-bold ${isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'}`}>Rs {order.total.toFixed(2)}</p>
-                                <button
-                                  onClick={() => {
-                                    setCompletedOrder(order);
-                                    setShowReceipt(true);
-                                  }}
-                                  className={`p-1 rounded transition-colors ${isDarkTheme ? 'hover:bg-slate-600 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'}`}
-                                  title="Print receipt"
-                                >
-                                  <Printer className="w-3 h-3" />
-                                </button>
-                              </div>
-                            </div>
-                            <p className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-500' : 'text-slate-500'}`}>{timeAgo}</p>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
+                {/* Inventory Alerts Widget */}
+                <InventoryAlertsWidget
+                  isDarkTheme={isDarkTheme}
+                  onAlertClick={currentStaff?.role === "Admin" ? () => setActiveModal("admin") : undefined}
+                />
               </div>
 
               {/* Center Column - Product Grid */}
@@ -1059,7 +1181,7 @@ export default function Index() {
                             <span className={`font-bold text-sm ${
                               selectedProductIndex === index ? "text-blue-100" : "text-blue-600"
                             }`}>
-                              Rs {product.price.toFixed(2)}
+                              {formatCurrencyNew(product.price)}
                             </span>
                           </button>
                         ))}
@@ -1113,7 +1235,7 @@ export default function Index() {
                           </h4>
                           <div className="flex items-center justify-between gap-1">
                             <span className={`font-bold text-sm ${isDarkTheme ? 'text-blue-400' : 'text-blue-600'}`}>
-                              Rs {product.price.toFixed(2)}
+                              {formatCurrencyNew(product.price)}
                             </span>
                             <Plus className={`w-3 h-3 transition-opacity ${
                               isDarkTheme ? 'text-green-400' : 'text-green-600'
@@ -1144,7 +1266,22 @@ export default function Index() {
 
               {/* Right Column - Order Summary & Payment */}
               <div className={`rounded-lg border p-6 flex flex-col sticky top-6 h-fit max-h-[calc(100vh-120px)] ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                <h3 className={`text-xl font-bold mb-4 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>TOTAL</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`text-xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>TOTAL</h3>
+                  <button
+                    type="button"
+                    onClick={handleResetCart}
+                    disabled={cartItems.length === 0 && !checkoutDiscount}
+                    className={`text-xs font-semibold px-3 py-1 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isDarkTheme
+                        ? 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                        : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                    }`}
+                    title="Reset cart"
+                  >
+                    Reset
+                  </button>
+                </div>
 
                 {/* Items List */}
                 <div className="flex-1 overflow-auto mb-4 space-y-2 min-h-0">
@@ -1191,11 +1328,22 @@ export default function Index() {
                         <div className="flex justify-between items-center text-xs">
                           <div className="flex flex-col">
                             <span className={`font-bold ${isDarkTheme ? 'text-blue-400' : 'text-blue-600'}`}>
-                              Rs {item.totalAfterDiscount.toFixed(2)}
+                              {formatCurrencyNew(item.totalAfterDiscount)}
                             </span>
                             {item.discountAmount > 0 && (
                               <span className={`text-xs ${isDarkTheme ? 'text-red-400' : 'text-red-600'}`}>
-                                -Rs {item.discountAmount.toFixed(2)}
+                                -{formatCurrencyNew(item.discountAmount)}
+                              </span>
+                            )}
+                            {(item.appliedTaxRate ?? 0) > 0 && (
+                              <span className={`text-xs mt-0.5 ${isDarkTheme ? 'text-emerald-300' : 'text-emerald-600'}`}>
+                                Tax {(item.appliedTaxRate * 100).toFixed(2)}%
+                                {item.appliedTaxLabel ? ` • ${item.appliedTaxLabel}` : ''}: {formatCurrencyNew(item.taxAmount)}
+                              </span>
+                            )}
+                            {(item.appliedTaxRate ?? 0) === 0 && (
+                              <span className={`text-xs mt-0.5 ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}`}>
+                                No tax applied
                               </span>
                             )}
                           </div>
@@ -1320,7 +1468,7 @@ export default function Index() {
                   >
                     <Tag className="w-4 h-4" />
                     {checkoutDiscount
-                      ? `Checkout Discount: ${checkoutDiscount.type === 'percentage' ? `${checkoutDiscount.value}%` : `Rs ${checkoutDiscount.value}`}`
+                      ? `Checkout Discount: ${checkoutDiscount.type === 'percentage' ? `${checkoutDiscount.value}%` : formatCurrencyNew(checkoutDiscount.value)}`
                       : 'Add Checkout Discount'}
                   </button>
                 </div>
@@ -1329,17 +1477,17 @@ export default function Index() {
                 <div className={`border-t pt-4 space-y-2 mb-6 ${isDarkTheme ? 'border-slate-600' : 'border-slate-300'}`}>
                   <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
                     <span>Subtotal</span>
-                    <span>Rs {subtotalBeforeDiscount.toFixed(2)}</span>
+                    <span>{formatCurrencyNew(subtotalBeforeDiscount)}</span>
                   </div>
                   {itemDiscountTotal > 0 && (
                     <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-red-400' : 'text-red-600'}`}>
                       <span>Item Discounts</span>
-                      <span>-Rs {itemDiscountTotal.toFixed(2)}</span>
+                      <span>-{formatCurrencyNew(itemDiscountTotal)}</span>
                     </div>
                   )}
                   <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
                     <span>Subtotal After Discounts</span>
-                    <span>Rs {subtotalAfterItemDiscount.toFixed(2)}</span>
+                    <span>{formatCurrencyNew(subtotalAfterItemDiscount)}</span>
                   </div>
                   {checkoutDiscountAmount > 0 && (
                     <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-red-400' : 'text-red-600'}`}>
@@ -1349,18 +1497,30 @@ export default function Index() {
                           ? ` (${checkoutDiscount.value}%)`
                           : ''}
                       </span>
-                      <span>-Rs {checkoutDiscountAmount.toFixed(2)}</span>
+                      <span>-{formatCurrencyNew(checkoutDiscountAmount)}</span>
                     </div>
                   )}
                   <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
                     <span>
-                      Tax ({(taxRate * 100).toFixed(1)}%{taxRateLabel ? ` • ${taxRateLabel}` : ""})
+                      Tax{taxSummaryLabel ? ` (${taxSummaryLabel})` : ""}
                     </span>
-                    <span>Rs {tax.toFixed(2)}</span>
+                    <span>{formatCurrencyNew(tax)}</span>
                   </div>
+                  {taxBreakdown.length > 1 && (
+                    <div className={`text-xs rounded-md px-2 py-2 ${isDarkTheme ? 'bg-slate-700/40 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+                      {taxBreakdown.map((entry) => (
+                        <div key={`${entry.rate}-${entry.label ?? 'none'}`} className="flex justify-between">
+                          <span>
+                            {(entry.rate * 100).toFixed(1)}%{entry.label ? ` • ${entry.label}` : ''}
+                          </span>
+                          <span>{formatCurrencyNew(entry.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className={`flex justify-between text-2xl font-bold pt-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
                     <span>Total</span>
-                    <span>Rs {total.toFixed(2)}</span>
+                    <span>{formatCurrencyNew(total)}</span>
                   </div>
                 </div>
 
@@ -1420,7 +1580,15 @@ export default function Index() {
       </div>
 
       {/* Modals */}
-      {activeModal === "products" && <ProductsModal isDarkTheme={isDarkTheme} onClose={closeModal} onProductsUpdated={(updatedProducts: any) => setProducts(updatedProducts)} />}
+      {activeModal === "products" && (
+        <ProductsModal
+          isDarkTheme={isDarkTheme}
+          onClose={closeModal}
+          onProductsUpdated={(updatedProducts) =>
+            setProducts(updatedProducts.map((product) => convertApiProduct(product as ApiProduct)))
+          }
+        />
+      )}
       {activeModal === "customers" && <CustomersModal isDarkTheme={isDarkTheme} onClose={closeModal} />}
       {activeModal === "orders" && <OrdersModal isDarkTheme={isDarkTheme} onClose={closeModal} />}
       {activeModal === "history" && <OrderHistoryModal isDarkTheme={isDarkTheme} onClose={closeModal} />}
@@ -1524,7 +1692,7 @@ export default function Index() {
           onLoginSuccess={(staff) => {
             setCurrentStaff(staff);
             // Save staff session to localStorage
-            storage.set("currentStaff", staff);
+              storage.set("currentStaff", staff);
             closeModal();
           }}
           currentStaff={currentStaff}

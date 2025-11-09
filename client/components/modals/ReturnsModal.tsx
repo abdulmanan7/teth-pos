@@ -2,6 +2,7 @@ import { X, Plus, Trash2, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import { useToast } from "@/components/ToastManager";
+import { formatCurrencyNew } from "@/utils";
 
 interface ReturnItem {
   productId: string;
@@ -316,7 +317,7 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                             "bg-slate-500/20 text-slate-400"
                           }`}>{ret.status}</span>
                           <p className={`text-lg font-bold mt-2 ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>
-                            Rs {ret.netAdjustment.toFixed(2)}
+                            {formatCurrencyNew(ret.netAdjustment)}
                           </p>
                         </div>
                       </div>
@@ -410,7 +411,7 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                     </div>
                   </div>
                   <div className="text-xs text-slate-400">
-                    Order Total: Rs {selectedOrder.total.toFixed(2)} • Items: {selectedOrder.items.length}
+                    Order Total: {formatCurrencyNew(selectedOrder.total)} • Items: {selectedOrder.items.length}
                   </div>
                 </div>
               )}
@@ -450,7 +451,7 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                               className={`w-full text-left px-4 py-2 border-b last:border-0 transition-colors ${isDarkTheme ? 'hover:bg-slate-600 border-slate-600 text-white' : 'hover:bg-slate-100 border-slate-300 text-slate-900'}`}
                             >
                               <p className={`font-medium ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{order.orderNumber}</p>
-                              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{order.customer} • Rs {order.total.toFixed(2)}</p>
+                              <p className={`text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>{order.customer} • {formatCurrencyNew(order.total)}</p>
                             </button>
                           ))
                         )}
@@ -550,7 +551,7 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                                     }}
                                     className="w-full text-left px-2 py-1 hover:bg-slate-500 border-b border-slate-500 last:border-0 text-white text-sm transition-colors"
                                   >
-                                    {p.name} - Rs {p.price.toFixed(2)} (Qty: {p.quantity})
+                                    {p.name} - {formatCurrencyNew(p.price)} (Qty: {p.quantity})
                                   </button>
                                 ))
                               )}
@@ -717,7 +718,7 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                                       }}
                                       className="w-full text-left px-2 py-1 hover:bg-slate-500 border-b border-slate-500 last:border-0 text-white text-sm transition-colors"
                                     >
-                                      {p.name} - Rs {p.price.toFixed(2)}
+                                      {p.name} - {formatCurrencyNew(p.price)}
                                     </button>
                                   ))
                                 )}
@@ -805,16 +806,16 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                 <div className="text-xs text-slate-400 mt-2 space-y-1">
                   {returnType === "refund" ? (
                     <>
-                      <p>Refund Amount: Rs {returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0).toFixed(2)}</p>
-                      <p className="text-red-400 font-semibold">Deduction: Rs {priceAdjustment.toFixed(2)}</p>
-                      <p className="text-emerald-400 font-semibold">Final Refund: Rs {(returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0) - priceAdjustment).toFixed(2)}</p>
+                      <p>Refund Amount: {formatCurrencyNew(returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0))}</p>
+                      <p className="text-red-400 font-semibold">Deduction: {formatCurrencyNew(priceAdjustment)}</p>
+                      <p className="text-emerald-400 font-semibold">Final Refund: {formatCurrencyNew((returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0) - priceAdjustment))}</p>
                       <p className="text-slate-500">Enter deduction amount (e.g., 2.50 to deduct Rs 2.50 from refund)</p>
                     </>
                   ) : (
                     <>
-                      <p>Returned Total: Rs {returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0).toFixed(2)}</p>
-                      <p>Replacement Total: Rs {replacementItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}</p>
-                      <p className="text-blue-400 font-semibold">Auto Value: Rs {calculateAutoAdjustment().toFixed(2)}</p>
+                      <p>Returned Total: {formatCurrencyNew(returnItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0))}</p>
+                      <p>Replacement Total: {formatCurrencyNew(replacementItems.reduce((sum, item) => sum + item.price * item.quantity, 0))}</p>
+                      <p className="text-blue-400 font-semibold">Auto Value: {formatCurrencyNew(calculateAutoAdjustment())}</p>
                       <p className="text-slate-500">Positive = customer pays more, Negative = customer gets credit</p>
                     </>
                   )}
@@ -844,7 +845,7 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                         <span className="flex items-center gap-1">
                           <span className="text-red-400">↓</span> Returned Items ({returnItems.length}):
                         </span>
-                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {returnTotal.toFixed(2)}</span>
+                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{formatCurrencyNew(returnTotal)}</span>
                       </div>
                       
                       {priceAdjustment > 0 && (
@@ -852,7 +853,7 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                           <span className="flex items-center gap-1">
                             <span className="text-yellow-400">✂</span> Deduction:
                           </span>
-                          <span className="font-bold text-red-400">-Rs {priceAdjustment.toFixed(2)}</span>
+                          <span className="font-bold text-red-400">-{formatCurrencyNew(priceAdjustment)}</span>
                         </div>
                       )}
                     </>
@@ -862,14 +863,14 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                         <span className="flex items-center gap-1">
                           <span className="text-red-400">↓</span> Returned Items ({returnItems.length}):
                         </span>
-                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {returnTotal.toFixed(2)}</span>
+                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{formatCurrencyNew(returnTotal)}</span>
                       </div>
                       
                       <div className={`flex justify-between ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
                         <span className="flex items-center gap-1">
                           <span className="text-blue-400">↑</span> Replacement Items ({replacementItems.length}):
                         </span>
-                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {replacementTotal.toFixed(2)}</span>
+                        <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{formatCurrencyNew(replacementTotal)}</span>
                       </div>
                       
                       {priceAdjustment !== 0 && (
@@ -901,10 +902,10 @@ export default function ReturnsModal({ isDarkTheme, onClose }: { isDarkTheme: bo
                             : "text-slate-300"
                     }`}>
                       {returnType === "refund" 
-                        ? `Rs ${(returnTotal - priceAdjustment).toFixed(2)}`
+                        ? formatCurrencyNew(returnTotal - priceAdjustment)
                         : netAdjustment > 0
-                          ? `Rs ${netAdjustment.toFixed(2)}`
-                          : `${netAdjustment < 0 ? "-" : ""}Rs ${Math.abs(netAdjustment).toFixed(2)}`
+                          ? formatCurrencyNew(netAdjustment)
+                          : `${netAdjustment < 0 ? "-" : ""}${formatCurrencyNew(Math.abs(netAdjustment))}`
                       }
                     </div>
                     <div className={`text-xs mt-1 ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>

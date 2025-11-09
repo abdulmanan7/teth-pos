@@ -45,7 +45,13 @@ const ReturnSchema = new mongoose.Schema(
         },
         reason: {
           type: String,
-          enum: ["defective", "wrong_item", "not_as_described", "changed_mind", "other"],
+          enum: [
+            "defective",
+            "wrong_item",
+            "not_as_described",
+            "changed_mind",
+            "other",
+          ],
           required: true,
         },
         notes: String,
@@ -121,12 +127,11 @@ const ReturnSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for performance
 ReturnSchema.index({ status: 1, createdAt: -1 });
 ReturnSchema.index({ customer: 1 });
-ReturnSchema.index({ originalOrderId: 1 });
 
 export default mongoose.model("Return", ReturnSchema);

@@ -4,20 +4,19 @@ import { Product } from "../../db/models/Product";
 import { Warehouse } from "../../db/models/Warehouse";
 import { StockAlert } from "../../db/models/StockAlert";
 import { ExpiryNotification } from "../../db/models/ExpiryNotification";
-import { LotNumber } from "../../db/models/LotNumber";
 
-// Retry helper
+// Retry helper with exponential backoff
 async function withRetry<T>(
   operation: () => Promise<T>,
   maxRetries = 3,
-  delayMs = 500
+  delayMs = 500,
 ): Promise<T> {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await operation();
     } catch (error) {
       if (i === maxRetries - 1) throw error;
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      await new Promise((resolve) => setTimeout(resolve, delayMs * Math.pow(2, i)));
     }
   }
   throw new Error("Max retries exceeded");
@@ -27,39 +26,43 @@ async function withRetry<T>(
 export const calculateMetrics: RequestHandler = async (req, res) => {
   try {
     const products = await withRetry(async () =>
-      (Product.find() as any).exec()
+      (Product.find() as any).exec(),
     );
 
     const warehouses = await withRetry(async () =>
-      (Warehouse.find() as any).exec()
+      (Warehouse.find() as any).exec(),
     );
 
-    const lowStockAlerts = await withRetry(async () =>
-      (StockAlert.countDocuments({
-        alert_type: "low_stock",
-        status: "active",
-      }) as any)
+    const lowStockAlerts = await withRetry(
+      async () =>
+        StockAlert.countDocuments({
+          alert_type: "low_stock",
+          status: "active",
+        }) as any,
     );
 
-    const outOfStockAlerts = await withRetry(async () =>
-      (StockAlert.countDocuments({
-        alert_type: "out_of_stock",
-        status: "active",
-      }) as any)
+    const outOfStockAlerts = await withRetry(
+      async () =>
+        StockAlert.countDocuments({
+          alert_type: "out_of_stock",
+          status: "active",
+        }) as any,
     );
 
-    const expiredNotifications = await withRetry(async () =>
-      (ExpiryNotification.countDocuments({
-        notification_type: "expired",
-        status: "active",
-      }) as any)
+    const expiredNotifications = await withRetry(
+      async () =>
+        ExpiryNotification.countDocuments({
+          notification_type: "expired",
+          status: "active",
+        }) as any,
     );
 
-    const expiringNotifications = await withRetry(async () =>
-      (ExpiryNotification.countDocuments({
-        notification_type: "expiring_soon",
-        status: "active",
-      }) as any)
+    const expiringNotifications = await withRetry(
+      async () =>
+        ExpiryNotification.countDocuments({
+          notification_type: "expiring_soon",
+          status: "active",
+        }) as any,
     );
 
     // Calculate metrics
@@ -107,7 +110,7 @@ export const calculateMetrics: RequestHandler = async (req, res) => {
         units: data.units,
         value: data.value,
         percentage: totalUnits > 0 ? (data.units / totalUnits) * 100 : 0,
-      })
+      }),
     );
 
     // Identify slow-moving products (high stock, low value)
@@ -124,8 +127,9 @@ export const calculateMetrics: RequestHandler = async (req, res) => {
       out_of_stock_count: outOfStockAlerts,
       expired_count: expiredNotifications,
       expiring_soon_count: expiringNotifications,
-      average_stock_level: products.length > 0 ? totalUnits / products.length : 0,
-      stock_turnover_rate: 0, // Would need historical data
+      average_stock_level:
+        products.length > 0 ? totalUnits / products.length : 0,
+      stock_turnover_rate: 0,
       warehouse_distribution: warehouseDistribution,
       category_distribution: categoryDistribution,
       top_products: topProductsList,
@@ -144,9 +148,7 @@ export const calculateMetrics: RequestHandler = async (req, res) => {
 export const getLatestMetrics: RequestHandler = async (req, res) => {
   try {
     const metrics = await withRetry(async () =>
-      (InventoryMetrics.findOne() as any)
-        .sort({ date: -1 })
-        .exec()
+      (InventoryMetrics.findOne() as any).sort({ date: -1 }).exec(),
     );
 
     if (!metrics) {
@@ -175,11 +177,13 @@ export const getMetricsRange: RequestHandler = async (req, res) => {
     const end = new Date(endDate as string);
 
     const metrics = await withRetry(async () =>
-      (InventoryMetrics.find({
-        date: { $gte: start, $lte: end },
-      }) as any)
+      (
+        InventoryMetrics.find({
+          date: { $gte: start, $lte: end },
+        }) as any
+      )
         .sort({ date: -1 })
-        .exec()
+        .exec(),
     );
 
     res.json(metrics);
@@ -193,35 +197,39 @@ export const getMetricsRange: RequestHandler = async (req, res) => {
 export const getInventoryOverview: RequestHandler = async (req, res) => {
   try {
     const products = await withRetry(async () =>
-      (Product.find() as any).exec()
+      (Product.find() as any).exec(),
     );
 
-    const lowStockCount = await withRetry(async () =>
-      (StockAlert.countDocuments({
-        alert_type: "low_stock",
-        status: "active",
-      }) as any)
+    const lowStockCount = await withRetry(
+      async () =>
+        StockAlert.countDocuments({
+          alert_type: "low_stock",
+          status: "active",
+        }) as any,
     );
 
-    const outOfStockCount = await withRetry(async () =>
-      (StockAlert.countDocuments({
-        alert_type: "out_of_stock",
-        status: "active",
-      }) as any)
+    const outOfStockCount = await withRetry(
+      async () =>
+        StockAlert.countDocuments({
+          alert_type: "out_of_stock",
+          status: "active",
+        }) as any,
     );
 
-    const expiredCount = await withRetry(async () =>
-      (ExpiryNotification.countDocuments({
-        notification_type: "expired",
-        status: "active",
-      }) as any)
+    const expiredCount = await withRetry(
+      async () =>
+        ExpiryNotification.countDocuments({
+          notification_type: "expired",
+          status: "active",
+        }) as any,
     );
 
-    const expiringCount = await withRetry(async () =>
-      (ExpiryNotification.countDocuments({
-        notification_type: "expiring_soon",
-        status: "active",
-      }) as any)
+    const expiringCount = await withRetry(
+      async () =>
+        ExpiryNotification.countDocuments({
+          notification_type: "expiring_soon",
+          status: "active",
+        }) as any,
     );
 
     let totalValue = 0;
@@ -236,8 +244,10 @@ export const getInventoryOverview: RequestHandler = async (req, res) => {
       total_products: products.length,
       total_stock_value: totalValue,
       total_units: totalUnits,
-      average_value_per_product: products.length > 0 ? totalValue / products.length : 0,
-      average_units_per_product: products.length > 0 ? totalUnits / products.length : 0,
+      average_value_per_product:
+        products.length > 0 ? totalValue / products.length : 0,
+      average_units_per_product:
+        products.length > 0 ? totalUnits / products.length : 0,
       low_stock_alerts: lowStockCount,
       out_of_stock_alerts: outOfStockCount,
       expired_products: expiredCount,
@@ -247,7 +257,7 @@ export const getInventoryOverview: RequestHandler = async (req, res) => {
         outOfStockCount,
         expiredCount,
         expiringCount,
-        products.length
+        products.length,
       ),
     });
   } catch (error) {
@@ -256,35 +266,43 @@ export const getInventoryOverview: RequestHandler = async (req, res) => {
   }
 };
 
-// Get category analysis
+// Get category analysis with percentage distribution
 export const getCategoryAnalysis: RequestHandler = async (req, res) => {
   try {
     const products = await withRetry(async () =>
-      (Product.find() as any).exec()
+      (Product.find() as any).exec(),
     );
 
     const categoryMap: Record<string, any> = {};
+    let totalUnits = 0;
 
+    // First pass: calculate totals
+    for (const product of products) {
+      totalUnits += product.stock || 0;
+    }
+
+    // Second pass: build category data
     for (const product of products) {
       const category = product.category || "Uncategorized";
       if (!categoryMap[category]) {
         categoryMap[category] = {
-          products: 0,
           units: 0,
           value: 0,
-          average_price: 0,
         };
       }
-      categoryMap[category].products += 1;
       categoryMap[category].units += product.stock || 0;
-      categoryMap[category].value += (product.price || 0) * (product.stock || 0);
+      categoryMap[category].value +=
+        (product.price || 0) * (product.stock || 0);
     }
 
-    const analysis = Object.entries(categoryMap).map(([category, data]: [string, any]) => ({
-      category,
-      ...data,
-      average_price: data.products > 0 ? data.value / data.units : 0,
-    }));
+    const analysis = Object.entries(categoryMap).map(
+      ([category, data]: [string, any]) => ({
+        category,
+        units: data.units,
+        value: data.value,
+        percentage: totalUnits > 0 ? (data.units / totalUnits) * 100 : 0,
+      }),
+    );
 
     res.json(analysis);
   } catch (error) {
@@ -293,23 +311,55 @@ export const getCategoryAnalysis: RequestHandler = async (req, res) => {
   }
 };
 
-// Get warehouse analysis
+// Get warehouse analysis with capacity utilization
 export const getWarehouseAnalysis: RequestHandler = async (req, res) => {
   try {
     const warehouses = await withRetry(async () =>
-      (Warehouse.find() as any).exec()
+      (Warehouse.find() as any).exec(),
     );
 
-    const analysis = warehouses.map((warehouse: any) => ({
-      warehouse_id: warehouse._id,
-      warehouse_name: warehouse.name,
-      location: warehouse.location,
-      total_units: warehouse.total_units || 0,
-      total_value: warehouse.total_value || 0,
-      capacity_utilization: warehouse.capacity
-        ? ((warehouse.total_units || 0) / warehouse.capacity) * 100
-        : 0,
-    }));
+    const products = await withRetry(async () =>
+      (Product.find() as any).exec(),
+    );
+
+    let totalInventoryUnits = 0;
+
+    // Calculate total inventory units
+    for (const product of products) {
+      totalInventoryUnits += product.stock || 0;
+    }
+
+    const analysis = warehouses.map((warehouse: any) => {
+      // Filter products for this warehouse
+      const warehouseProducts = products.filter(
+        (p: any) => p.warehouse_id?.toString() === warehouse._id.toString(),
+      );
+
+      // Calculate warehouse totals
+      const warehouseUnits = warehouseProducts.reduce(
+        (sum, p: any) => sum + (p.stock || 0),
+        0,
+      );
+      const warehouseValue = warehouseProducts.reduce(
+        (sum, p: any) => sum + (p.price || 0) * (p.stock || 0),
+        0,
+      );
+
+      // Calculate capacity utilization as percentage of total inventory
+      const capacityUtilization =
+        totalInventoryUnits > 0
+          ? (warehouseUnits / totalInventoryUnits) * 100
+          : 0;
+
+      return {
+        warehouse_id: warehouse._id,
+        warehouse_name: warehouse.name,
+        location: warehouse.location,
+        total_units: warehouseUnits,
+        total_value: warehouseValue,
+        capacity_utilization: capacityUtilization,
+      };
+    });
 
     res.json(analysis);
   } catch (error) {
@@ -318,11 +368,11 @@ export const getWarehouseAnalysis: RequestHandler = async (req, res) => {
   }
 };
 
-// Get top and bottom products
+// Get product performance (top products by value and quantity)
 export const getProductPerformance: RequestHandler = async (req, res) => {
   try {
     const products = await withRetry(async () =>
-      (Product.find() as any).exec()
+      (Product.find() as any).exec(),
     );
 
     const productList = products.map((p: any) => ({
@@ -339,11 +389,6 @@ export const getProductPerformance: RequestHandler = async (req, res) => {
       .sort((a, b) => b.value - a.value)
       .slice(0, 10);
 
-    // Bottom products by value
-    const bottomByValue = [...productList]
-      .sort((a, b) => a.value - b.value)
-      .slice(0, 10);
-
     // Top products by quantity
     const topByQuantity = [...productList]
       .sort((a, b) => b.stock - a.stock)
@@ -351,7 +396,6 @@ export const getProductPerformance: RequestHandler = async (req, res) => {
 
     res.json({
       top_by_value: topByValue,
-      bottom_by_value: bottomByValue,
       top_by_quantity: topByQuantity,
     });
   } catch (error) {
@@ -360,20 +404,22 @@ export const getProductPerformance: RequestHandler = async (req, res) => {
   }
 };
 
-// Helper function to calculate health score
+// Helper function to calculate inventory health score
 function calculateHealthScore(
   lowStock: number,
   outOfStock: number,
   expired: number,
   expiringSoon: number,
-  totalProducts: number
+  totalProducts: number,
 ): number {
+  if (totalProducts === 0) return 100;
+
   const alertsPercentage = ((lowStock + outOfStock) / totalProducts) * 100;
   const expiryPercentage = ((expired + expiringSoon) / totalProducts) * 100;
 
   let score = 100;
-  score -= Math.min(alertsPercentage * 0.5, 30); // Max 30 points for stock alerts
-  score -= Math.min(expiryPercentage * 0.3, 20); // Max 20 points for expiry
+  score -= Math.min(alertsPercentage * 0.5, 30);
+  score -= Math.min(expiryPercentage * 0.3, 20);
 
   return Math.max(0, Math.round(score));
 }

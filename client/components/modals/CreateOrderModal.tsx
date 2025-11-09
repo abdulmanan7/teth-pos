@@ -2,6 +2,7 @@ import { X, Plus, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { formatCurrencyNew } from "@/utils";
 
 interface Product {
   id: number;
@@ -174,7 +175,7 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
                         <div className="flex justify-between items-center">
                           <span className="font-medium">{product.name}</span>
                           <span className="text-blue-400 font-bold">
-                            Rs {product.price.toFixed(2)}
+                            {formatCurrencyNew(product.price)}
                           </span>
                         </div>
                         <p className="text-xs text-slate-400 mt-1">
@@ -229,7 +230,7 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
 
                       <div className="flex justify-between items-center">
                         <span className="text-blue-400 font-bold">
-                          Rs {item.price.toFixed(2)}
+                          {formatCurrencyNew(item.price)}
                         </span>
                         <div className="flex items-center gap-2">
                           <button
@@ -275,15 +276,15 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
               <div className="border-t border-slate-600 pt-4 space-y-2">
                 <div className="flex justify-between text-slate-300">
                   <span>Subtotal:</span>
-                  <span>Rs {subtotal.toFixed(2)}</span>
+                  <span>{formatCurrencyNew(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-slate-300">
                   <span>Tax (10%):</span>
-                  <span>Rs {tax.toFixed(2)}</span>
+                  <span>{formatCurrencyNew(tax)}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold text-white border-t border-slate-600 pt-3">
                   <span>Total:</span>
-                  <span className="text-green-400">Rs {total.toFixed(2)}</span>
+                  <span className="text-green-400">{formatCurrencyNew(total)}</span>
                 </div>
               </div>
             </div>

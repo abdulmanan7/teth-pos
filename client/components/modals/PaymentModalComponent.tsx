@@ -1,3 +1,4 @@
+import { formatCurrencyNew } from "@/utils";
 import { useState } from "react";
 
 interface StaffMember {
@@ -65,24 +66,24 @@ export default function PaymentModalComponent({
           <div className={`p-4 rounded-lg space-y-2 ${isDarkTheme ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
             <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
               <span>Total Amount:</span>
-              <span className="text-green-400 font-bold text-lg">Rs {total.toFixed(2)}</span>
+              <span className="text-green-400 font-bold text-lg">{formatCurrencyNew(total)}</span>
             </div>
             {paymentAmount && (
               <>
                 <div className={`flex justify-between text-sm border-t pt-2 ${isDarkTheme ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600'}`}>
                   <span>Amount Paid:</span>
-                  <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Rs {paymentAmountNum.toFixed(2)}</span>
+                  <span className={`font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{formatCurrencyNew(paymentAmountNum)}</span>
                 </div>
                 {isValidPayment && (
                   <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                     <span>Change to Return:</span>
-                    <span className="text-yellow-400 font-bold text-lg">Rs {change.toFixed(2)}</span>
+                    <span className="text-yellow-400 font-bold text-lg">{formatCurrencyNew(change)}</span>
                   </div>
                 )}
                 {!isValidPayment && (
                   <div className={`flex justify-between text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}>
                     <span>Still Due:</span>
-                    <span className="text-red-400 font-bold">Rs {(total - paymentAmountNum).toFixed(2)}</span>
+                    <span className="text-red-400 font-bold">{formatCurrencyNew(total - paymentAmountNum)}</span>
                   </div>
                 )}
               </>

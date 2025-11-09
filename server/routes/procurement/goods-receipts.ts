@@ -259,9 +259,9 @@ const confirmGR: RequestHandler = async (req, res) => {
     for (const grItem of gr.items) {
       const product = await Product.findById(grItem.product_id);
       if (product) {
-        // Add received quantity (excluding damaged)
-        const goodQuantity =
-          grItem.received_quantity - (grItem.damaged_quantity || 0);
+        // Calculate good quantity (received items)
+        const goodQuantity = grItem.received_quantity || 0;
+        // Add received quantity to stock
         product.stock += goodQuantity;
 
         // Calculate damaged goods value

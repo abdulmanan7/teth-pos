@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import Return from "../db/models/Return";
 import { Order } from "../db/models/Order";
 import { Product } from "../db/models/Product";
+import { createReturnAccountingEntries } from "../utils/orderAccountingIntegration";
 
 // Create a new return request
 export const createReturn: RequestHandler = async (req, res) => {
@@ -184,7 +185,31 @@ export const approveReturn: RequestHandler = async (req, res) => {
     const { id } = req.params;
     const { approvedBy } = req.body;
 
-    const returnRecord = await Return.findByIdAndUpdate(
+    const returnRecord = await Return.findById(id);
+    if (!returnRecord) {
+      return res.status(404).json({ error: "Return not found" });
+    }
+
+    // Calculate total refund value for accounting
+    let totalRefundValue = 0;
+    for (const item of returnRecord.items) {
+      const product = await Product.findById(item.productId);
+      if (product) {
+        totalRefundValue += product.price * item.quantity;
+      }
+    }
+
+    // Create accounting entries for the return
+    if (totalRefundValue > 0) {
+      await createReturnAccountingEntries(
+        totalRefundValue,
+        returnRecord._id.toString(),
+        returnRecord.returnNumber,
+        returnRecord.returnType
+      );
+    }
+
+    const updatedReturn = await Return.findByIdAndUpdate(
       id,
       {
         status: "approved",
@@ -194,16 +219,13 @@ export const approveReturn: RequestHandler = async (req, res) => {
       { new: true }
     );
 
-    if (!returnRecord) {
-      return res.status(404).json({ error: "Return not found" });
-    }
-
     res.json({
       success: true,
-      return: returnRecord,
-      message: "Return approved",
+      return: updatedReturn,
+      message: "Return approved with accounting entries created",
     });
   } catch (error: any) {
+    console.error("Error approving return:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -262,7 +284,8 @@ export const completeReturn: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Return must be approved first" });
     }
 
-    // Handle replacement items - deduct from stock
+    // Handle replacement items - deduct from stock and create accounting entries
+    let replacementValue = 0;
     if (returnRecord.replacementItems && returnRecord.replacementItems.length > 0) {
       for (const replacement of returnRecord.replacementItems) {
         const product = await Product.findById(replacement.productId);
@@ -273,8 +296,19 @@ export const completeReturn: RequestHandler = async (req, res) => {
             });
           }
           product.stock -= replacement.quantity;
+          replacementValue += (product.price || 0) * replacement.quantity;
           await product.save();
         }
+      }
+
+      // Create accounting entries for replacement items
+      if (replacementValue > 0) {
+        await createReturnAccountingEntries(
+          replacementValue,
+          returnRecord._id.toString(),
+          returnRecord.returnNumber,
+          "replacement"
+        );
       }
     }
 
@@ -292,9 +326,10 @@ export const completeReturn: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       return: updated,
-      message: "Return completed successfully",
+      message: "Return completed successfully with accounting entries",
     });
   } catch (error: any) {
+    console.error("Error completing return:", error);
     res.status(500).json({ error: error.message });
   }
 };

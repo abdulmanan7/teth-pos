@@ -281,6 +281,101 @@ export async function recordDamagedGoods(
 }
 
 /**
+ * Create accounting entries for product returns
+ *
+ * For REFUND (item returned):
+ * DEBIT: Sales Returns/Allowances (4150) - Record the return
+ * CREDIT: Accounts Receivable/Cash (1060) - Reduce cash/receivable
+ *
+ * For REPLACEMENT (item exchanged for another):
+ * DEBIT: Inventory (1510) - Add replacement item to inventory
+ * CREDIT: Sales Returns/Allowances (4150) - Record the exchange
+ *
+ * @param returnValue - Total value of returned items
+ * @param returnId - Return ID
+ * @param returnNumber - Return number
+ * @param returnType - "refund" or "replacement"
+ */
+export async function createReturnAccountingEntries(
+  returnValue: number,
+  returnId: string,
+  returnNumber: string,
+  returnType: "refund" | "replacement",
+) {
+  try {
+    if (returnValue <= 0) {
+      return;
+    }
+
+    const cashAccount = await ChartOfAccount.findOne({ code: "1060" }); // Cash
+    const salesReturnsAccount = await ChartOfAccount.findOne({ code: "4150" }); // Sales Returns/Allowances
+    const inventoryAccount = await ChartOfAccount.findOne({ code: "1510" }); // Inventory
+
+    if (!cashAccount || !salesReturnsAccount) {
+      console.error(
+        "Required accounting accounts not found for returns.",
+      );
+      return;
+    }
+
+    const description = `${returnType === "refund" ? "Refund" : "Exchange"} - Return ${returnNumber}`;
+
+    if (returnType === "refund") {
+      // DEBIT: Sales Returns/Allowances (Expense/Contra-Revenue)
+      await addTransactionLine({
+        account_id: salesReturnsAccount._id,
+        reference: "Return",
+        reference_id: returnId,
+        date: new Date(),
+        debit: returnValue,
+        credit: 0,
+        description,
+      });
+
+      // CREDIT: Cash (Refund paid out)
+      await addTransactionLine({
+        account_id: cashAccount._id,
+        reference: "Return",
+        reference_id: returnId,
+        date: new Date(),
+        debit: 0,
+        credit: returnValue,
+        description,
+      });
+    } else if (returnType === "replacement" && inventoryAccount) {
+      // For replacement: Inventory increases, Sales Returns records the exchange
+      // DEBIT: Inventory (Asset increases)
+      await addTransactionLine({
+        account_id: inventoryAccount._id,
+        reference: "Return",
+        reference_id: returnId,
+        date: new Date(),
+        debit: returnValue,
+        credit: 0,
+        description: `Replacement inventory - ${returnNumber}`,
+      });
+
+      // CREDIT: Sales Returns/Allowances
+      await addTransactionLine({
+        account_id: salesReturnsAccount._id,
+        reference: "Return",
+        reference_id: returnId,
+        date: new Date(),
+        debit: 0,
+        credit: returnValue,
+        description,
+      });
+    }
+
+    console.log(
+      `✅ Accounting entries created for return: Rs.${returnValue}`,
+    );
+  } catch (error) {
+    console.error("Error creating return accounting entries:", error);
+  }
+}
+
+/**
  * Create accounting entries for stock adjustments
  *
  * For INCREASE (e.g., found inventory, count correction):

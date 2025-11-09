@@ -263,8 +263,8 @@ export const approveAdjustment: RequestHandler = async (req, res) => {
 
       await withRetry(() => product.save());
 
-      // Calculate value for accounting (use unit_cost if provided, otherwise use product cost)
-      const unitCost = line.unit_cost || product.cost || 0;
+      // Calculate value for accounting (use unit_cost if provided, otherwise use product price)
+      const unitCost = line.unit_cost || product.price || 0;
       const lineValue = Math.abs(difference) * unitCost;
 
       if (difference > 0) {

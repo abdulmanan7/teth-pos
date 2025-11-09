@@ -226,7 +226,7 @@ export async function initializeDefaultChartOfAccounts() {
  */
 export async function addTransactionLine(data: {
   account_id: string;
-  reference: 'Order' | 'PurchaseOrder' | 'JournalEntry' | 'Payment' | 'Adjustment' | 'GoodsReceipt';
+  reference: 'Order' | 'PurchaseOrder' | 'JournalEntry' | 'Payment' | 'Adjustment' | 'GoodsReceipt' | 'Return';
   reference_id: string;
   reference_sub_id?: string;
   date: Date;

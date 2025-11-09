@@ -39,6 +39,12 @@ export interface Product {
   status?: "active" | "inactive" | "discontinued";
   hasSerialNumbers?: boolean; // Flag to indicate product has serial numbers
   sku?: string; // SKU from BarcodeMapping (joined via aggregation)
+  tax_rate_id?: string | null;
+  taxRate?: {
+    _id: string;
+    name: string;
+    rate: number;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

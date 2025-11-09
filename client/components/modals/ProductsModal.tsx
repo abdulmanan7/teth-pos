@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import { useToast } from "@/components/ToastManager";
-import type { Product } from "@shared/api";
+import type { Product, TaxRateConfig } from "@shared/api";
 
 export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated }: { isDarkTheme: boolean; onClose: () => void; onProductsUpdated?: (products: Product[]) => void }) {
   const { addToast } = useToast();
@@ -21,6 +21,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
   const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [taxRates, setTaxRates] = useState<TaxRateConfig[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -31,6 +32,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
     unit_custom: "",
     warehouse_id: "",
     status: "active" as 'active' | 'inactive' | 'discontinued',
+    tax_rate_id: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const { get, post, put, delete: deleteRequest } = useElectronApi();
@@ -38,6 +40,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
   useEffect(() => {
     fetchProducts();
     fetchWarehouses();
+    fetchTaxRates();
   }, []);
 
   const fetchProducts = async () => {
@@ -61,6 +64,17 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
       setWarehouses(data);
     } catch (error) {
       console.error("Error fetching warehouses:", error);
+    }
+  };
+
+  const fetchTaxRates = async () => {
+    try {
+      const data = await get("/api/tax-rates");
+      if (Array.isArray(data)) {
+        setTaxRates(data as TaxRateConfig[]);
+      }
+    } catch (error) {
+      console.error("Error fetching tax rates:", error);
     }
   };
 
@@ -109,6 +123,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
       unit_custom: "",
       warehouse_id: "",
       status: "active",
+      tax_rate_id: "",
     });
     setEditingId(null);
   };
@@ -132,6 +147,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
         unit_custom: formData.unit_custom,
         warehouse_id: formData.warehouse_id,
         status: formData.status,
+        tax_rate_id: formData.tax_rate_id || null,
       };
 
       if (editingId) {
@@ -173,6 +189,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
       unit_custom: product.unit_custom || "",
       warehouse_id: product.warehouse_id || "",
       status: product.status || "active",
+      tax_rate_id: (product as any).tax_rate_id ? String((product as any).tax_rate_id) : product.taxRate?._id || "",
     });
     setEditingId(product._id);
     setShowAddForm(true);
@@ -293,6 +310,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                           <div>Category: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{product.category}</span></div>
                           <div>Stock: <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'} ${product.stock < 10 ? 'text-red-400' : 'text-green-400'}`}>{product.stock} {product.unit_custom || product.unit || 'piece'}</span></div>
                           <div>Status: <span className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'} ${product.status === 'active' ? 'text-green-400' : product.status === 'inactive' ? 'text-yellow-400' : 'text-red-400'}`}>{product.status || 'active'}</span></div>
+                          <div>Tax Rate: <span className={isDarkTheme ? 'text-white' : 'text-slate-900'}>{product.taxRate ? `${product.taxRate.name} (${(product.taxRate.rate * 100).toFixed(2)}%)` : 'No tax assigned'}</span></div>
                         </div>
                       </div>
 
@@ -393,6 +411,7 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                   <p className={`font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>{selectedProduct.quantity} {selectedProduct.unit_custom || selectedProduct.unit || 'piece'}</p>
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Unit Type</p>
@@ -424,6 +443,12 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                   <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Status</p>
                   <p className={`capitalize font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'} ${selectedProduct.status === 'active' ? 'text-green-400' : selectedProduct.status === 'inactive' ? 'text-yellow-400' : 'text-red-400'}`}>
                     {selectedProduct.status || 'active'}
+                  </p>
+                </div>
+                <div>
+                  <p className={isDarkTheme ? 'text-slate-400' : 'text-slate-600'}>Tax Rate</p>
+                  <p className={isDarkTheme ? 'text-white' : 'text-slate-900'}>
+                    {selectedProduct.taxRate ? `${selectedProduct.taxRate.name} (${(selectedProduct.taxRate.rate * 100).toFixed(2)}%)` : 'No tax assigned'}
                   </p>
                 </div>
               </div>
@@ -584,6 +609,24 @@ export default function ProductsModal({ isDarkTheme, onClose, onProductsUpdated 
                   />
                 </div>
               )}
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Tax Rate (optional)
+                </label>
+                <select
+                  value={formData.tax_rate_id}
+                  onChange={(e) => setFormData({ ...formData, tax_rate_id: e.target.value })}
+                  className={`w-full border rounded px-3 py-2 text-sm ${isDarkTheme ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'}`}
+                >
+                  <option value="">No tax</option>
+                  {taxRates.map((rate) => (
+                    <option key={rate._id} value={rate._id}>
+                      {rate.name} ({(rate.rate * 100).toFixed(2)}%)
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div>
                 <label className={`block text-sm font-medium mb-2 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>

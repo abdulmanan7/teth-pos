@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IProduct extends Document {
   _id: string;
@@ -25,6 +25,7 @@ export interface IProduct extends Document {
   // Inventory system fields
   warehouse_id?: string;
   status?: "active" | "inactive" | "discontinued";
+  tax_rate_id?: Types.ObjectId | string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -91,6 +92,11 @@ const ProductSchema = new Schema<IProduct>(
     warehouse_id: {
       type: String,
       index: true,
+    },
+    tax_rate_id: {
+      type: Schema.Types.ObjectId,
+      ref: "TaxRate",
+      default: null,
     },
     status: {
       type: String,

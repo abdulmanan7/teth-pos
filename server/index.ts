@@ -190,6 +190,77 @@ export async function createServer() {
     return deleteLotNumber(req, res, next);
   });
 
+  // Inventory routes - Product Batches (for multi-expiry tracking)
+  app.post("/api/inventory/product-batches", async (req, res, next) => {
+    const { createProductBatch } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return createProductBatch(req, res, next);
+  });
+
+  app.get("/api/inventory/product-batches/product/:productId", async (req, res, next) => {
+    const { getBatchesByProduct } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return getBatchesByProduct(req, res, next);
+  });
+
+  app.get("/api/inventory/product-batches/fifo/:productId", async (req, res, next) => {
+    const { getActiveBatchesFIFO } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return getActiveBatchesFIFO(req, res, next);
+  });
+
+  app.get("/api/inventory/product-batches/summary/:productId", async (req, res, next) => {
+    const { getProductBatchSummary } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return getProductBatchSummary(req, res, next);
+  });
+
+  app.get("/api/inventory/product-batches/expired", async (req, res, next) => {
+    const { getExpiredBatches } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return getExpiredBatches(req, res, next);
+  });
+
+  app.get("/api/inventory/product-batches/expiring", async (req, res, next) => {
+    const { getExpiringBatches } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return getExpiringBatches(req, res, next);
+  });
+
+  app.get("/api/inventory/product-batches/:batchId", async (req, res, next) => {
+    const { getBatchById } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return getBatchById(req, res, next);
+  });
+
+  app.put("/api/inventory/product-batches/:batchId/quantity", async (req, res, next) => {
+    const { updateBatchQuantity } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return updateBatchQuantity(req, res, next);
+  });
+
+  app.put("/api/inventory/product-batches/:batchId/status", async (req, res, next) => {
+    const { updateBatchStatus } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return updateBatchStatus(req, res, next);
+  });
+
+  app.get("/api/inventory/warehouse/:warehouseId/batches", async (req, res, next) => {
+    const { getWarehouseInventoryWithBatches } = await import(
+      "./routes/inventory/product-batches"
+    );
+    return getWarehouseInventoryWithBatches(req, res, next);
+  });
+
   // Inventory routes - Reorder Rules
   app.get("/api/inventory/reorder-rules", async (req, res, next) => {
     const { getAllReorderRules } = await import(
@@ -860,6 +931,35 @@ export async function createServer() {
   app.use("/api/purchase-orders", poRouter);
   app.use("/api/goods-receipts", grRouter);
   app.use("/api/tax-rates", taxRateRouter);
+
+  // Market Purchases routes (Direct market purchases without PO)
+  app.post("/api/market-purchases", async (req, res, next) => {
+    const { createMarketPurchase } = await import(
+      "./routes/procurement/market-purchases"
+    );
+    return createMarketPurchase(req, res, next);
+  });
+
+  app.get("/api/market-purchases", async (req, res, next) => {
+    const { getMarketPurchases } = await import(
+      "./routes/procurement/market-purchases"
+    );
+    return getMarketPurchases(req, res, next);
+  });
+
+  app.delete("/api/market-purchases/:id", async (req, res, next) => {
+    const { deleteMarketPurchase } = await import(
+      "./routes/procurement/market-purchases"
+    );
+    return deleteMarketPurchase(req, res, next);
+  });
+
+  app.post("/api/market-purchases/:id/add-to-inventory", async (req, res, next) => {
+    const { addPurchaseToInventory } = await import(
+      "./routes/procurement/market-purchases"
+    );
+    return addPurchaseToInventory(req, res, next);
+  });
 
   // Staff routes
   app.get("/api/staff", async (req, res, next) => {

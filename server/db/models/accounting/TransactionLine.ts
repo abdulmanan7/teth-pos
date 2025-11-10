@@ -24,7 +24,7 @@ const TransactionLineSchema = new Schema<ITransactionLine>(
     reference: {
       type: String,
       required: true,
-      enum: ['Order', 'PurchaseOrder', 'GoodsReceipt', 'JournalEntry', 'Payment', 'Adjustment'],
+      enum: ['Order', 'PurchaseOrder', 'GoodsReceipt', 'JournalEntry', 'Payment', 'Adjustment', 'MarketPurchase'],
     },
     reference_id: {
       type: String,

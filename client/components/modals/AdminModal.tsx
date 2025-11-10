@@ -15,6 +15,7 @@ import AdvancedReporting from "@/components/inventory/AdvancedReporting";
 import VendorManager from "@/components/procurement/VendorManager";
 import PurchaseOrderManager from "@/components/procurement/PurchaseOrderManager";
 import GoodsReceiptManager from "@/components/procurement/GoodsReceiptManager";
+import DirectMarketPurchaseManager from "@/components/procurement/DirectMarketPurchaseManager";
 import StaffManagementModal from "@/components/modals/StaffManagementModal";
 import BrandingManager from "@/components/modals/BrandingManager";
 import TaxRatesManager from "@/components/modals/TaxRatesManager";
@@ -25,7 +26,7 @@ interface AdminModalProps {
   userRole?: string;
 }
 
-type AdminTab = "overview" | "warehouses" | "lot-numbers" | "reorder-rules" | "serial-numbers" | "stock-adjustments" | "stock-alerts" | "expiry-notifications" | "analytics" | "transactions" | "barcode-scanner" | "reporting" | "vendors" | "purchase-orders" | "goods-receipts" | "staff" | "branding" | "tax-rates" | null;
+type AdminTab = "overview" | "warehouses" | "lot-numbers" | "reorder-rules" | "serial-numbers" | "stock-adjustments" | "stock-alerts" | "expiry-notifications" | "analytics" | "transactions" | "barcode-scanner" | "reporting" | "vendors" | "purchase-orders" | "market-purchases" | "goods-receipts" | "staff" | "branding" | "tax-rates" | null;
 
 export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModalProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
@@ -534,6 +535,41 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
     );
   }
 
+  if (activeTab === "market-purchases") {
+    return (
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+        <div className={`rounded-lg border shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col ${isDarkTheme ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className={`flex items-center justify-between p-6 border-b ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <h2 className={`text-2xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-900'}`}>Admin Panel</h2>
+            <button
+              onClick={onClose}
+              className={`transition-colors p-1 ${isDarkTheme ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-6">
+            <DirectMarketPurchaseManager isDarkTheme={isDarkTheme} />
+          </div>
+          <div className={`border-t p-6 flex gap-2 ${isDarkTheme ? 'border-slate-700' : 'border-slate-200'}`}>
+            <Button
+              onClick={() => setActiveTab("overview")}
+              className={isDarkTheme ? 'flex-1 bg-slate-600 hover:bg-slate-700 text-white' : 'flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900'}
+            >
+              Back
+            </Button>
+            <Button
+              onClick={onClose}
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (activeTab === "goods-receipts") {
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
@@ -657,6 +693,7 @@ export default function AdminModal({ isDarkTheme, onClose, userRole }: AdminModa
     // Procurement
     { id: "vendors", category: "procurement", icon: Truck, title: "Vendor Management", description: "Manage vendors and track ratings", color: "blue" },
     { id: "purchase-orders", category: "procurement", icon: ShoppingCart, title: "Purchase Orders", description: "Create and manage purchase orders", color: "green" },
+    { id: "market-purchases", category: "procurement", icon: ShoppingCart, title: "Market Purchases", description: "Record direct market purchases without PO", color: "cyan" },
     { id: "goods-receipts", category: "procurement", icon: Package, title: "Goods Receipts", description: "Receive goods with quality checks", color: "purple" },
     
     // Settings

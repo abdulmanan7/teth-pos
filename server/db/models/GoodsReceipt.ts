@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface GoodsReceiptItem {
   product_id: string;
@@ -6,7 +6,7 @@ export interface GoodsReceiptItem {
   po_quantity: number; // Original ordered quantity
   received_quantity: number; // Actual received quantity
   damaged_quantity: number; // Damaged items
-  quality_check: 'pass' | 'fail' | 'pending';
+  quality_check: "pass" | "fail" | "pending";
   quality_notes?: string;
   barcodes?: string[]; // Scanned barcodes
   lot_numbers?: string[]; // Lot/batch numbers
@@ -24,7 +24,7 @@ export interface IGoodsReceipt extends Document {
   received_by?: string; // User who received
   total_received: number; // Total items received across all items
   total_damaged: number; // Total damaged items
-  status: 'pending' | 'partial' | 'complete'; // pending=awaiting more, partial=received some, complete=all received
+  status: "pending" | "partial" | "complete"; // pending=awaiting more, partial=received some, complete=all received
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -57,8 +57,8 @@ const GoodsReceiptItemSchema = new Schema({
   },
   quality_check: {
     type: String,
-    enum: ['pass', 'fail', 'pending'],
-    default: 'pending',
+    enum: ["pass", "fail", "pending"],
+    default: "pending",
   },
   quality_notes: {
     type: String,
@@ -109,7 +109,7 @@ const GoodsReceiptSchema = new Schema<IGoodsReceipt>(
         validator: function (v: GoodsReceiptItem[]) {
           return v.length > 0;
         },
-        message: 'Goods receipt must have at least one item',
+        message: "Goods receipt must have at least one item",
       },
     },
     receipt_date: {
@@ -133,8 +133,8 @@ const GoodsReceiptSchema = new Schema<IGoodsReceipt>(
     },
     status: {
       type: String,
-      enum: ['pending', 'partial', 'complete'],
-      default: 'pending',
+      enum: ["pending", "partial", "complete"],
+      default: "pending",
       index: true,
     },
     notes: {
@@ -142,12 +142,14 @@ const GoodsReceiptSchema = new Schema<IGoodsReceipt>(
       trim: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes
-GoodsReceiptSchema.index({ po_id: 1, status: 1 });
-GoodsReceiptSchema.index({ receipt_number: 1 });
+GoodsReceiptSchema.index({ po_id: 1 });
 GoodsReceiptSchema.index({ vendor_id: 1, receipt_date: -1 });
 
-export const GoodsReceipt = mongoose.model<IGoodsReceipt>('GoodsReceipt', GoodsReceiptSchema);
+export const GoodsReceipt = mongoose.model<IGoodsReceipt>(
+  "GoodsReceipt",
+  GoodsReceiptSchema,
+);

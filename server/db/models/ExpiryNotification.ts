@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IExpiryNotification extends Document {
-  lot_id: string;
+  lot_id?: string; // Optional: for lot-based tracking
+  batch_id?: string; // Optional: for batch-based tracking (market purchases)
   product_id: string;
   warehouse_id?: string;
   notification_type: "expired" | "expiring_soon" | "upcoming";
@@ -20,7 +21,8 @@ export interface IExpiryNotification extends Document {
 
 const ExpiryNotificationSchema = new Schema<IExpiryNotification>(
   {
-    lot_id: { type: String, required: true },
+    lot_id: { type: String }, // Optional: for lot-based tracking
+    batch_id: { type: String, index: true }, // Optional: for batch-based tracking
     product_id: { type: String, required: true },
     warehouse_id: { type: String },
     notification_type: {

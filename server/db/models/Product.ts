@@ -26,6 +26,9 @@ export interface IProduct extends Document {
   warehouse_id?: string;
   status?: "active" | "inactive" | "discontinued";
   tax_rate_id?: Types.ObjectId | string | null;
+  // Expiry tracking (for items without lot numbers)
+  expiry_date?: Date; // For open market items without lot tracking
+  is_perishable?: boolean; // Flag to indicate if item can expire
   createdAt: Date;
   updatedAt: Date;
 }
@@ -104,11 +107,22 @@ const ProductSchema = new Schema<IProduct>(
       default: "active",
       index: true,
     },
+    // Expiry tracking for open market items (without lot numbers)
+    expiry_date: {
+      type: Date,
+      index: true,
+    },
+    is_perishable: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   { timestamps: true },
 );
 
 // Indexes for inventory queries
 ProductSchema.index({ category: 1, status: 1 });
+ProductSchema.index({ expiry_date: 1, is_perishable: 1 });
 
 export const Product = mongoose.model<IProduct>("Product", ProductSchema);

@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { ExpiryNotification } from "../../db/models/ExpiryNotification";
 import { LotNumber } from "../../db/models/LotNumber";
+import { ProductBatch } from "../../db/models/ProductBatch";
 
 // Retry helper
 async function withRetry<T>(
@@ -121,6 +122,15 @@ export const checkAndCreateNotifications: RequestHandler = async (req, res) => {
       (LotNumber.find({ expiry_date: { $exists: true } }) as any).exec()
     );
 
+    // Get all product batches with expiry dates (including market purchases)
+    const batches = await withRetry(async () =>
+      (ProductBatch.find({ 
+        expiry_date: { $exists: true },
+        status: "active" // Only check active batches
+      }) as any).exec()
+    );
+
+    // Process lot numbers
     for (const lot of lots) {
       if (!lot.expiry_date) continue;
 
@@ -160,6 +170,53 @@ export const checkAndCreateNotifications: RequestHandler = async (req, res) => {
           expiry_date: lot.expiry_date,
           days_until_expiry: daysUntilExpiry,
           quantity: lot.quantity,
+          status: "active",
+        });
+        await withRetry(() => newNotification.save());
+        notifications.push(newNotification);
+      }
+    }
+
+    // Process product batches
+    for (const batch of batches) {
+      if (!batch.expiry_date) continue;
+
+      const expiryDate = new Date(batch.expiry_date);
+      expiryDate.setHours(0, 0, 0, 0);
+      const daysUntilExpiry = Math.ceil(
+        (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      let notificationType: "expired" | "expiring_soon" | "upcoming";
+
+      if (daysUntilExpiry < 0) {
+        notificationType = "expired";
+      } else if (daysUntilExpiry <= 30) {
+        notificationType = "expiring_soon";
+      } else if (daysUntilExpiry <= 60) {
+        notificationType = "upcoming";
+      } else {
+        continue; // Skip if more than 60 days away
+      }
+
+      // Check if notification already exists for this batch
+      const existingNotification = await withRetry(async () =>
+        (ExpiryNotification.findOne({
+          batch_id: batch._id,
+          notification_type: notificationType,
+          status: { $in: ["active", "acknowledged"] },
+        }) as any).exec()
+      );
+
+      if (!existingNotification) {
+        const newNotification = new ExpiryNotification({
+          batch_id: batch._id,
+          product_id: batch.product_id,
+          warehouse_id: batch.warehouse_id,
+          notification_type: notificationType,
+          expiry_date: batch.expiry_date,
+          days_until_expiry: daysUntilExpiry,
+          quantity: batch.quantity,
           status: "active",
         });
         await withRetry(() => newNotification.save());

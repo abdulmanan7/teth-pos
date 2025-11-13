@@ -1,59 +1,58 @@
 import { X, Plus, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { formatCurrencyNew } from "@/utils";
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  stock: number;
-}
+import { useState, useEffect } from "react";
+import { formatCurrencyNew, showNotification } from "@/utils";
+import { useElectronApi } from "@/hooks/useElectronApi";
+import type { Product, Customer } from "@shared/api";
 
 interface CartItem {
-  productId: number;
+  productId: string | number;
   name: string;
   price: number;
   quantity: number;
 }
 
-const PRODUCTS: Product[] = [
-  { id: 1, name: "Premium Coffee Beans", price: 12.99, stock: 45 },
-  { id: 2, name: "Organic Tea", price: 8.99, stock: 62 },
-  { id: 3, name: "Fresh Croissant", price: 4.99, stock: 28 },
-  { id: 4, name: "Chocolate Cake", price: 24.99, stock: 12 },
-  { id: 5, name: "Cheese Sandwich", price: 7.99, stock: 35 },
-  { id: 6, name: "Turkey Club", price: 10.99, stock: 18 },
-  { id: 7, name: "Bottled Water", price: 2.99, stock: 150 },
-  { id: 8, name: "Fruit Juice", price: 4.49, stock: 87 },
-];
-
-const CUSTOMERS = [
-  { id: 1, name: "Alice Johnson" },
-  { id: 2, name: "Bob Smith" },
-  { id: 3, name: "Carol Davis" },
-  { id: 4, name: "David Wilson" },
-  { id: 5, name: "Emma Martinez" },
-  { id: 6, name: "Frank Brown" },
-];
-
 export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
+  const { get, post } = useElectronApi();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showProductList, setShowProductList] = useState(false);
 
-  const filteredProducts = PRODUCTS.filter((product) =>
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productsData, customersData] = await Promise.all([
+          get("/api/products"),
+          get("/api/customers")
+        ]);
+        setProducts(productsData || []);
+        setCustomers(customersData || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        showNotification.error("Failed to load products and customers");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const addToCart = (product: Product) => {
-    const existing = cartItems.find((item) => item.productId === product.id);
+    const existing = cartItems.find((item) => item.productId === product._id);
     if (existing) {
       setCartItems(
         cartItems.map((item) =>
-          item.productId === product.id
+          item.productId === product._id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
@@ -62,7 +61,7 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
       setCartItems([
         ...cartItems,
         {
-          productId: product.id,
+          productId: product._id,
           name: product.name,
           price: product.price,
           quantity: 1,
@@ -73,11 +72,11 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
     setShowProductList(false);
   };
 
-  const removeFromCart = (productId: number) => {
+  const removeFromCart = (productId: string | number) => {
     setCartItems(cartItems.filter((item) => item.productId !== productId));
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (productId: string | number, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
     } else {
@@ -96,13 +95,32 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
-  const handleCreateOrder = () => {
+  const handleCreateOrder = async () => {
     if (!selectedCustomer || cartItems.length === 0) {
-      alert("Please select a customer and add items to cart");
+      showNotification.error("Please select a customer and add items to cart");
       return;
     }
-    alert("Order created successfully!");
-    onClose();
+
+    try {
+      const orderData = {
+        customerId: selectedCustomer,
+        items: cartItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        subtotal,
+        tax,
+        total
+      };
+
+      await post("/api/orders", orderData);
+      showNotification.success("Order created successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Error creating order:", error);
+      showNotification.error("Failed to create order");
+    }
   };
 
   return (
@@ -113,35 +131,42 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
           <h2 className="text-2xl font-bold text-white">Create Order</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1"
+            className="text-slate-400 hover:text-white transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-2 gap-6">
-            {/* Left: Order Details */}
-            <div className="space-y-6">
-              {/* Customer Selection */}
-              <div>
-                <label className="block text-white font-semibold mb-3">
-                  Select Customer
-                </label>
-                <select
-                  value={selectedCustomer}
-                  onChange={(e) => setSelectedCustomer(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:border-blue-500"
-                >
-                  <option value="">Choose a customer...</option>
-                  {CUSTOMERS.map((customer) => (
-                    <option key={customer.id} value={customer.name}>
-                      {customer.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        <div className="p-6 flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <span className="ml-3 text-slate-400">Loading products and customers...</span>
+            </div>
+          ) : (
+            <div className="space-y-6 grid grid-cols-2 gap-6">
+              {/* Left: Order Details */}
+              <div className="space-y-6">
+                {/* Customer Selection */}
+                <div>
+                  <label className="block text-white font-semibold mb-3">
+                    Select Customer
+                  </label>
+                  <select
+                    value={selectedCustomer}
+                    onChange={(e) => setSelectedCustomer(e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white focus:outline-none focus:border-blue-500"
+                    disabled={loading}
+                  >
+                    <option value="">Choose a customer...</option>
+                    {customers.map((customer) => (
+                      <option key={customer._id} value={customer._id}>
+                        {customer.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
               {/* Product Search and Add */}
               <div>
@@ -168,7 +193,7 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
                   <div className="absolute top-full left-0 right-0 mt-2 bg-slate-700 border border-slate-600 rounded-lg shadow-lg z-10 max-h-48 overflow-auto">
                     {filteredProducts.map((product) => (
                       <button
-                        key={product.id}
+                        key={product._id}
                         onClick={() => addToCart(product)}
                         className="w-full text-left px-4 py-3 hover:bg-slate-600 transition-colors border-b border-slate-600 last:border-0 text-slate-300"
                       >
@@ -288,7 +313,8 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
                 </div>
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

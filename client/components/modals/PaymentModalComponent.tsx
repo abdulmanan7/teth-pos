@@ -1,4 +1,4 @@
-import { formatCurrencyNew } from "@/utils";
+import { formatCurrencyNew, showNotification } from "@/utils";
 import { useState } from "react";
 
 interface StaffMember {
@@ -182,11 +182,11 @@ export default function PaymentModalComponent({
           <button
             onClick={() => {
               if (!selectedMethod) {
-                alert("Please select a payment method");
+                showNotification.error("Please select a payment method");
                 return;
               }
               if (!isValidPayment) {
-                alert("Payment amount must be at least Rs " + total.toFixed(2));
+                showNotification.error(`Payment amount must be at least ${formatCurrencyNew(total)}`);
                 return;
               }
               onPayment(selectedMethod);

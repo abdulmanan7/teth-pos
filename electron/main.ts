@@ -34,8 +34,8 @@ async function createWindow() {
       // Production: spa is in resources folder
       startUrl = `file://${path.join(process.resourcesPath, "spa", "index.html")}`;
     } else {
-      // Built but not packaged
-      startUrl = `file://${path.resolve(__dirname, "spa/index.html")}`;
+      // Built but not packaged - __dirname is already in dist directory
+      startUrl = `file://${path.join(__dirname, "spa", "index.html")}`;
     }
 
     await mainWindow.loadURL(startUrl);
@@ -55,6 +55,8 @@ async function createWindow() {
 
 async function startExpressServer() {
   try {
+    console.log("Starting Express server...");
+    
     // Dynamically import the built server to avoid bundling mongoose
     // In development: dist/server/node-build.mjs
     // In production (packaged): resources/server/node-build.mjs
@@ -68,6 +70,8 @@ async function startExpressServer() {
       serverPath = path.join(__dirname, "../dist/server/node-build.mjs");
     }
 
+    console.log("Server path:", serverPath);
+
     const module = await import(serverPath);
     const createServer = module.createServer;
 
@@ -75,7 +79,10 @@ async function startExpressServer() {
       throw new Error("createServer not found in server module");
     }
 
+    console.log("Creating Express app...");
     const expressApp = await createServer();
+    console.log("Express app created successfully");
+    
     expressServer = expressApp.listen(0, "127.0.0.1", () => {
       const address = expressServer?.address();
       if (address && typeof address !== "string") {
@@ -151,4 +158,10 @@ ipcMain.handle("api:post", async (_event, apiPath: string, body: any) => {
     path: apiPath,
     body,
   });
+});
+
+ipcMain.handle("app:restart", async () => {
+  // Restart the application
+  app.relaunch();
+  app.exit();
 });

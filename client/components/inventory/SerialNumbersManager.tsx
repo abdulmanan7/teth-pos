@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import { useToast } from "@/components/ToastManager";
+import { showNotification } from "@/utils";
 import type { SerialNumber, Product, Warehouse, LotNumber } from "@shared/api";
 
 interface SerialNumbersManagerProps {
@@ -520,17 +521,17 @@ export default function SerialNumbersManager({ isDarkTheme = true, onClose }: Se
                     
                     const selectedProduct = getSelectedProduct();
                     if (!selectedProduct) {
-                      alert("Please select a product first");
+                      showNotification.error("Please select a product first");
                       return;
                     }
                     
                     if (bulkData.serial_numbers.length >= selectedProduct.stock) {
-                      alert(`Cannot add more serials. Product stock is ${selectedProduct.stock}`);
+                      showNotification.error(`Cannot add more serials. Product stock is ${selectedProduct.stock}`);
                       return;
                     }
                     
                     if (bulkData.serial_numbers.includes(serial)) {
-                      alert("This serial number already exists in the list");
+                      showNotification.error("This serial number already exists in the list");
                       return;
                     }
                     
@@ -658,7 +659,7 @@ export default function SerialNumbersManager({ isDarkTheme = true, onClose }: Se
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(serial.serial_number);
-                    alert("Serial number copied to clipboard");
+                    showNotification.success("Serial number copied to clipboard");
                   }}
                   className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-300 hover:bg-slate-400 text-slate-900'}`}
                   title="Copy serial number"

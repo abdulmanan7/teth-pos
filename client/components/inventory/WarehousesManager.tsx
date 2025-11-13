@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Loader, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { showNotification } from "@/utils";
 import type { Warehouse } from "@shared/api";
 
 interface WarehousesManagerProps {
@@ -61,7 +62,7 @@ export default function WarehousesManager({ isDarkTheme = true, onClose }: Wareh
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.code) {
-      alert("Name and code are required");
+      showNotification.error("Name and code are required");
       return;
     }
 
@@ -75,7 +76,7 @@ export default function WarehousesManager({ isDarkTheme = true, onClose }: Wareh
       await fetchWarehouses();
     } catch (error) {
       console.error("Error saving warehouse:", error);
-      alert("Failed to save warehouse");
+      showNotification.error("Failed to save warehouse");
     }
   };
 
@@ -101,7 +102,7 @@ export default function WarehousesManager({ isDarkTheme = true, onClose }: Wareh
         await fetchWarehouses();
       } catch (error) {
         console.error("Error deleting warehouse:", error);
-        alert("Failed to delete warehouse");
+        showNotification.error("Failed to delete warehouse");
       }
     }
   };

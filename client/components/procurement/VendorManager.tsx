@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
-import { formatCurrencyNew } from "@/utils";
+import { formatCurrencyNew, showNotification } from "@/utils";
 
 interface Vendor {
   _id: string;
@@ -60,7 +60,7 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
       setVendors(data);
     } catch (error) {
       console.error("Error fetching vendors:", error);
-      alert("Failed to fetch vendors");
+      showNotification.error("Failed to fetch vendors");
     } finally {
       setLoading(false);
     }
@@ -104,7 +104,7 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
   const handleSaveVendor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.code || !formData.email) {
-      alert("Please fill in all required fields");
+      showNotification.error("Please fill in all required fields");
       return;
     }
 
@@ -112,17 +112,17 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
       setSubmitting(true);
       if (editingId) {
         await put(`/api/vendors/${editingId}`, formData);
-        alert("Vendor updated successfully!");
+        showNotification.success("Vendor updated successfully!");
       } else {
         await post("/api/vendors", formData);
-        alert("Vendor added successfully!");
+        showNotification.success("Vendor added successfully!");
       }
       resetForm();
       setShowForm(false);
       await fetchVendors();
     } catch (error) {
       console.error("Error saving vendor:", error);
-      alert("Failed to save vendor");
+      showNotification.error("Failed to save vendor");
     } finally {
       setSubmitting(false);
     }
@@ -132,11 +132,11 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
     if (confirm("Are you sure you want to delete this vendor?")) {
       try {
         await deleteRequest(`/api/vendors/${id}`);
-        alert("Vendor deleted successfully!");
+        showNotification.success("Vendor deleted successfully!");
         await fetchVendors();
       } catch (error) {
         console.error("Error deleting vendor:", error);
-        alert("Failed to delete vendor");
+        showNotification.error("Failed to delete vendor");
       }
     }
   };

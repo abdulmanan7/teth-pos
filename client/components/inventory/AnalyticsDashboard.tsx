@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import type { InventoryOverview, InventoryMetrics } from "@shared/api";
-import { formatCurrencyNew } from "@/utils";
+import { formatCurrencyNew, showNotification } from "@/utils";
 
 interface AnalyticsDashboardProps {
   isDarkTheme?: boolean;
@@ -176,11 +176,11 @@ export default function AnalyticsDashboard({ isDarkTheme = true, onClose }: Anal
     try {
       setLoading(true);
       await post("/api/inventory/analytics/calculate", {});
-      alert("Metrics calculated successfully");
+      showNotification.success("Metrics calculated successfully");
       await fetchData();
     } catch (error) {
       console.error("Error calculating metrics:", error);
-      alert("Failed to calculate metrics");
+      showNotification.error("Failed to calculate metrics");
     }
   };
 

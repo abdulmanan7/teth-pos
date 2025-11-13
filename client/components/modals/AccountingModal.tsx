@@ -6,6 +6,7 @@ import JournalEntryManager from "@/components/accounting/JournalEntryManager";
 import TransactionHistoryViewer from "@/components/accounting/TransactionHistoryViewer";
 import FinancialReports from "@/components/accounting/FinancialReports";
 import { useElectronApi } from "@/hooks/useElectronApi";
+import { showNotification } from "@/utils";
 
 interface AccountingModalProps {
   isDarkTheme: boolean;
@@ -104,10 +105,10 @@ export default function AccountingModal({ isDarkTheme, onClose }: AccountingModa
                       onClick={async () => {
                         try {
                           const data = await post('/api/accounting/initialize', {});
-                          alert(data.message || 'Chart of accounts initialized successfully!');
+                          showNotification.success(data.message || 'Chart of accounts initialized successfully!');
                         } catch (error) {
                           console.error('Error initializing accounts:', error);
-                          alert('Error initializing accounts');
+                          showNotification.error('Error initializing accounts');
                         }
                       }}
                       className="bg-blue-600 hover:bg-blue-700 text-white"

@@ -1166,5 +1166,21 @@ export async function createServer() {
     return getBalanceSheet(req, res, next);
   });
 
+  // Environment Configuration Routes
+  app.get("/api/system/env-config", async (req, res, next) => {
+    const { getEnvConfig } = await import("./routes/system/env-config");
+    return getEnvConfig(req, res, next);
+  });
+
+  app.post("/api/system/env-config", async (req, res, next) => {
+    const { updateEnvConfig } = await import("./routes/system/env-config");
+    return updateEnvConfig(req, res, next);
+  });
+
+  app.get("/api/system/logs", async (req, res, next) => {
+    const { getErrorLogs } = await import("./routes/system/logs");
+    return getErrorLogs(req, res, next);
+  });
+
   return app;
 }

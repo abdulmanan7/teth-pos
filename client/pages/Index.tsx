@@ -21,6 +21,7 @@ import {
   Percent,
   Tag,
   Calculator,
+  Database,
 } from "lucide-react";
 import ProductsModal from "@/components/modals/ProductsModal";
 import CustomersModal from "@/components/modals/CustomersModal";
@@ -35,6 +36,7 @@ import PaymentModalComponent from "@/components/modals/PaymentModalComponent";
 import ReturnsModal from "@/components/modals/ReturnsModal";
 import DiscountModalComponent from "@/components/modals/DiscountModalComponent";
 import AccountingModal from "@/components/modals/AccountingModal";
+import EnvironmentConfigModal from "@/components/modals/EnvironmentConfigModal";
 import ThermalReceipt from "@/components/receipts/ThermalReceipt";
 import InventoryWidgets from "@/components/dashboard/InventoryWidgets";
 import InventoryAlertsWidget from "@/components/dashboard/InventoryAlertsWidget";
@@ -62,8 +64,9 @@ type ModalType =
   | "security"
   | "admin"
   | "dashboard"
-  | "returns"
+  | "env-config"
   | "accounting"
+  | "returns"
   | null;
 
 interface Product {
@@ -896,6 +899,14 @@ export default function Index() {
                   <Calculator className="w-4 h-4" />
                 </button>
               )}
+              {/* Environment Config Button */}
+              <button
+                onClick={() => setActiveModal("env-config")}
+                className={`p-2 rounded-lg transition-colors ${isDarkTheme ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'}`}
+                title="Environment Configuration"
+              >
+                <Database className="w-4 h-4" />
+              </button>
               {/* Theme Switcher */}
               <button
                 onClick={() => setIsDarkTheme(!isDarkTheme)}
@@ -1699,6 +1710,7 @@ export default function Index() {
         />
       )}
       {activeModal === "admin" && <AdminModal isDarkTheme={isDarkTheme} onClose={closeModal} userRole={currentStaff?.role} />}
+      {activeModal === "env-config" && <EnvironmentConfigModal isOpen={true} onClose={closeModal} isDarkTheme={isDarkTheme} />}
       {activeModal === "returns" && <ReturnsModal isDarkTheme={isDarkTheme} onClose={closeModal} />}
       {activeModal === "accounting" && <AccountingModal isDarkTheme={isDarkTheme} onClose={closeModal} />}
     </>

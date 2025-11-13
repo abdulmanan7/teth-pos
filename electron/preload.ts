@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld("electron", {
     post: (path: string, body: any) =>
       ipcRenderer.invoke("api:post", path, body),
   },
+  restart: () => ipcRenderer.invoke("app:restart"),
 });
 
 declare global {
@@ -18,6 +19,7 @@ declare global {
         get: (path: string) => Promise<any>;
         post: (path: string, body: any) => Promise<any>;
       };
+      restart: () => Promise<void>;
     };
   }
 }

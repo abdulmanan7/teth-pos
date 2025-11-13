@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld("electron", {
       ipcRenderer.invoke("api:post", path, body),
   },
   restart: () => ipcRenderer.invoke("app:restart"),
+  saveFile: (filename: string, content: string) =>
+    ipcRenderer.invoke("file:save", { filename, content }),
 });
 
 declare global {
@@ -20,6 +22,7 @@ declare global {
         post: (path: string, body: any) => Promise<any>;
       };
       restart: () => Promise<void>;
+      saveFile: (filename: string, content: string) => Promise<boolean>;
     };
   }
 }

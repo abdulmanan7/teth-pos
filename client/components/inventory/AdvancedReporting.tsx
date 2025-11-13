@@ -26,7 +26,7 @@ export default function AdvancedReporting({ isDarkTheme = true, onClose }: Advan
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const { post } = useElectronApi();
+  const { post, saveFile } = useElectronApi();
 
   const reportConfigs = {
     inventory: {
@@ -75,15 +75,14 @@ export default function AdvancedReporting({ isDarkTheme = true, onClose }: Advan
       const data = await post(config.endpoint, payload);
 
       if (format === "csv") {
-        // Handle CSV download
-        const element = document.createElement("a");
-        const file = new Blob([data], { type: "text/csv" });
-        element.href = URL.createObjectURL(file);
-        element.download = `${reportType}-report.csv`;
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-        showNotification.success("Report downloaded successfully!");
+        // Handle CSV download using native file dialog
+        const filename = `${reportType}-report.csv`;
+        const saved = await saveFile(filename, data);
+        if (saved) {
+          showNotification.success("Report saved successfully!");
+        } else {
+          showNotification.info("Report save cancelled");
+        }
       } else {
         setReportData(data);
         setShowPreview(true);
@@ -344,16 +343,15 @@ export default function AdvancedReporting({ isDarkTheme = true, onClose }: Advan
 
           {/* Download Button */}
           <Button
-            onClick={() => {
-              const element = document.createElement("a");
-              const file = new Blob([JSON.stringify(reportData, null, 2)], {
-                type: "application/json",
-              });
-              element.href = URL.createObjectURL(file);
-              element.download = `${reportType}-report.json`;
-              document.body.appendChild(element);
-              element.click();
-              document.body.removeChild(element);
+            onClick={async () => {
+              const filename = `${reportType}-report.json`;
+              const content = JSON.stringify(reportData, null, 2);
+              const saved = await saveFile(filename, content);
+              if (saved) {
+                showNotification.success("Report saved successfully!");
+              } else {
+                showNotification.info("Report save cancelled");
+              }
             }}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2"
           >

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol } from "electron";
+import { app, BrowserWindow, ipcMain, protocol, dialog } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Server } from "http";
@@ -56,7 +56,7 @@ async function createWindow() {
 async function startExpressServer() {
   try {
     console.log("Starting Express server...");
-    
+
     // Dynamically import the built server to avoid bundling mongoose
     // In development: dist/server/node-build.mjs
     // In production (packaged): resources/server/node-build.mjs
@@ -82,7 +82,7 @@ async function startExpressServer() {
     console.log("Creating Express app...");
     const expressApp = await createServer();
     console.log("Express app created successfully");
-    
+
     expressServer = expressApp.listen(0, "127.0.0.1", () => {
       const address = expressServer?.address();
       if (address && typeof address !== "string") {
@@ -144,7 +144,15 @@ ipcMain.handle("api:call", async (_event, { method, path: apiPath, body }) => {
     throw new Error(`API error: ${response.statusText}`);
   }
 
-  return response.json();
+  // Check content type to determine how to parse the response
+  const contentType = response.headers.get("content-type");
+  if (contentType?.includes("text/csv")) {
+    // Return CSV as plain text
+    return response.text();
+  } else {
+    // Default to JSON parsing
+    return response.json();
+  }
 });
 
 // Generic IPC handler for any API endpoint
@@ -164,4 +172,28 @@ ipcMain.handle("app:restart", async () => {
   // Restart the application
   app.relaunch();
   app.exit();
+});
+
+// File save handler
+ipcMain.handle("file:save", async (_event, { filename, content }) => {
+  try {
+    const { filePath, canceled } = await dialog.showSaveDialog({
+      defaultPath: filename,
+      filters: [
+        { name: "CSV Files", extensions: ["csv"] },
+        { name: "JSON Files", extensions: ["json"] },
+        { name: "All Files", extensions: ["*"] },
+      ],
+    });
+
+    if (canceled || !filePath) {
+      return false;
+    }
+
+    await fs.promises.writeFile(filePath, content, "utf-8");
+    return true;
+  } catch (error) {
+    console.error("Error saving file:", error);
+    return false;
+  }
 });

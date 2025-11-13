@@ -29,28 +29,45 @@ export function useElectronApi() {
         return response.json();
       }
     },
-    [isElectron]
+    [isElectron],
   );
 
-  const get = useCallback(
-    (path: string) => apiCall("GET", path),
-    [apiCall]
-  );
+  const get = useCallback((path: string) => apiCall("GET", path), [apiCall]);
 
   const post = useCallback(
     (path: string, body: any) => apiCall("POST", path, body),
-    [apiCall]
+    [apiCall],
   );
 
   const put = useCallback(
     (path: string, body: any) => apiCall("PUT", path, body),
-    [apiCall]
+    [apiCall],
   );
 
   const delete_ = useCallback(
     (path: string) => apiCall("DELETE", path),
-    [apiCall]
+    [apiCall],
   );
 
-  return { apiCall, get, post, put, delete: delete_, isElectron };
+  const saveFile = useCallback(
+    async (filename: string, content: string): Promise<boolean> => {
+      if (isElectron) {
+        return (window as any).electron.saveFile(filename, content);
+      } else {
+        // Fallback to browser download for web version
+        const element = document.createElement("a");
+        const file = new Blob([content], { type: "text/plain" });
+        element.href = URL.createObjectURL(file);
+        element.download = filename;
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        URL.revokeObjectURL(element.href);
+        return true;
+      }
+    },
+    [isElectron],
+  );
+
+  return { apiCall, get, post, put, delete: delete_, saveFile, isElectron };
 }

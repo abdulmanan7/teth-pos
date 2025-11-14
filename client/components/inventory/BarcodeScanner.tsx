@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useElectronApi } from "@/hooks/useElectronApi";
-import { showNotification } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
 import type { BarcodeMapping, BarcodeResult, Product } from "@shared/api";
 
 interface BarcodeScannerProps {
@@ -23,6 +23,7 @@ interface BarcodeScannerProps {
 }
 
 export default function BarcodeScanner({ isDarkTheme = true, onClose }: BarcodeScannerProps) {
+  const notify = useNotifications();
   const [scanInput, setScanInput] = useState("");
   const [scanResult, setScanResult] = useState<BarcodeResult | null>(null);
   const [barcodes, setBarcodes] = useState<BarcodeMapping[]>([]);
@@ -170,19 +171,19 @@ export default function BarcodeScanner({ isDarkTheme = true, onClose }: BarcodeS
   const handleCreateBarcode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBarcode.barcode || !newBarcode.product_id) {
-      showNotification.error("Please fill in all fields");
+      notify.error("Please fill in all fields");
       return;
     }
 
     try {
       setLoading(true);
       await post("/api/inventory/barcodes", newBarcode);
-      showNotification.success("Barcode created successfully");
+      notify.success("Barcode created successfully");
       setNewBarcode({ barcode: "", barcode_type: "sku", product_id: "" });
       await fetchBarcodes();
     } catch (error) {
       console.error("Error creating barcode:", error);
-      showNotification.error("Failed to create barcode");
+      notify.error("Failed to create barcode");
     } finally {
       setLoading(false);
     }
@@ -192,11 +193,11 @@ export default function BarcodeScanner({ isDarkTheme = true, onClose }: BarcodeS
     if (confirm("Delete this barcode mapping?")) {
       try {
         await deleteRequest(`/api/inventory/barcodes/${id}`);
-        showNotification.success("Barcode deleted");
+        notify.success("Barcode deleted");
         await fetchBarcodes();
       } catch (error) {
         console.error("Error deleting barcode:", error);
-        showNotification.error("Failed to delete barcode");
+        notify.error("Failed to delete barcode");
       }
     }
   };
@@ -500,7 +501,7 @@ export default function BarcodeScanner({ isDarkTheme = true, onClose }: BarcodeS
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(barcode.barcode);
-                        showNotification.success("Barcode copied!");
+                        notify.success("Barcode copied!");
                       }}
                       className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
                       title="Copy barcode"

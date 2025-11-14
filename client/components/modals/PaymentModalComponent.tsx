@@ -1,4 +1,5 @@
-import { formatCurrencyNew, showNotification } from "@/utils";
+import { formatCurrencyNew } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
 import { useState } from "react";
 
 interface StaffMember {
@@ -32,6 +33,7 @@ export default function PaymentModalComponent({
   onPayment,
   onClose,
 }: PaymentModalProps) {
+  const notify = useNotifications();
   const [paymentAmount, setPaymentAmount] = useState<string>(total.toFixed(2));
   const [selectedMethod, setSelectedMethod] = useState<string>("cash");
   const paymentAmountNum = parseFloat(paymentAmount) || 0;
@@ -182,11 +184,11 @@ export default function PaymentModalComponent({
           <button
             onClick={() => {
               if (!selectedMethod) {
-                showNotification.error("Please select a payment method");
+                notify.error("Please select a payment method");
                 return;
               }
               if (!isValidPayment) {
-                showNotification.error(`Payment amount must be at least ${formatCurrencyNew(total)}`);
+                notify.error(`Payment amount must be at least ${formatCurrencyNew(total)}`);
                 return;
               }
               onPayment(selectedMethod);

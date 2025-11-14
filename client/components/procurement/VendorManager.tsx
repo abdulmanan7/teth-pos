@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useElectronApi } from "@/hooks/useElectronApi";
-import { formatCurrencyNew, showNotification } from "@/utils";
+import { formatCurrencyNew } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
 
 interface Vendor {
   _id: string;
@@ -29,6 +30,7 @@ interface VendorManagerProps {
 }
 
 export default function VendorManager({ isDarkTheme = true }: VendorManagerProps) {
+  const notify = useNotifications();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -60,7 +62,7 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
       setVendors(data);
     } catch (error) {
       console.error("Error fetching vendors:", error);
-      showNotification.error("Failed to fetch vendors");
+      notify.error("Failed to fetch vendors");
     } finally {
       setLoading(false);
     }
@@ -104,7 +106,7 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
   const handleSaveVendor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.code || !formData.email) {
-      showNotification.error("Please fill in all required fields");
+      notify.error("Please fill in all required fields");
       return;
     }
 
@@ -112,17 +114,17 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
       setSubmitting(true);
       if (editingId) {
         await put(`/api/vendors/${editingId}`, formData);
-        showNotification.success("Vendor updated successfully!");
+        notify.success("Vendor updated successfully!");
       } else {
         await post("/api/vendors", formData);
-        showNotification.success("Vendor added successfully!");
+        notify.success("Vendor added successfully!");
       }
       resetForm();
       setShowForm(false);
       await fetchVendors();
     } catch (error) {
       console.error("Error saving vendor:", error);
-      showNotification.error("Failed to save vendor");
+      notify.error("Failed to save vendor");
     } finally {
       setSubmitting(false);
     }
@@ -132,11 +134,11 @@ export default function VendorManager({ isDarkTheme = true }: VendorManagerProps
     if (confirm("Are you sure you want to delete this vendor?")) {
       try {
         await deleteRequest(`/api/vendors/${id}`);
-        showNotification.success("Vendor deleted successfully!");
+        notify.success("Vendor deleted successfully!");
         await fetchVendors();
       } catch (error) {
         console.error("Error deleting vendor:", error);
-        showNotification.error("Failed to delete vendor");
+        notify.error("Failed to delete vendor");
       }
     }
   };

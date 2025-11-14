@@ -3,8 +3,7 @@ import { Plus, Edit2, Trash2, Loader, Barcode, AlertTriangle, Copy } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useElectronApi } from "@/hooks/useElectronApi";
-import { useToast } from "@/components/ToastManager";
-import { showNotification } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
 import type { SerialNumber, Product, Warehouse, LotNumber } from "@shared/api";
 
 interface SerialNumbersManagerProps {
@@ -13,7 +12,7 @@ interface SerialNumbersManagerProps {
 }
 
 export default function SerialNumbersManager({ isDarkTheme = true, onClose }: SerialNumbersManagerProps) {
-  const { addToast } = useToast();
+  const notify = useNotifications();
   const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -157,7 +156,7 @@ export default function SerialNumbersManager({ isDarkTheme = true, onClose }: Se
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.serial_number || !formData.product_id || !formData.warehouse_id) {
-      addToast("Serial number, product, and warehouse are required", "warning");
+      notify.warning("Serial number, product, and warehouse are required");
       return;
     }
 
@@ -168,23 +167,23 @@ export default function SerialNumbersManager({ isDarkTheme = true, onClose }: Se
 
       if (editingId) {
         await put(`/api/inventory/serial-numbers/${editingId}`, payload);
-        addToast("Serial number updated successfully", "success");
+        notify.success("Serial number updated successfully");
       } else {
         await post("/api/inventory/serial-numbers", payload);
-        addToast("Serial number created successfully", "success");
+        notify.success("Serial number created successfully");
       }
       resetForm();
       await fetchSerialNumbers();
     } catch (error) {
       console.error("Error saving serial number:", error);
-      addToast("Failed to save serial number", "error");
+      notify.error("Failed to save serial number");
     }
   };
 
   const handleBulkSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (bulkData.serial_numbers.length === 0 || !bulkData.product_id || !bulkData.warehouse_id) {
-      addToast("Serial numbers, product, and warehouse are required", "warning");
+      notify.warning("Serial numbers, product, and warehouse are required");
       return;
     }
 
@@ -209,10 +208,10 @@ export default function SerialNumbersManager({ isDarkTheme = true, onClose }: Se
       setScannerInput("");
       setShowBulkForm(false);
       await fetchSerialNumbers();
-      addToast(`Successfully created ${bulkData.serial_numbers.length} serial numbers`, "success");
+      notify.success(`Successfully created ${bulkData.serial_numbers.length} serial numbers`);
     } catch (error) {
       console.error("Error creating serial numbers:", error);
-      addToast("Failed to create serial numbers", "error");
+      notify.error("Failed to create serial numbers");
     }
   };
 
@@ -233,11 +232,11 @@ export default function SerialNumbersManager({ isDarkTheme = true, onClose }: Se
     if (confirm("Are you sure you want to delete this serial number?")) {
       try {
         await deleteRequest(`/api/inventory/serial-numbers/${id}`);
-        addToast("Serial number deleted successfully", "success");
+        notify.success("Serial number deleted successfully");
         await fetchSerialNumbers();
       } catch (error) {
         console.error("Error deleting serial number:", error);
-        addToast("Failed to delete serial number", "error");
+        notify.error("Failed to delete serial number");
       }
     }
   };
@@ -521,17 +520,17 @@ export default function SerialNumbersManager({ isDarkTheme = true, onClose }: Se
                     
                     const selectedProduct = getSelectedProduct();
                     if (!selectedProduct) {
-                      showNotification.error("Please select a product first");
+                      notify.error("Please select a product first");
                       return;
                     }
                     
                     if (bulkData.serial_numbers.length >= selectedProduct.stock) {
-                      showNotification.error(`Cannot add more serials. Product stock is ${selectedProduct.stock}`);
+                      notify.error(`Cannot add more serials. Product stock is ${selectedProduct.stock}`);
                       return;
                     }
                     
                     if (bulkData.serial_numbers.includes(serial)) {
-                      showNotification.error("This serial number already exists in the list");
+                      notify.error("This serial number already exists in the list");
                       return;
                     }
                     
@@ -659,7 +658,7 @@ export default function SerialNumbersManager({ isDarkTheme = true, onClose }: Se
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(serial.serial_number);
-                    showNotification.success("Serial number copied to clipboard");
+                    notify.success("Serial number copied to clipboard");
                   }}
                   className={`p-2 rounded transition-colors ${isDarkTheme ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-300 hover:bg-slate-400 text-slate-900'}`}
                   title="Copy serial number"

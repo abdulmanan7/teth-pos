@@ -2,7 +2,8 @@ import { X, Plus, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import { formatCurrencyNew, showNotification } from "@/utils";
+import { formatCurrencyNew } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import type { Product, Customer } from "@shared/api";
 
@@ -14,6 +15,7 @@ interface CartItem {
 }
 
 export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme: boolean; onClose: () => void }) {
+  const notify = useNotifications();
   const { get, post } = useElectronApi();
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -34,7 +36,7 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
         setCustomers(customersData || []);
       } catch (error) {
         console.error("Error fetching data:", error);
-        showNotification.error("Failed to load products and customers");
+        notify.error("Failed to load products and customers");
       } finally {
         setLoading(false);
       }
@@ -97,7 +99,7 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
 
   const handleCreateOrder = async () => {
     if (!selectedCustomer || cartItems.length === 0) {
-      showNotification.error("Please select a customer and add items to cart");
+      notify.error("Please select a customer and add items to cart");
       return;
     }
 
@@ -115,11 +117,11 @@ export default function CreateOrderModal({ isDarkTheme, onClose }: { isDarkTheme
       };
 
       await post("/api/orders", orderData);
-      showNotification.success("Order created successfully!");
+      notify.success("Order created successfully!");
       onClose();
     } catch (error) {
       console.error("Error creating order:", error);
-      showNotification.error("Failed to create order");
+      notify.error("Failed to create order");
     }
   };
 

@@ -9,8 +9,16 @@ interface ThermalReceiptProps {
   brandingConfig?: {
     storeName: string;
     phone: string;
-    city: string;
     email?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+    website?: string;
+    taxId?: string;
+    businessLicense?: string;
+    description?: string;
   };
   onClose: () => void;
 }
@@ -175,7 +183,7 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
           >
             {/* Logo - Inline SVG for reliable printing */}
             <div style={{ marginBottom: "12px", textAlign: "center", display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <svg width="120" height="30" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="120" height="30" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: "45px" }}>
                 {/* Icon */}
                 <g clipPath="url(#clip0_101_2)">
                   <path d="M12 0H24V12H36V24H24V36H12V24H0V12H12V0Z" fill="black"/>
@@ -195,12 +203,24 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
             {/* Store Information */}
             {brandingConfig && (
               <div style={{ marginBottom: "12px", borderBottom: "1px dashed black", paddingBottom: "8px", textAlign: "center" }}>
+                {/* Store Name */}
                 <div style={{ fontWeight: "bold", fontSize: "12px", marginBottom: "4px" }}>
                   {brandingConfig.storeName}
                 </div>
-                <div style={{ fontSize: "10px" }}>{brandingConfig.phone}</div>
-                <div style={{ fontSize: "10px" }}>{brandingConfig.city}</div>
-                {brandingConfig.email && <div style={{ fontSize: "10px" }}>{brandingConfig.email}</div>}
+                
+                {/* Phone */}
+                {brandingConfig.phone && (
+                  <div style={{ fontSize: "9px", marginBottom: "2px" }}>
+                    {brandingConfig.phone}
+                  </div>
+                )}
+                
+                {/* Combined Address: Street, City, State, Zip */}
+                {(brandingConfig.address || brandingConfig.city || brandingConfig.state) && (
+                  <div style={{ fontSize: "9px" }}>
+                    {[brandingConfig.address, brandingConfig.city, brandingConfig.state].filter(Boolean).join(", ")}
+                  </div>
+                )}
               </div>
             )}
 
@@ -237,16 +257,15 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
                 display: "flex",
                 justifyContent: "space-between",
                 fontWeight: "bold",
-                fontSize: "10px",
-                marginBottom: "8px",
-                borderBottom: "1px solid black",
+                fontSize: "9px",
+                marginBottom: "6px",
                 paddingBottom: "4px",
+                borderBottom: "1px solid black",
+                color: "#555",
               }}
             >
-              <span style={{ flex: 1, textAlign: "left" }}>Item</span>
-              <span style={{ width: "40px", textAlign: "center" }}>Qty</span>
-              <span style={{ width: "50px", textAlign: "right" }}>Price</span>
-              <span style={{ width: "50px", textAlign: "right" }}>Total</span>
+              <span style={{ flex: 1, textAlign: "left" }}>Item Details</span>
+              <span style={{ width: "100px", textAlign: "right" }}>Amount</span>
             </div>
 
             {/* Items */}
@@ -260,19 +279,23 @@ export default function ThermalReceipt({ order, brandingConfig, onClose }: Therm
                 const effectiveUnitPrice = quantity > 0 ? lineTotal / quantity : unitPrice;
 
                 return (
-                  <div key={index} style={{ marginBottom: "6px", fontSize: "10px" }}>
+                  <div key={index} style={{ marginBottom: "8px", fontSize: "10px", borderBottom: "1px dotted #ccc", paddingBottom: "4px" }}>
+                    {/* Item Name - Full Width */}
+                    <div style={{ marginBottom: "4px" }}>
+                      <span style={{ fontWeight: "bold", color: "#222" }}>{item.name}</span>
+                    </div>
+                    {/* Qty, Price, Total - Full Width Row */}
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        color: "#222",
+                        color: "#444",
                       }}
                     >
-                      <span style={{ flex: 1, textAlign: "left", fontWeight: "bold" }}>{item.name}</span>
-                      <span style={{ width: "40px", textAlign: "center" }}>{quantity % 1 === 0 ? quantity : quantity.toFixed(2)}</span>
-                      <span style={{ width: "50px", textAlign: "right" }}>{formatCurrency(effectiveUnitPrice)}</span>
-                      <span style={{ width: "50px", textAlign: "right" }}>{formatCurrency(lineTotal)}</span>
+                      <span style={{ textAlign: "left" }}>Qty: <strong>{quantity % 1 === 0 ? quantity : quantity.toFixed(2)}</strong></span>
+                      <span style={{ textAlign: "center" }}>@ <strong>{formatCurrency(effectiveUnitPrice)}</strong></span>
+                      <span style={{ textAlign: "right" }}>= <strong>{formatCurrency(lineTotal)}</strong></span>
                     </div>
                   </div>
                 );

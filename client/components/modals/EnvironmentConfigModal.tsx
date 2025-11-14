@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Save, RotateCcw, Database, Globe, DollarSign, Server, RefreshCw } from "lucide-react";
-import { showNotification } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
 import { useElectronApi } from "@/hooks/useElectronApi";
 
 interface ErrorLog {
@@ -25,6 +25,7 @@ interface EnvironmentConfigModalProps {
 }
 
 export default function EnvironmentConfigModal({ isOpen, onClose, isDarkTheme }: EnvironmentConfigModalProps) {
+  const notify = useNotifications();
   const { get, post } = useElectronApi();
   const [envConfig, setEnvConfig] = useState<EnvConfig>({
     MONGODB_URI: "",
@@ -113,10 +114,10 @@ export default function EnvironmentConfigModal({ isOpen, onClose, isDarkTheme }:
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      showNotification.success("Error logs downloaded successfully!");
+      notify.success("Error logs downloaded successfully!");
     } catch (error) {
       console.error("Error downloading logs:", error);
-      showNotification.error("Failed to download error logs");
+      notify.error("Failed to download error logs");
     }
   };
 
@@ -127,11 +128,11 @@ export default function EnvironmentConfigModal({ isOpen, onClose, isDarkTheme }:
       if (response.success) {
         setEnvConfig(response.config);
       } else {
-        showNotification.error("Failed to load environment configuration");
+        notify.error("Failed to load environment configuration");
       }
     } catch (error) {
       console.error("Error loading env config:", error);
-      showNotification.error("Error loading environment configuration");
+      notify.error("Error loading environment configuration");
     } finally {
       setLoading(false);
     }
@@ -143,14 +144,14 @@ export default function EnvironmentConfigModal({ isOpen, onClose, isDarkTheme }:
       const response = await post("/api/system/env-config", { config: envConfig });
       
       if (response.success) {
-        showNotification.success("Environment configuration saved successfully! Restart the application for changes to take effect.");
+        notify.success("Environment configuration saved successfully! Restart the application for changes to take effect.");
         onClose();
       } else {
-        showNotification.error(response.message || "Failed to save configuration");
+        notify.error(response.message || "Failed to save configuration");
       }
     } catch (error) {
       console.error("Error saving env config:", error);
-      showNotification.error("Error saving environment configuration");
+      notify.error("Error saving environment configuration");
     } finally {
       setSaving(false);
     }
@@ -160,7 +161,7 @@ export default function EnvironmentConfigModal({ isOpen, onClose, isDarkTheme }:
     if (window.electron) {
       window.electron.restart();
     } else {
-      showNotification.info("Please restart the application manually for changes to take effect");
+      notify.info("Please restart the application manually for changes to take effect");
     }
   };
 

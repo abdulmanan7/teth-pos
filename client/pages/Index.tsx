@@ -43,7 +43,8 @@ import InventoryAlertsWidget from "@/components/dashboard/InventoryAlertsWidget"
 import RecentOrdersWidget from "@/components/dashboard/RecentOrdersWidget";
 import { useElectronApi } from "@/hooks/useElectronApi";
 import { useBrandingConfig } from "@/hooks/useBrandingConfig";
-import { showNotification, storage, formatCurrencyNew } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
+import { storage, formatCurrencyNew } from "@/utils";
 import type {
   Product as ApiProduct,
   Customer as ApiCustomer,
@@ -191,6 +192,7 @@ interface StaffMember {
 export default function Index() {
   const { get, post } = useElectronApi();
   const { config: branding } = useBrandingConfig();
+  const notify = useNotifications();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedCustomer, setSelectedCustomer] = useState("Walk-in");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -433,7 +435,7 @@ export default function Index() {
       setTaxRatesError("Failed to load tax presets. Using custom rate.");
       setSelectedTaxRateId(CUSTOM_TAX_OPTION);
       setTaxRateLabel(null);
-      showNotification.error("Failed to load tax rates");
+      notify.error("Failed to load tax rates");
     } finally {
       setTaxRatesLoading(false);
     }
@@ -627,7 +629,7 @@ export default function Index() {
 
     // Check if staff is logged in
     if (!currentStaff) {
-      showNotification.loginRequired("add items to cart");
+      notify.loginRequired("add items to cart");
       setActiveModal("security");
       return;
     }
@@ -720,7 +722,7 @@ export default function Index() {
 
   const saveDraftOrder = () => {
     if (cartItems.length === 0) {
-      showNotification.emptyDraft();
+      notify.emptyDraft();
       return;
     }
 
@@ -743,7 +745,7 @@ export default function Index() {
     setSearchTerm("");
     setCustomerSearch("");
 
-    showNotification.draftSaved();
+    notify.draftSaved();
   };
 
   const resumeDraftOrder = (draft: DraftOrder) => {
@@ -760,13 +762,13 @@ export default function Index() {
 
   const handleCreateOrder = () => {
     if (!currentStaff) {
-      showNotification.loginRequired("process payments");
+      notify.loginRequired("process payments");
       setActiveModal("security");
       return;
     }
 
     if (cartItems.length === 0) {
-      showNotification.emptyCart();
+      notify.emptyCart();
       return;
     }
     setActiveModal("payment");
@@ -860,10 +862,10 @@ export default function Index() {
           fetchRecentOrders();
         }, 500);
       } else {
-        showNotification.error(response.error || "Failed to create order");
+        notify.error(response.error || "Failed to create order");
       }
     } catch (error: any) {
-      showNotification.error(error.message || "Unknown error");
+      notify.error(error.message || "Unknown error");
     }
   };
 

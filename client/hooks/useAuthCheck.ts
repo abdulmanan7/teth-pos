@@ -3,7 +3,7 @@
  */
 
 import { useCallback } from "react";
-import { showNotification } from "@/utils/notifications";
+import { useNotifications } from "@/utils/notifications";
 
 export interface UseAuthCheckProps {
   currentStaff: any;
@@ -17,19 +17,21 @@ export const useAuthCheck = ({
   currentStaff,
   setActiveModal,
 }: UseAuthCheckProps) => {
+  const notify = useNotifications();
+
   /**
    * Check if user is authenticated, show alert and redirect if not
    */
   const requireAuth = useCallback(
     (action: string): boolean => {
       if (!currentStaff) {
-        showNotification.loginRequired(action);
+        notify.loginRequired(action);
         setActiveModal("security");
         return false;
       }
       return true;
     },
-    [currentStaff, setActiveModal]
+    [currentStaff, setActiveModal, notify],
   );
 
   /**
@@ -38,12 +40,12 @@ export const useAuthCheck = ({
   const requireCartItems = useCallback(
     (items: any[]): boolean => {
       if (items.length === 0) {
-        showNotification.emptyCart();
+        notify.emptyCart();
         return false;
       }
       return true;
     },
-    []
+    [notify],
   );
 
   /**
@@ -55,7 +57,7 @@ export const useAuthCheck = ({
       if (!requireCartItems(items)) return false;
       return true;
     },
-    [requireAuth, requireCartItems]
+    [requireAuth, requireCartItems],
   );
 
   return {

@@ -6,7 +6,7 @@ import JournalEntryManager from "@/components/accounting/JournalEntryManager";
 import TransactionHistoryViewer from "@/components/accounting/TransactionHistoryViewer";
 import FinancialReports from "@/components/accounting/FinancialReports";
 import { useElectronApi } from "@/hooks/useElectronApi";
-import { showNotification } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
 
 interface AccountingModalProps {
   isDarkTheme: boolean;
@@ -16,6 +16,7 @@ interface AccountingModalProps {
 type AccountingTab = 'accounts' | 'journal' | 'transactions' | 'reports' | 'settings';
 
 export default function AccountingModal({ isDarkTheme, onClose }: AccountingModalProps) {
+  const notify = useNotifications();
   const { post } = useElectronApi();
   const [activeTab, setActiveTab] = useState<AccountingTab>('accounts');
 
@@ -105,10 +106,10 @@ export default function AccountingModal({ isDarkTheme, onClose }: AccountingModa
                       onClick={async () => {
                         try {
                           const data = await post('/api/accounting/initialize', {});
-                          showNotification.success(data.message || 'Chart of accounts initialized successfully!');
+                          notify.success(data.message || 'Chart of accounts initialized successfully!');
                         } catch (error) {
                           console.error('Error initializing accounts:', error);
-                          showNotification.error('Error initializing accounts');
+                          notify.error('Error initializing accounts');
                         }
                       }}
                       className="bg-blue-600 hover:bg-blue-700 text-white"

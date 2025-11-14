@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useElectronApi } from "@/hooks/useElectronApi";
-import { formatCurrencyNew, showNotification } from "@/utils";
+import { formatCurrencyNew } from "@/utils";
+import { useNotifications } from "@/utils/notifications";
 
 interface AdvancedReportingProps {
   isDarkTheme?: boolean;
@@ -19,6 +20,7 @@ interface AdvancedReportingProps {
 }
 
 export default function AdvancedReporting({ isDarkTheme = true, onClose }: AdvancedReportingProps) {
+  const notify = useNotifications();
   const [reportType, setReportType] = useState<"inventory" | "transactions" | "expiry" | "stock-alerts" | "warehouses">("inventory");
   const [format, setFormat] = useState<"json" | "csv">("json");
   const [startDate, setStartDate] = useState("");
@@ -79,9 +81,9 @@ export default function AdvancedReporting({ isDarkTheme = true, onClose }: Advan
         const filename = `${reportType}-report.csv`;
         const saved = await saveFile(filename, data);
         if (saved) {
-          showNotification.success("Report saved successfully!");
+          notify.success("Report saved successfully!");
         } else {
-          showNotification.info("Report save cancelled");
+          notify.info("Report save cancelled");
         }
       } else {
         setReportData(data);
@@ -89,7 +91,7 @@ export default function AdvancedReporting({ isDarkTheme = true, onClose }: Advan
       }
     } catch (error) {
       console.error("Error generating report:", error);
-      showNotification.error("Failed to generate report");
+      notify.error("Failed to generate report");
     } finally {
       setLoading(false);
     }
@@ -348,9 +350,9 @@ export default function AdvancedReporting({ isDarkTheme = true, onClose }: Advan
               const content = JSON.stringify(reportData, null, 2);
               const saved = await saveFile(filename, content);
               if (saved) {
-                showNotification.success("Report saved successfully!");
+                notify.success("Report saved successfully!");
               } else {
-                showNotification.info("Report save cancelled");
+                notify.info("Report save cancelled");
               }
             }}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2"

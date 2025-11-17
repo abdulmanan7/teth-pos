@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface PurchaseOrderItem {
   product_id: string;
@@ -22,8 +22,8 @@ export interface IPurchaseOrder extends Document {
   vendor_id: string;
   items: PurchaseOrderItem[];
   total_amount: number;
-  status: 'draft' | 'sent' | 'confirmed' | 'received' | 'invoiced' | 'paid';
-  payment_status: 'pending' | 'partial' | 'paid';
+  status: "draft" | "sent" | "confirmed" | "received" | "invoiced" | "paid";
+  payment_status: "pending" | "partial" | "paid";
   amount_paid: number;
   payment_history: PaymentRecord[];
   order_date: Date;
@@ -34,29 +34,32 @@ export interface IPurchaseOrder extends Document {
   updatedAt: Date;
 }
 
-const PaymentRecordSchema = new Schema({
-  amount: {
-    type: Number,
-    required: true,
-    min: 0,
+const PaymentRecordSchema = new Schema(
+  {
+    amount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    payment_date: {
+      type: Date,
+      default: Date.now,
+    },
+    payment_method: {
+      type: String,
+      enum: ["cash", "check", "bank_transfer", "credit_card", "other"],
+    },
+    reference: {
+      type: String,
+      trim: true,
+    },
+    notes: {
+      type: String,
+      trim: true,
+    },
   },
-  payment_date: {
-    type: Date,
-    default: Date.now,
-  },
-  payment_method: {
-    type: String,
-    enum: ['cash', 'check', 'bank_transfer', 'credit_card', 'other'],
-  },
-  reference: {
-    type: String,
-    trim: true,
-  },
-  notes: {
-    type: String,
-    trim: true,
-  },
-}, { _id: true });
+  { _id: true },
+);
 
 const PurchaseOrderItemSchema = new Schema({
   product_id: {
@@ -101,7 +104,7 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder>(
         validator: function (v: PurchaseOrderItem[]) {
           return v.length > 0;
         },
-        message: 'Purchase order must have at least one item',
+        message: "Purchase order must have at least one item",
       },
     },
     total_amount: {
@@ -111,14 +114,14 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder>(
     },
     status: {
       type: String,
-      enum: ['draft', 'sent', 'confirmed', 'received', 'invoiced', 'paid'],
-      default: 'draft',
+      enum: ["draft", "sent", "confirmed", "received", "invoiced", "paid"],
+      default: "draft",
       index: true,
     },
     payment_status: {
       type: String,
-      enum: ['pending', 'partial', 'paid'],
-      default: 'pending',
+      enum: ["pending", "partial", "paid"],
+      default: "pending",
       index: true,
     },
     amount_paid: {
@@ -145,7 +148,7 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder>(
       trim: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes
@@ -154,4 +157,7 @@ PurchaseOrderSchema.index({ po_number: 1 });
 PurchaseOrderSchema.index({ status: 1 });
 PurchaseOrderSchema.index({ order_date: -1 });
 
-export const PurchaseOrder = mongoose.model<IPurchaseOrder>('PurchaseOrder', PurchaseOrderSchema);
+export const PurchaseOrder = mongoose.model<IPurchaseOrder>(
+  "PurchaseOrder",
+  PurchaseOrderSchema,
+);

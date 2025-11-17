@@ -985,6 +985,9 @@ export default function GoodsReceiptManager({ isDarkTheme = true }: GoodsReceipt
                       {item.quality_notes && (
                         <p className="text-xs text-slate-300">Notes: {item.quality_notes}</p>
                       )}
+                      {item.barcodes && item.barcodes.length > 0 && (
+                        <p className="text-xs text-slate-300">Barcodes: {item.barcodes.join(", ")}</p>
+                      )}
                       {item.lot_numbers && item.lot_numbers.length > 0 && (
                         <p className="text-xs text-slate-300">Lots: {item.lot_numbers.join(", ")}</p>
                       )}

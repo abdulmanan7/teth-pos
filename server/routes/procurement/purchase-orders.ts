@@ -20,7 +20,17 @@ const generatePONumber = async (): Promise<string> => {
 // GET all purchase orders
 const getAllPOs: RequestHandler = async (req, res) => {
   try {
-    const pos = await PurchaseOrder.find().sort({ order_date: -1 });
+    const { status } = req.query;
+    const filter: any = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const pos = await PurchaseOrder.find(filter).sort({ order_date: -1 });
+
+    // Return raw POs without enrichment for backward compatibility
+    // Clients that need enriched data should use specific endpoints
     res.json(pos);
   } catch (error) {
     console.error("Error fetching POs:", error);
@@ -301,6 +311,74 @@ const recordPayment: RequestHandler = async (req, res) => {
   }
 };
 
+// GET enriched purchase orders (with populated vendor and product data)
+const getEnrichedPOs: RequestHandler = async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter: any = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const pos = await PurchaseOrder.find(filter).sort({ order_date: -1 });
+
+    // Populate vendor and product data
+    const enrichedPOs = await Promise.all(
+      pos.map(async (po) => {
+        try {
+          const vendor = await Vendor.findById(po.vendor_id);
+          const items = await Promise.all(
+            po.items.map(async (item) => {
+              const product = await Product.findById(item.product_id);
+              return {
+                product: {
+                  _id: product?._id,
+                  name: product?.name,
+                },
+                quantity: item.quantity,
+                unit_price: item.purchase_price,
+              };
+            }),
+          );
+
+          return {
+            ...po.toObject(),
+            vendor: {
+              _id: vendor?._id,
+              name: vendor?.name,
+            },
+            items,
+          };
+        } catch (err) {
+          console.error("Error enriching PO:", err);
+          // Fallback: return PO with minimal enrichment
+          return {
+            ...po.toObject(),
+            vendor: {
+              _id: po.vendor_id,
+              name: "Unknown Vendor",
+            },
+            items: po.items.map((item) => ({
+              product: {
+                _id: item.product_id,
+                name: "Unknown Product",
+              },
+              quantity: item.quantity,
+              unit_price: item.purchase_price,
+            })),
+          };
+        }
+      }),
+    );
+
+    res.json(enrichedPOs);
+  } catch (error) {
+    console.error("Error fetching enriched POs:", error);
+    res.status(500).json({ error: "Failed to fetch purchase orders" });
+  }
+};
+
 // DELETE purchase order
 const deletePO: RequestHandler = async (req, res) => {
   try {
@@ -325,6 +403,7 @@ const deletePO: RequestHandler = async (req, res) => {
   }
 };
 
+router.get("/enriched", getEnrichedPOs);
 router.get("/", getAllPOs);
 router.get("/:id", getPOById);
 router.get("/vendor/:vendorId", getPOsByVendor);

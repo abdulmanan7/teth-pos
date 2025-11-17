@@ -5,6 +5,7 @@ import { Product } from "../../db/models/Product";
 import { TransactionHistory } from "../../db/models/TransactionHistory";
 import { LotNumber } from "../../db/models/LotNumber";
 import { SerialNumber } from "../../db/models/SerialNumber";
+import { BarcodeMapping } from "../../db/models/BarcodeMapping";
 import { recordDamagedGoods } from "../../utils/orderAccountingIntegration";
 
 const router = Router();
@@ -111,15 +112,16 @@ const getPOWithRemaining: RequestHandler = async (req, res) => {
 // POST create goods receipt
 const createGR: RequestHandler = async (req, res) => {
   try {
-    const { po_id, items, received_by, notes } = req.body;
+    const { po_id, purchase_order_id, items, received_by, notes } = req.body;
+    const poId = po_id || purchase_order_id;
 
-    if (!po_id || !items || items.length === 0) {
+    if (!poId || !items || items.length === 0) {
       res.status(400).json({ error: "PO ID and items are required" });
       return;
     }
 
     // Verify PO exists
-    const po = await PurchaseOrder.findById(po_id);
+    const po = await PurchaseOrder.findById(poId);
     if (!po) {
       res.status(404).json({ error: "Purchase order not found" });
       return;
@@ -128,20 +130,25 @@ const createGR: RequestHandler = async (req, res) => {
     // Validate items against PO
     let totalReceived = 0;
     let totalDamaged = 0;
+    const processedItems = [];
 
-    for (const item of items) {
-      if (item.po_item_index >= po.items.length) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const poItemIndex =
+        item.po_item_index !== undefined ? item.po_item_index : i;
+
+      if (poItemIndex >= po.items.length) {
         res
           .status(400)
-          .json({ error: `Invalid PO item index: ${item.po_item_index}` });
+          .json({ error: `Invalid PO item index: ${poItemIndex}` });
         return;
       }
 
-      const poItem = po.items[item.po_item_index];
+      const poItem = po.items[poItemIndex];
       if (item.product_id !== poItem.product_id) {
         res
           .status(400)
-          .json({ error: `Product mismatch at item ${item.po_item_index}` });
+          .json({ error: `Product mismatch at item ${poItemIndex}` });
         return;
       }
 
@@ -152,30 +159,37 @@ const createGR: RequestHandler = async (req, res) => {
 
       if (receivedQty < 0 || damagedQty < 0) {
         res.status(400).json({
-          error: `Quantities cannot be negative for item ${item.po_item_index}`,
+          error: `Quantities cannot be negative for item ${poItemIndex}`,
         });
         return;
       }
 
       if (totalQty > poItem.quantity) {
         res.status(400).json({
-          error: `Total quantity (${totalQty}) exceeds ordered quantity (${poItem.quantity}) for item ${item.po_item_index}`,
+          error: `Total quantity (${totalQty}) exceeds ordered quantity (${poItem.quantity}) for item ${poItemIndex}`,
         });
         return;
       }
 
       totalReceived += receivedQty;
       totalDamaged += damagedQty;
+
+      // Add po_item_index and po_quantity to item if not present
+      processedItems.push({
+        ...item,
+        po_item_index: poItemIndex,
+        po_quantity: poItem.quantity,
+      });
     }
 
     const receipt_number = await generateGRNumber();
 
     const gr = new GoodsReceipt({
-      po_id,
+      po_id: poId,
       po_number: po.po_number,
       vendor_id: po.vendor_id,
       receipt_number,
-      items,
+      items: processedItems,
       received_by,
       total_received: totalReceived,
       total_damaged: totalDamaged,
@@ -341,6 +355,32 @@ const confirmGR: RequestHandler = async (req, res) => {
                 `Error creating serial number ${serialNum}:`,
                 error,
               );
+            }
+          }
+        }
+
+        // Create Barcode Mappings if provided
+        if (grItem.barcodes && grItem.barcodes.length > 0) {
+          for (const barcode of grItem.barcodes) {
+            try {
+              // Check if barcode already exists
+              const existingBarcode = await BarcodeMapping.findOne({
+                barcode: barcode,
+              });
+              if (!existingBarcode) {
+                await BarcodeMapping.create({
+                  barcode: barcode,
+                  barcode_type: "custom",
+                  product_id: grItem.product_id,
+                  warehouse_id: defaultWarehouseId,
+                  is_active: true,
+                  created_by: gr.received_by || "system",
+                });
+              } else {
+                console.warn(`Barcode ${barcode} already exists, skipping`);
+              }
+            } catch (error) {
+              console.error(`Error creating barcode ${barcode}:`, error);
             }
           }
         }

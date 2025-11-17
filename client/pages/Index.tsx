@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import logoSvg from "@/assets/logo.svg";
 import {
   ShoppingCart,
@@ -22,6 +23,7 @@ import {
   Tag,
   Calculator,
   Database,
+  PackageCheck,
 } from "lucide-react";
 import ProductsModal from "@/components/modals/ProductsModal";
 import CustomersModal from "@/components/modals/CustomersModal";
@@ -190,6 +192,7 @@ interface StaffMember {
 // Customers fetched from GET /api/customers
 
 export default function Index() {
+  const navigate = useNavigate();
   const { get, post } = useElectronApi();
   const { config: branding } = useBrandingConfig();
   const notify = useNotifications();
@@ -1052,11 +1055,11 @@ export default function Index() {
                     <span>History</span>
                   </button>
                   <button
-                    onClick={() => setActiveModal("sales")}
-                    className={`rounded-lg p-3 font-medium text-sm transition-all flex flex-col items-center gap-1 ${isDarkTheme ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'}`}
+                    onClick={() => navigate("/goods-receipt")}
+                    className={`rounded-lg p-3 font-medium text-sm transition-all flex flex-col items-center gap-1 ${isDarkTheme ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-purple-100 hover:bg-purple-200 text-purple-700'}`}
                   >
-                    <BarChart3 className="w-5 h-5" />
-                    <span>Sales</span>
+                    <PackageCheck className="w-5 h-5" />
+                    <span>Receive</span>
                   </button>
                   <button
                     onClick={() => setActiveModal("resume")}
